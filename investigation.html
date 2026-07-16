@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="RiskFusion AI — Active Investigations workspace for SOC analysts" />
+  <title>Investigations — RiskFusion AI</title>
+  <link rel="stylesheet" href="styles/design-system.css" />
+  <style>
+    /* ── Investigation Cards ── */
+    .inv-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .inv-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-xs);
+      transition: all var(--t-base);
+      cursor: pointer;
+    }
+
+    .inv-card:hover {
+      box-shadow: var(--shadow-lg);
+      border-color: var(--border-strong);
+      transform: translateY(-1px);
+    }
+
+    .inv-card-head {
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border-default);
+    }
+
+    .inv-card-id {
+      font-family: monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--brand-blue-mid);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .inv-card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+
+    .inv-card-meta {
+      font-size: 0.8125rem;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .inv-card-body {
+      padding: 16px 20px;
+    }
+
+    .inv-progress-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .inv-progress {
+      height: 6px;
+      background: var(--bg-muted);
+      border-radius: var(--r-full);
+      overflow: hidden;
+    }
+
+    .inv-progress-fill {
+      height: 100%;
+      border-radius: var(--r-full);
+      background: linear-gradient(90deg, var(--brand-blue-mid), var(--brand-cyan-light));
+      transition: width 1s ease;
+    }
+
+    .inv-checklist {
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .inv-check-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8125rem;
+      color: var(--text-tertiary);
+    }
+
+    .inv-check-item.done {
+      color: var(--low);
+    }
+
+    .inv-check-item.done .check-icon {
+      color: var(--low);
+    }
+
+    .inv-check-item.active {
+      color: var(--brand-blue-mid);
+      font-weight: 600;
+    }
+
+    .inv-check-item.active .check-icon {
+      color: var(--brand-blue-mid);
+    }
+
+    .check-icon svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .inv-card-foot {
+      padding: 12px 20px;
+      background: var(--bg-subtle);
+      border-top: 1px solid var(--border-default);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* ── Analyst Workload Panel ── */
+    .workload-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .analyst-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-xl);
+      padding: 18px;
+      box-shadow: var(--shadow-xs);
+      transition: all var(--t-base);
+    }
+
+    .analyst-card:hover {
+      box-shadow: var(--shadow-md);
+    }
+
+    .ac-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 12px;
+    }
+
+    .ac-name {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .ac-role {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .ac-stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8125rem;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border-default);
+    }
+
+    .ac-stat-row:last-child {
+      border-bottom: none;
+    }
+
+    .ac-stat-label {
+      color: var(--text-tertiary);
+    }
+
+    .ac-stat-val {
+      font-weight: 700;
+    }
+
+    .ac-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 4px;
+    }
+
+    /* ── Evidence Workspace ── */
+    .evidence-workspace {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+    }
+
+    .ew-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-lg);
+      padding: 16px;
+      transition: all var(--t-base);
+      cursor: pointer;
+    }
+
+    .ew-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--border-strong);
+    }
+
+    .ew-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--r-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+
+    .ew-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .ew-name {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .ew-val {
+      font-size: 0.8125rem;
+      color: var(--text-tertiary);
+      line-height: 1.4;
+    }
+
+    .ew-meta {
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border-default);
+    }
+
+    /* ── Timeline dots in card ── */
+    .mini-timeline {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 10px;
+    }
+
+    .mt-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .mt-line {
+      flex: 1;
+      height: 2px;
+      background: var(--border-default);
+    }
+
+    /* ── Linked Cases panel ── */
+    .linked-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-default);
+      font-size: 0.8125rem;
+      cursor: pointer;
+      transition: all var(--t-fast);
+    }
+
+    .linked-row:hover {
+      padding-left: 6px;
+      color: var(--brand-blue-mid);
+    }
+
+    .linked-row:last-child {
+      border-bottom: none;
+    }
+
+    /* ── Notes Area ── */
+    .note-input {
+      width: 100%;
+      min-height: 100px;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border-default);
+      border-radius: var(--r-lg);
+      font-size: 0.875rem;
+      font-family: inherit;
+      color: var(--text-primary);
+      resize: vertical;
+      outline: none;
+      background: var(--bg-surface);
+      transition: all var(--t-fast);
+    }
+
+    .note-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+    }
+
+    .note-item {
+      padding: 12px 14px;
+      background: var(--bg-subtle);
+      border-radius: var(--r-lg);
+      border: 1px solid var(--border-default);
+      margin-bottom: 8px;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    .note-meta {
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+      margin-top: 5px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 18px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="app-sidebar"></aside>
+    <div class="main-area">
+      <header class="topbar" id="app-topbar"></header>
+      <div class="page-content">
+
+        <!-- ── Header ── -->
+        <div class="pg-header">
+          <div>
+            <div class="pg-eyebrow">Operations · Active Investigations</div>
+            <h1 class="pg-title">Investigations</h1>
+            <p class="pg-sub">4 active investigations assigned to your team · <span id="live-time">--:--:--</span> IST
+            </p>
+          </div>
+          <div class="pg-actions">
+            <button class="btn btn-secondary btn-sm">
+              <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M2 4h10M4 7h6M6 10h2" />
+              </svg>
+              Filter
+            </button>
+            <button class="btn btn-primary btn-sm">
+              <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <line x1="7" y1="1" x2="7" y2="13" />
+                <line x1="1" y1="7" x2="13" y2="7" />
+              </svg>
+              Start Investigation
+            </button>
+          </div>
+        </div>
+
+        <!-- ── Analyst Workload ── -->
+        <div style="margin-bottom:6px;">
+          <div
+            style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:12px;">
+            Analyst Workload — Real-Time</div>
+          <div class="workload-grid">
+            <div class="analyst-card">
+              <div class="ac-avatar" style="background:#2563EB;">PS</div>
+              <div class="ac-name">Akshat</div>
+              <div class="ac-role">SOC Analyst L3 · Lead</div>
+              <div class="ac-stat-row"><span class="ac-stat-label">Open Cases</span><span class="ac-stat-val"
+                  style="color:var(--critical);">5</span></div>
+              <div class="ac-stat-row"><span class="ac-stat-label">Resolved Today</span><span class="ac-stat-val"
+                  style="color:var(--low);">8</span></div>
+              <div class="ac-stat-row"><span class="ac-stat-label">MTTR</span><span class="ac-stat-val">1h 14m</span>
+              </div>
+              <div
+                style="margin-top:10px;display:flex;align-items:center;gap:5px;font-size:0.75rem;color:var(--low);font-weight:600;">
+                <span class="ac-status-dot" style="background:var(--low);"></span>Online · Active
+              </div>
+            </div>
+            <div class="analyst-card">
+              <div class="ac-avatar" style="background:#0891B2;">RM</div>
+              <div class="ac-name">Rohan Mehta</div>
+              <div class="ac-role">SOC Analyst L2</div>
+              <div class="ac-stat-row"><span class="ac-stat-label">Open Cases</span><span class="ac-stat-val"
+                  style="color:var(--high);">3</span></div>
+              <div class="ac-stat-row"><span class="ac-stat-label">Resolved Today</span><span class="ac-stat-val"
+                  style="color:var(--low);">6</span></div>
+              <div class="ac-stat-row"><span class="ac-stat-label">MTTR</span><span class="ac-stat-val">1h 48m</span>
+              </div>
+              <div
+                style="margin-top:10px;display:flex;align-items:center;gap:5px;font-size:0.75rem;color:var(--low);font-weight:600;">
+                <span class="ac-status-dot" style="background:var(--low);"></span>Online · Active
+              </div>
+            </div>
+            <div class="analyst-card">
+              <div class="ac-avatar" style="background:#7C3AED;">AI</div>
+              <div class="ac-name">Ananya Iyer</div>
+              <div class="ac-role">SOC Analyst L2</div>
+              <div class="ac-stat-row"><span class="ac-stat-label">Open Cases</span><span class="ac-stat-val"
+                  style="color:var(--medium);">2</span></div>
+              <div class="ac-stat-row"><span class="ac-stat-label">Resolved Today</span><span class="ac-stat-val"
+                  style="color:var(--low);">4</span></div>
+              <div class="ac-stat-row"><span class="ac-stat-label">MTTR</span><span class="ac-stat-val">2h 02m</span>
+              </div>
+              <div
+                style="margin-top:10px;display:flex;align-items:center;gap:5px;font-size:0.75rem;color:var(--medium);font-weight:600;">
+                <span class="ac-status-dot" style="background:var(--medium);"></span>Online · In Investigation
+              </div>
+            </div>
+            <div class="analyst-card">
+              <div class="ac-avatar" style="background:#059669;">VN</div>
+              <div class="ac-name">Vikram Nair</div>
+              <div class="ac-role">SOC Analyst L3</div>
+              <div class="ac-stat-row"><span class="ac-stat-label">Open Cases</span><span class="ac-stat-val"
+                  style="color:var(--critical);">4</span></div>
+              <div class="ac-stat-row"><span class="ac-stat-label">Resolved Today</span><span class="ac-stat-val"
+                  style="color:var(--low);">5</span></div>
+              <div class="ac-stat-row"><span class="ac-stat-label">MTTR</span><span class="ac-stat-val">1h 31m</span>
+              </div>
+              <div
+                style="margin-top:10px;display:flex;align-items:center;gap:5px;font-size:0.75rem;color:var(--text-muted);font-weight:600;">
+                <span class="ac-status-dot" style="background:var(--text-muted);"></span>Away · Break
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Active Investigation Cards ── -->
+        <div
+          style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:12px;margin-top:24px;">
+          Active Investigations</div>
+        <div class="inv-grid">
+
+          <!-- Investigation 1: INC-0847 -->
+          <a href="incident.html" class="inv-card" style="text-decoration:none;">
+            <div class="inv-card-head">
+              <div class="inv-card-id">
+                INC-2026-0847
+                <span class="badge critical"><span class="dot"></span>Critical</span>
+                <span class="badge open" style="margin-left:auto;">Open</span>
+              </div>
+              <div class="inv-card-title">Account Takeover — Impossible Travel Detected</div>
+              <div class="inv-card-meta">
+                <div style="display:flex;align-items:center;gap:5px;">
+                  <div
+                    style="width:20px;height:20px;border-radius:50%;background:#2563EB;display:flex;align-items:center;justify-content:center;font-size:0.5rem;font-weight:800;color:white;">
+                    PS</div>
+                  Akshat
+                </div>
+                <span>·</span>
+                <span>Risk Score <strong style="color:var(--critical);">94</strong></span>
+                <span>·</span>
+                <span style="color:var(--critical);font-weight:600;">SLA Breached</span>
+              </div>
+            </div>
+            <div class="inv-card-body">
+              <div class="inv-progress-label">
+                <span>Investigation Progress</span>
+                <span style="color:var(--brand-blue-mid);font-weight:700;">65%</span>
+              </div>
+              <div class="inv-progress">
+                <div class="inv-progress-fill" style="width:65%;"></div>
+              </div>
+              <div class="inv-checklist">
+                <div class="inv-check-item done">
+                  <div class="check-icon"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round">
+                      <path d="M2 7l3.5 3.5L12 3.5" />
+                    </svg></div>
+                  Evidence collection — 7 correlated signals
+                </div>
+                <div class="inv-check-item done">
+                  <div class="check-icon"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round">
+                      <path d="M2 7l3.5 3.5L12 3.5" />
+                    </svg></div>
+                  AI analysis — Report generated (96.4% confidence)
+                </div>
+                <div class="inv-check-item active">
+                  <div class="check-icon"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="7" cy="7" r="5.5" />
+                      <path d="M7 4.5v3l2 1.5" stroke-linecap="round" />
+                    </svg></div>
+                  Transaction block — Pending analyst approval
+                </div>
+                <div class="inv-check-item">
+                  <div class="check-icon"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <circle cx="7" cy="7" r="5.5" />
+                    </svg></div>
+                  Customer notification (RBI mandated — 30 min)
+                </div>
+                <div class="inv-check-item">
+                  <div class="check-icon"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <circle cx="7" cy="7" r="5.5" />
+                    </svg></div>
+                  STR filing with FIU-IND (PMLA §12A)
+                </div>
+              </div>
+              <div class="mini-timeline" style="margin-top:14px;">
+                <div class="mt-dot" style="background:#2563EB;"></div>
+                <div class="mt-line"></div>
+                <div class="mt-dot" style="background:#2563EB;"></div>
+                <div class="mt-line"></div>
+                <div class="mt-dot" style="background:#2563EB;border:2px solid #2563EB;background:white;"></div>
+                <div class="mt-line" style="background:#E2E8F0;"></div>
+                <div class="mt-dot" style="background:#E2E8F0;"></div>
+                <div class="mt-line" style="background:#E2E8F0;"></div>
+                <div class="mt-dot" style="background:#E2E8F0;"></div>
+              </div>
+            </div>
+            <div class="inv-card-foot">
+              <svg viewBox="0 0 14 14" fill="none" stroke="var(--text-muted)" stroke-width="1.5"
+                style="width:13px;height:13px;">
+                <circle cx="7" cy="7" r="5.5" />
+                <path d="M7 4.5v3l2 1.5" stroke-linecap="round" />
+              </svg>
+              <span style="font-size:0.75rem;color:var(--text-muted);">Last updated 8 min ago</span>
+              <span class="sla-pill breach" style="margin-left:auto;">SLA Breach</span>
+            </div>
+          </a>
+
+          <!-- Investigation 2: INC-0846 -->
+          <a href="incident.html" class="inv-card" style="text-decoration:none;">
+            <div class="inv-card-head">
+              <div class="inv-card-id">
+                INC-2026-0846
+                <span class="badge high"><span class="dot"></span>High</span>
+                <span class="badge investigating" style="margin-left:auto;">Investigating</span>
+              </div>
+              <div class="inv-card-title">Suspicious Wire Transfer — New Beneficiary</div>
+              <div class="inv-card-meta">
+                <div style="display:flex;align-items:center;gap:5px;">
+                  <div
+                    style="width:20px;height:20px;border-radius:50%;background:#0891B2;display:flex;align-items:center;justify-content:center;font-size:0.5rem;font-weight:800;color:white;">
+                    RM</div>
+                  Rohan Mehta
+                </div>
+                <span>·</span>
+                <span>Risk Score <strong style="color:var(--high);">81</strong></span>
+                <span>·</span>
+                <span style="color:var(--medium);font-weight:600;">58 min SLA</span>
+              </div>
+            </div>
+            <div class="inv-card-body">
+              <div class="inv-progress-label">
+                <span>Investigation Progress</span>
+                <span style="color:var(--brand-blue-mid);font-weight:700;">40%</span>
+              </div>
+              <div class="inv-progress">
+                <div class="inv-progress-fill" style="width:40%;"></div>
+              </div>
+              <div class="inv-checklist">
+                <div class="inv-check-item done">
+                  <div class="check-icon"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round">
+                      <path d="M2 7l3.5 3.5L12 3.5" />
+                    </svg></div>
+                  Transaction flagged and placed on hold
+                </div>
+                <div class="inv-check-item active">
+                  <div class="check-icon"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="7" cy="7" r="5.5" />
+                      <path d="M7 4.5v3l2 1.5" stroke-linecap="round" />
+                    </svg></div>
+                  Beneficiary account verification — In Progress
+                </div>
+                <div class="inv-check-item">
+                  <div class="check-icon"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <circle cx="7" cy="7" r="5.5" />
+                    </svg></div>
+                  Customer call-back verification
+                </div>
+                <div class="inv-check-item">
+                  <div class="check-icon"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <circle cx="7" cy="7" r="5.5" />
+                    </svg></div>
+                  AI risk assessment and report generation
+                </div>
+              </div>
+              <div class="mini-timeline" style="margin-top:14px;">
+                <div class="mt-dot" style="background:#2563EB;"></div>
+                <div class="mt-line"></div>
+                <div class="mt-dot" style="background:#2563EB;border:2px solid #2563EB;background:white;"></div>
+                <div class="mt-line" style="background:#E2E8F0;"></div>
+                <div class="mt-dot" style="background:#E2E8F0;"></div>
+                <div class="mt-line" style="background:#E2E8F0;"></div>
+                <div class="mt-dot" style="background:#E2E8F0;"></div>
+              </div>
+            </div>
+            <div class="inv-card-foot">
+              <svg viewBox="0 0 14 14" fill="none" stroke="var(--text-muted)" stroke-width="1.5"
+                style="width:13px;height:13px;">
+                <circle cx="7" cy="7" r="5.5" />
+                <path d="M7 4.5v3l2 1.5" stroke-linecap="round" />
+              </svg>
+              <span style="font-size:0.75rem;color:var(--text-muted);">Last updated 22 min ago</span>
+              <span class="sla-pill warning" style="margin-left:auto;">58 min left</span>
+            </div>
+          </a>
+
+          <!-- Investigation 3: INC-0844 -->
+          <a href="incident.html" class="inv-card" style="text-decoration:none;">
+            <div class="inv-card-head">
+              <div class="inv-card-id">
+                INC-2026-0844
+                <span class="badge critical"><span class="dot"></span>Critical</span>
+                <span class="badge open" style="margin-left:auto;">Open</span>
+              </div>
+              <div class="inv-card-title">Privilege Escalation — Admin Panel Access Outside Hours</div>
+              <div class="inv-card-meta">
+                <div style="display:flex;align-items:center;gap:5px;">
+                  <div
+                    style="width:20px;height:20px;border-radius:50%;background:#059669;display:flex;align-items:center;justify-content:center;font-size:0.5rem;font-weight:800;color:white;">
+                    VN</div>
+                  Vikram Nair
+                </div>
+                <span>·</span>
+                <span>Risk Score <strong style="color:var(--critical);">89</strong></span>
+                <span>·</span>
+                <span style="color:var(--critical);font-weight:600;">SLA Breached</span>
+              </div>
+            </div>
+            <div class="inv-card-body">
+              <div class="inv-progress-label">
+                <span>Investigation Progress</span>
+                <span style="color:var(--brand-blue-mid);font-weight:700;">25%</span>
+              </div>
+              <div class="inv-progress">
+                <div class="inv-progress-fill" style="width:25%;"></div>
+              </div>
+              <div class="inv-checklist">
+                <div class="inv-check-item done">
+                  <div class="check-icon"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round">
+                      <path d="M2 7l3.5 3.5L12 3.5" />
+                    </svg></div>
+                  Incident raised and escalated to L3
+                </div>
+                <div class="inv-check-item active">
+                  <div class="check-icon"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="7" cy="7" r="5.5" />
+                      <path d="M7 4.5v3l2 1.5" stroke-linecap="round" />
+                    </svg></div>
+                  Reviewing UAT-449 access logs — Active
+                </div>
+                <div class="inv-check-item">
+                  <div class="check-icon"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <circle cx="7" cy="7" r="5.5" />
+                    </svg></div>
+                  HR / Insider Threat team notification
+                </div>
+                <div class="inv-check-item">
+                  <div class="check-icon"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <circle cx="7" cy="7" r="5.5" />
+                    </svg></div>
+                  Revoke elevated privileges · Account suspension
+                </div>
+              </div>
+            </div>
+            <div class="inv-card-foot">
+              <svg viewBox="0 0 14 14" fill="none" stroke="var(--text-muted)" stroke-width="1.5"
+                style="width:13px;height:13px;">
+                <circle cx="7" cy="7" r="5.5" />
+                <path d="M7 4.5v3l2 1.5" stroke-linecap="round" />
+              </svg>
+              <span style="font-size:0.75rem;color:var(--text-muted);">Last updated 1h 12m ago</span>
+              <span class="sla-pill breach" style="margin-left:auto;">SLA Breach</span>
+            </div>
+          </a>
+
+          <!-- Investigation 4: INC-0842 -->
+          <a href="incident.html" class="inv-card" style="text-decoration:none;">
+            <div class="inv-card-head">
+              <div class="inv-card-id">
+                INC-2026-0842
+                <span class="badge critical"><span class="dot"></span>Critical</span>
+                <span class="badge investigating" style="margin-left:auto;">Investigating</span>
+              </div>
+              <div class="inv-card-title">SIM Swap Fraud — BSNL Mumbai Circle</div>
+              <div class="inv-card-meta">
+                <div style="display:flex;align-items:center;gap:5px;">
+                  <div
+                    style="width:20px;height:20px;border-radius:50%;background:#0891B2;display:flex;align-items:center;justify-content:center;font-size:0.5rem;font-weight:800;color:white;">
+                    RM</div>
+                  Rohan Mehta
+                </div>
+                <span>·</span>
+                <span>Risk Score <strong style="color:var(--critical);">83</strong></span>
+                <span>·</span>
+                <span style="color:var(--medium);font-weight:600;">1h 20m SLA</span>
+              </div>
+            </div>
+            <div class="inv-card-body">
+              <div class="inv-progress-label">
+                <span>Investigation Progress</span>
+                <span style="color:var(--brand-blue-mid);font-weight:700;">55%</span>
+              </div>
+              <div class="inv-progress">
+                <div class="inv-progress-fill" style="width:55%;"></div>
+              </div>
+              <div class="inv-checklist">
+                <div class="inv-check-item done">
+                  <div class="check-icon"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round">
+                      <path d="M2 7l3.5 3.5L12 3.5" />
+                    </svg></div>
+                  SIM swap confirmed with BSNL network logs
+                </div>
+                <div class="inv-check-item done">
+                  <div class="check-icon"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round">
+                      <path d="M2 7l3.5 3.5L12 3.5" />
+                    </svg></div>
+                  OTP-based transactions suspended
+                </div>
+                <div class="inv-check-item active">
+                  <div class="check-icon"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="7" cy="7" r="5.5" />
+                      <path d="M7 4.5v3l2 1.5" stroke-linecap="round" />
+                    </svg></div>
+                  Coordinating with BSNL fraud team — Active
+                </div>
+                <div class="inv-check-item">
+                  <div class="check-icon"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <circle cx="7" cy="7" r="5.5" />
+                    </svg></div>
+                  FIR filing and CERT-IN notification
+                </div>
+              </div>
+            </div>
+            <div class="inv-card-foot">
+              <svg viewBox="0 0 14 14" fill="none" stroke="var(--text-muted)" stroke-width="1.5"
+                style="width:13px;height:13px;">
+                <circle cx="7" cy="7" r="5.5" />
+                <path d="M7 4.5v3l2 1.5" stroke-linecap="round" />
+              </svg>
+              <span style="font-size:0.75rem;color:var(--text-muted);">Last updated 34 min ago</span>
+              <span class="sla-pill warning" style="margin-left:auto;">1h 20m left</span>
+            </div>
+          </a>
+
+        </div><!-- end inv-grid -->
+
+        <!-- ── Evidence Workspace + Notes ── -->
+        <div class="two-col" style="margin-top:20px;">
+
+          <!-- Evidence for Active Investigation (INC-0847) -->
+          <div>
+            <div
+              style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:12px;">
+              Evidence Workspace — INC-2026-0847
+            </div>
+            <div class="evidence-workspace">
+              <div class="ew-card">
+                <div class="ew-icon" style="background:var(--critical-bg);">
+                  <svg viewBox="0 0 18 18" fill="none" stroke="var(--critical)" stroke-width="1.5"
+                    stroke-linecap="round">
+                    <circle cx="9" cy="7" r="3" />
+                    <path d="M9 14.5S4 11 4 7A5 5 0 0 1 14 7c0 4-5 7.5-5 7.5z" />
+                  </svg>
+                </div>
+                <div class="ew-name">Geo Intelligence</div>
+                <div class="ew-val">Moscow login via NordVPN confirmed · 7,242 km impossible travel</div>
+                <div class="ew-meta">Source: Geo-Engine v2.1 · Confidence: 98.1%</div>
+              </div>
+              <div class="ew-card">
+                <div class="ew-icon" style="background:var(--high-bg);">
+                  <svg viewBox="0 0 18 18" fill="none" stroke="var(--high)" stroke-width="1.5" stroke-linecap="round">
+                    <rect x="3" y="2" width="12" height="14" rx="2" />
+                    <line x1="6" y1="6" x2="12" y2="6" />
+                    <line x1="6" y1="9" x2="12" y2="9" />
+                    <line x1="6" y1="12" x2="9" y2="12" />
+                  </svg>
+                </div>
+                <div class="ew-name">Auth Log Extract</div>
+                <div class="ew-val">7 log lines extracted · 2 critical auth events from adversarial session</div>
+                <div class="ew-meta">Source: Auth-SVC · Timestamped + Signed</div>
+              </div>
+              <div class="ew-card">
+                <div class="ew-icon" style="background:#F5F3FF;">
+                  <svg viewBox="0 0 18 18" fill="none" stroke="#7C3AED" stroke-width="1.5" stroke-linecap="round">
+                    <rect x="2" y="4" width="14" height="11" rx="2" />
+                    <path d="M6 4V2.5a3 3 0 0 1 6 0V4" />
+                  </svg>
+                </div>
+                <div class="ew-name">AI Analyst Report</div>
+                <div class="ew-val">96.4% confidence — ATO classification. Reasoning chain 4 steps.</div>
+                <div class="ew-meta"><a href="ai.html" style="color:var(--brand-blue-mid);font-weight:600;">View Full
+                    Report →</a></div>
+              </div>
+              <div class="ew-card">
+                <div class="ew-icon" style="background:var(--info-bg);">
+                  <svg viewBox="0 0 18 18" fill="none" stroke="var(--brand-blue-mid)" stroke-width="1.5"
+                    stroke-linecap="round">
+                    <rect x="2" y="3" width="14" height="12" rx="2" />
+                    <polyline points="2 7 9 11 16 7" />
+                  </svg>
+                </div>
+                <div class="ew-name">Transaction Record</div>
+                <div class="ew-val">TX-9841 · ₹14.72L NEFT · On hold · New beneficiary verified high-risk</div>
+                <div class="ew-meta">Source: CBS · Core Banking System</div>
+              </div>
+              <div class="ew-card">
+                <div class="ew-icon" style="background:var(--medium-bg);">
+                  <svg viewBox="0 0 18 18" fill="none" stroke="var(--medium)" stroke-width="1.5" stroke-linecap="round">
+                    <rect x="2" y="2" width="14" height="14" rx="2" />
+                    <path d="M6 2v14" />
+                    <path d="M11 6h3" />
+                    <path d="M11 9h3" />
+                    <path d="M11 12h3" />
+                  </svg>
+                </div>
+                <div class="ew-name">Device Fingerprint</div>
+                <div class="ew-val">Samsung Galaxy S24 Ultra — never seen on account. Entropy: 0.14</div>
+                <div class="ew-meta">Source: Device-Mgr v4 · First-seen flag</div>
+              </div>
+              <div class="ew-card">
+                <div class="ew-icon" style="background:var(--low-bg);">
+                  <svg viewBox="0 0 18 18" fill="none" stroke="var(--low)" stroke-width="1.5" stroke-linecap="round">
+                    <path d="M9 2L2 5v5c0 4.5 3 7.5 7 8.5C16 17.5 16 9.5 16 10V5L9 2z" />
+                  </svg>
+                </div>
+                <div class="ew-name">Threat Intel Match</div>
+                <div class="ew-val">IP 95.213.40.114 matched — 23 prior fraud events across 6 banks</div>
+                <div class="ew-meta">Source: FS-ISAC Feed · TLP:AMBER</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Notes + Linked Cases -->
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <!-- Analyst Notes -->
+            <div class="card">
+              <div class="card-head">
+                <div class="card-title">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                    <rect x="2" y="2" width="12" height="12" rx="1.5" />
+                    <line x1="5" y1="6" x2="11" y2="6" />
+                    <line x1="5" y1="9" x2="9" y2="9" />
+                  </svg>
+                  Investigation Notes
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="note-item">
+                  Confirmed impossible travel via Haversine formula cross-check. VPN IP matches FS-ISAC threat intel.
+                  Waiting on BSNL to confirm if SIM clone involved.
+                  <div class="note-meta">Akshat · 08 min ago</div>
+                </div>
+                <div class="note-item">
+                  Beneficiary acc 50100892714XX — checked with beneficiary bank. Account opened 4 days ago. Same pattern
+                  seen in INC-2026-0802. Likely mule account.
+                  <div class="note-meta">Akshat · 32 min ago</div>
+                </div>
+                <div style="margin-top:10px;">
+                  <textarea class="note-input" placeholder="Add investigation note… (Ctrl+Enter to save)"></textarea>
+                  <div style="display:flex;justify-content:flex-end;margin-top:6px;">
+                    <button class="btn btn-primary btn-sm">Save Note</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Linked Cases -->
+            <div class="card">
+              <div class="card-head">
+                <div class="card-title">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                    <path d="M10 6H6a2 2 0 0 0 0 4h2m2 0h2a2 2 0 0 0 0-4h-2" />
+                  </svg>
+                  Linked Cases
+                </div>
+              </div>
+              <div class="card-body" style="padding:4px 16px;">
+                <div class="linked-row">
+                  <span
+                    style="font-weight:700;color:var(--brand-blue-mid);font-family:monospace;font-size:0.8125rem;">INC-2026-0802</span>
+                  <span style="flex:1;color:var(--text-tertiary);font-size:0.8125rem;">Same VPN IP · Resolved · Risk
+                    91</span>
+                  <span class="badge resolved" style="font-size:0.6rem;">Resolved</span>
+                </div>
+                <div class="linked-row">
+                  <span
+                    style="font-weight:700;color:var(--brand-blue-mid);font-family:monospace;font-size:0.8125rem;">INC-2026-0779</span>
+                  <span style="flex:1;color:var(--text-tertiary);font-size:0.8125rem;">New device + VPN pattern · Risk
+                    88</span>
+                  <span class="badge resolved" style="font-size:0.6rem;">Resolved</span>
+                </div>
+                <div class="linked-row">
+                  <span
+                    style="font-weight:700;color:var(--brand-blue-mid);font-family:monospace;font-size:0.8125rem;">INC-2026-0741</span>
+                  <span style="flex:1;color:var(--text-tertiary);font-size:0.8125rem;">Same beneficiary pattern · Risk
+                    86</span>
+                  <span class="badge closed" style="font-size:0.6rem;">Closed</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- end two-col -->
+      </div><!-- end page-content -->
+    </div>
+  </div>
+
+  <script src="scripts/shell.js"></script>
+  <script src="scripts/app.js"></script>
+  <script>renderShell('investigation');</script>
+</body>
+
+</html>

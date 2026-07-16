@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="RiskFusion AI — Sign in to the AI-Powered Banking Incident Correlation Platform" />
+  <title>Sign In — RiskFusion AI</title>
+  <link rel="stylesheet" href="styles/design-system.css" />
+  <style>
+    /* Login-page-specific overrides */
+    .login-brand-panel {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+
+    .brand-logo-mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1.5px solid rgba(255, 255, 255, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+    }
+
+    .brand-logo-mark svg {
+      width: 22px;
+      height: 22px;
+      color: white;
+    }
+
+    .brand-title {
+      font-size: 1.375rem;
+      font-weight: 800;
+      color: white;
+      letter-spacing: -0.03em;
+    }
+
+    .brand-headline {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: white;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+
+    .brand-headline span {
+      color: #67E8F9;
+    }
+
+    .brand-body {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: rgba(255, 255, 255, 0.7);
+      max-width: 380px;
+      margin-bottom: 40px;
+    }
+
+    .brand-stats {
+      display: flex;
+      gap: 32px;
+    }
+
+    .brand-stat-val {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: white;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .brand-stat-lbl {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.55);
+      margin-top: 3px;
+    }
+
+    .brand-visual {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 48px 48px;
+    }
+
+    .brand-card-stack {
+      position: relative;
+      width: 100%;
+      max-width: 340px;
+    }
+
+    .brand-mini-card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 18px 20px;
+      color: white;
+    }
+
+    .brand-mini-card+.brand-mini-card {
+      margin-top: 12px;
+    }
+
+    .bmc-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .bmc-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .bmc-badge {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 100px;
+      background: rgba(239, 68, 68, 0.2);
+      color: #FCA5A5;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .bmc-badge.warn {
+      background: rgba(245, 158, 11, 0.2);
+      color: #FCD34D;
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    .bmc-val {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: white;
+      line-height: 1;
+    }
+
+    .bmc-sub {
+      font-size: 0.8125rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 4px;
+    }
+
+    .bmc-bar-wrap {
+      margin-top: 12px;
+    }
+
+    .bmc-bar {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+
+    .bmc-bar-fill {
+      height: 100%;
+      border-radius: 100px;
+    }
+
+    .sso-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 11px 16px;
+      border: 1.5px solid var(--border-default);
+      border-radius: var(--r-md);
+      background: var(--bg-surface);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      cursor: pointer;
+      width: 100%;
+      transition: all var(--t-fast);
+      font-family: inherit;
+    }
+
+    .sso-btn:hover {
+      background: var(--bg-subtle);
+      border-color: var(--border-strong);
+    }
+
+    .sso-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .form-footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+
+    .form-footer a {
+      color: var(--brand-blue-mid);
+      font-weight: 600;
+    }
+
+    .trusted-by {
+      margin-top: 36px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-default);
+    }
+
+    .trusted-label {
+      font-size: 0.6875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .trusted-logos {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .trusted-logo-item {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      opacity: 0.6;
+    }
+
+    .input-pw-wrap {
+      position: relative;
+    }
+
+    .input-pw-wrap .input {
+      padding-right: 44px;
+    }
+
+    .pw-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+    }
+
+    .pw-toggle:hover {
+      color: var(--text-primary);
+    }
+
+    .pw-toggle svg {
+      width: 16px;
+      height: 16px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="login-shell">
+
+    <!-- ── Brand Panel ── -->
+    <section class="login-brand-panel">
+      <div class="login-brand-inner">
+        <div class="brand-logo-wrap">
+          <div class="brand-logo-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 17l10 5 10-5" />
+              <path d="M2 12l10 5 10-5" />
+            </svg>
+          </div>
+          <div>
+            <div style="font-size:1.125rem;font-weight:800;color:white;letter-spacing:-0.02em;">Risk<span
+                style="color:#67E8F9;">Fusion</span> AI</div>
+            <div
+              style="font-size:0.625rem;color:rgba(255,255,255,0.55);font-weight:600;letter-spacing:0.1em;text-transform:uppercase;">
+              Banking Security Platform</div>
+          </div>
+        </div>
+
+        <h1 class="brand-headline">
+          Detect. Correlate.<br><span>Neutralise.</span>
+        </h1>
+
+        <p class="brand-body">
+          Enterprise-grade AI threat detection and incident correlation purpose-built for banking security operations
+          centres. Monitor millions of transactions in real time.
+        </p>
+
+        <div class="brand-stats">
+          <div>
+            <div class="brand-stat-val">99.7%</div>
+            <div class="brand-stat-lbl">Detection Accuracy</div>
+          </div>
+          <div>
+            <div class="brand-stat-val">&lt; 2s</div>
+            <div class="brand-stat-lbl">Alert Latency</div>
+          </div>
+          <div>
+            <div class="brand-stat-val">340M+</div>
+            <div class="brand-stat-lbl">Events / Day</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mini dashboard cards in brand panel -->
+      <div class="brand-visual">
+        <div class="brand-card-stack">
+          <div class="brand-mini-card">
+            <div class="bmc-top">
+              <span class="bmc-label">Critical Threats</span>
+              <span class="bmc-badge">LIVE</span>
+            </div>
+            <div class="bmc-val">12</div>
+            <div class="bmc-sub">Active incidents requiring attention</div>
+            <div class="bmc-bar-wrap">
+              <div class="bmc-bar">
+                <div class="bmc-bar-fill" style="width:78%;background:rgba(239,68,68,0.8);"></div>
+              </div>
+            </div>
+          </div>
+          <div class="brand-mini-card">
+            <div class="bmc-top">
+              <span class="bmc-label">AI Confidence</span>
+              <span class="bmc-badge warn">HIGH</span>
+            </div>
+            <div class="bmc-val">94.2%</div>
+            <div class="bmc-sub">Model prediction confidence</div>
+            <div class="bmc-bar-wrap">
+              <div class="bmc-bar">
+                <div class="bmc-bar-fill"
+                  style="width:94%;background:linear-gradient(90deg,rgba(99,102,241,0.8),rgba(6,182,212,0.8));"></div>
+              </div>
+            </div>
+          </div>
+          <div class="brand-mini-card">
+            <div class="bmc-top">
+              <span class="bmc-label">Avg Risk Score</span>
+              <span class="bmc-badge">ELEVATED</span>
+            </div>
+            <div class="bmc-val">72.4</div>
+            <div class="bmc-sub">Portfolio-wide threat exposure</div>
+            <div class="bmc-bar-wrap">
+              <div class="bmc-bar">
+                <div class="bmc-bar-fill"
+                  style="width:72%;background:linear-gradient(90deg,rgba(245,158,11,0.8),rgba(239,68,68,0.8));"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom bar -->
+      <div class="login-brand-bottom">
+        <div class="hackathon-badge">
+          <span class="trophy">🏆</span>
+          Built for FinSpark 2026 Hackathon
+        </div>
+        <div style="color:rgba(255,255,255,0.4);font-size:0.6875rem;margin-left:auto;">
+          Prototype v1.0 · Not for production use
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Form Panel ── -->
+    <section class="login-form-panel">
+      <div class="login-form-box">
+
+        <div style="margin-bottom:32px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+            <div class="logo-mark" style="width:28px;height:28px;border-radius:7px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round" style="width:13px;height:13px;">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+              </svg>
+            </div>
+            <span style="font-size:0.9375rem;font-weight:700;color:var(--text-primary);">Risk<span
+                style="color:var(--brand-blue-mid);">Fusion</span> AI</span>
+          </div>
+          <h2 class="login-form-title">Welcome back</h2>
+          <p class="login-form-sub">Sign in to your SOC workspace</p>
+        </div>
+
+        <!-- SSO -->
+        <button class="sso-btn" style="margin-bottom:20px;" onclick="window.location.href='dashboard.html'">
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect width="24" height="24" rx="4" fill="#F3F4F6" />
+            <text x="12" y="17" text-anchor="middle" font-size="12" font-family="Arial" font-weight="bold"
+              fill="#2563EB">M</text>
+          </svg>
+          Continue with Microsoft SSO
+        </button>
+
+        <div class="divider-label" style="margin-bottom:20px;">or sign in with credentials</div>
+
+        <!-- Form -->
+        <form onsubmit="event.preventDefault(); window.location.href='dashboard.html'">
+          <div class="input-group" style="margin-bottom:16px;">
+            <label class="input-label" for="email">Work Email</label>
+            <div class="input-with-icon">
+              <span class="input-icon">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <rect x="1" y="3" width="14" height="10" rx="2" />
+                  <polyline points="1 5 8 9 15 5" />
+                </svg>
+              </span>
+              <input id="email" type="email" class="input" style="width:100%;" placeholder="analyst@hdfc.com"
+                value="Akshat@hdfc.com" />
+            </div>
+          </div>
+
+          <div class="input-group" style="margin-bottom:20px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <label class="input-label" for="password">Password</label>
+              <a href="#" style="font-size:0.8125rem;color:var(--brand-blue-mid);font-weight:600;">Forgot password?</a>
+            </div>
+            <div class="input-pw-wrap">
+              <input id="password" type="password" class="input" style="width:100%;" placeholder="••••••••••••"
+                value="SecurePass#2026" />
+              <button type="button" class="pw-toggle" onclick="togglePw()">
+                <svg id="pw-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M1 8s3-6 7-6 7 6 7 6-3 6-7 6-7-6-7-6z" />
+                  <circle cx="8" cy="8" r="2" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:24px;">
+            <input type="checkbox" id="mfa" checked
+              style="width:15px;height:15px;accent-color:var(--brand-blue-mid);" />
+            <label for="mfa" style="font-size:0.875rem;color:var(--text-tertiary);cursor:pointer;">
+              Verify via TOTP authenticator
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full btn-lg">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" style="width:16px;height:16px;">
+              <path d="M14 8H2m9-4l4 4-4 4" />
+            </svg>
+            Sign in to Platform
+          </button>
+        </form>
+
+        <div class="trusted-by">
+          <div class="trusted-label">Trusted by security teams at</div>
+          <div class="trusted-logos">
+            <span class="trusted-logo-item">HDFC BANK</span>
+            <span class="trusted-logo-item">ICICI BANK</span>
+            <span class="trusted-logo-item">SBI</span>
+            <span class="trusted-logo-item">JPMORGAN</span>
+            <span class="trusted-logo-item">HSBC</span>
+          </div>
+        </div>
+
+        <div
+          style="margin-top:24px;padding:12px 16px;background:var(--info-bg);border:1px solid var(--info-border);border-radius:var(--r-md);display:flex;align-items:center;gap:10px;">
+          <svg viewBox="0 0 16 16" fill="none" stroke="var(--brand-blue-mid)" stroke-width="1.5"
+            style="width:15px;height:15px;flex-shrink:0;">
+            <rect x="3" y="6" width="10" height="8" rx="1.5" />
+            <path d="M5 6V4a3 3 0 0 1 6 0v2" />
+          </svg>
+          <span style="font-size:0.75rem;color:var(--brand-blue-mid);font-weight:500;">Your session is protected by TLS
+            1.3 + MFA. All access is audited.</span>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    function togglePw() {
+      const input = document.getElementById('password');
+      const icon = document.getElementById('pw-icon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.innerHTML = '<path d="M13.5 8A5.5 5.5 0 0 1 3 8"/><line x1="2" y1="2" x2="14" y2="14"/>';
+      } else {
+        input.type = 'password';
+        icon.innerHTML = '<path d="M1 8s3-6 7-6 7 6 7 6-3 6-7 6-7-6-7-6z"/><circle cx="8" cy="8" r="2"/>';
+      }
+    }
+  </script>
+</body>
+
+</html>

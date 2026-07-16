@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="RiskFusion AI — Attack Kill Chain Visualisation for INC-2026-0847" />
+  <title>Attack Kill Chain — RiskFusion AI</title>
+  <link rel="stylesheet" href="styles/design-system.css" />
+  <style>
+    /* Kill Chain Track */
+    .kc-wrapper {
+      position: relative;
+      padding: 0 0 24px;
+    }
+
+    .kc-scroll {
+      overflow-x: auto;
+      padding: 32px 24px 24px;
+    }
+
+    .kc-track-line {
+      position: absolute;
+      top: 71px;
+      left: 60px; right: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--brand-blue-mid), var(--brand-cyan-light), var(--critical));
+      border-radius: var(--r-full);
+      z-index: 0;
+    }
+
+    .kc-events {
+      display: flex;
+      align-items: flex-start;
+      gap: 0;
+      min-width: max-content;
+      position: relative;
+      z-index: 1;
+    }
+
+    .kc-event {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: none;
+      width: 180px;
+      position: relative;
+    }
+
+    /* alternating up/down cards */
+    .kc-event.up   { flex-direction: column; }
+    .kc-event.down { flex-direction: column-reverse; }
+
+    .kc-dot {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      border: 3px solid white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      z-index: 2;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: all var(--t-base);
+    }
+    .kc-dot:hover { transform: scale(1.12); box-shadow: 0 8px 24px rgba(0,0,0,0.16); }
+    .kc-dot svg { width: 18px; height: 18px; color: white; }
+
+    .kc-stem {
+      width: 2px;
+      background: var(--border-default);
+      flex-shrink: 0;
+    }
+    .kc-event.up   .kc-stem { height: 28px; }
+    .kc-event.down .kc-stem { height: 28px; }
+
+    .kc-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-lg);
+      padding: 14px 14px 12px;
+      width: 168px;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: all var(--t-base);
+    }
+    .kc-card:hover { box-shadow: var(--shadow-lg); border-color: var(--border-strong); transform: translateY(-2px); }
+    .kc-card.active { border-color: var(--brand-blue-mid); box-shadow: 0 0 0 3px rgba(37,99,235,0.12), var(--shadow-md); }
+
+    .kce-time  { font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 5px; }
+    .kce-phase { font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; padding: 2px 7px; border-radius: var(--r-full); display: inline-block; }
+    .kce-name  { font-size: 0.875rem; font-weight: 700; color: var(--text-primary); margin-bottom: 5px; line-height: 1.3; }
+    .kce-desc  { font-size: 0.6875rem; color: var(--text-tertiary); line-height: 1.4; }
+
+    /* Detail panel */
+    .detail-panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-xl);
+      padding: 28px;
+      box-shadow: var(--shadow-md);
+      margin-top: 20px;
+    }
+
+    .dp-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
+    .dp-icon {
+      width: 52px; height: 52px;
+      border-radius: var(--r-lg);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .dp-icon svg { width: 26px; height: 26px; }
+    .dp-phase-label { font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 5px; }
+    .dp-title { font-size: 1.25rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.025em; margin-bottom: 5px; }
+    .dp-sub   { font-size: 0.9375rem; color: var(--text-tertiary); }
+
+    .dp-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 16px; }
+    .dp-stat {
+      background: var(--bg-subtle);
+      border-radius: var(--r-md);
+      padding: 14px;
+    }
+    .dp-stat-label { font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 5px; }
+    .dp-stat-val   { font-size: 1rem; font-weight: 800; color: var(--text-primary); }
+
+    .ioc-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .ioc-table th { padding: 8px 12px; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); background: var(--bg-subtle); text-align: left; border-bottom: 1px solid var(--border-default); }
+    .ioc-table td { padding: 10px 12px; border-bottom: 1px solid var(--border-default); }
+    .ioc-table tr:last-child td { border-bottom: none; }
+    .ioc-table tr:hover td { background: var(--bg-subtle); }
+
+    /* Filter controls */
+    .filter-bar {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      padding: 14px 20px;
+      background: var(--bg-subtle);
+      border-bottom: 1px solid var(--border-default);
+    }
+
+    .zoom-btn {
+      display: flex; align-items: center; gap: 5px;
+      padding: 6px 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-md);
+      font-size: 0.8125rem; font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--t-fast);
+      font-family: inherit;
+    }
+    .zoom-btn:hover { background: var(--info-bg); border-color: var(--info-border); color: var(--brand-blue-mid); }
+    .zoom-btn svg { width: 13px; height: 13px; }
+
+    /* Phase labels bar */
+    .phase-bar {
+      display: flex;
+      height: 28px;
+      border-radius: var(--r-full);
+      overflow: hidden;
+      gap: 2px;
+      margin-top: 4px;
+    }
+    .phase-seg {
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: white;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="app-sidebar"></aside>
+  <div class="main-area">
+    <header class="topbar" id="app-topbar"></header>
+    <div class="page-content">
+
+      <!-- Header -->
+      <div class="pg-header">
+        <div>
+          <div class="pg-eyebrow">Intelligence · Kill Chain Analysis</div>
+          <h1 class="pg-title">Attack Kill Chain</h1>
+          <p class="pg-sub">INC-2026-0847 · Account Takeover — Impossible Travel · <span id="live-time">--:--:--</span></p>
+        </div>
+        <div class="pg-actions">
+          <a href="ai.html" class="btn btn-secondary btn-sm">AI Report</a>
+          <a href="incident.html" class="btn btn-secondary btn-sm">Incident Detail</a>
+          <button class="btn btn-primary btn-sm">Export Timeline</button>
+        </div>
+      </div>
+
+      <!-- Alert Banner -->
+      <div class="alert critical" style="margin-bottom:18px;">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 1.5L1.5 14h13L8 1.5z"/><path d="M8 6v4"/><circle cx="8" cy="11.5" r="0.5" fill="currentColor"/></svg>
+        <div><strong>Active Threat:</strong> Kill chain is 6/6 stages complete. Transaction TX-9841 is on auto-hold. Immediate analyst action required to prevent fund release.</div>
+      </div>
+
+      <!-- MITRE Phase Legend -->
+      <div style="margin-bottom:14px;">
+        <div class="phase-bar">
+          <div class="phase-seg" style="background:#1D4ED8;flex:1.5;">Reconnaissance</div>
+          <div class="phase-seg" style="background:#2563EB;flex:1;">Initial Access</div>
+          <div class="phase-seg" style="background:#0891B2;flex:1.2;">Execution</div>
+          <div class="phase-seg" style="background:#D97706;flex:1;">Persistence</div>
+          <div class="phase-seg" style="background:#EA580C;flex:1.2;">Priv. Escalation</div>
+          <div class="phase-seg" style="background:#DC2626;flex:1.5;">Impact</div>
+        </div>
+      </div>
+
+      <!-- Kill Chain Visualisation Card -->
+      <div class="card" style="margin-bottom:18px;overflow:visible;">
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div style="font-size:0.8125rem;font-weight:600;color:var(--text-secondary);margin-right:4px;">Filters:</div>
+          <span class="chip active">All Events</span>
+          <span class="chip">Critical Only</span>
+          <span class="chip">Auth Events</span>
+          <span class="chip">Transactions</span>
+          <span class="chip">Network</span>
+          <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
+            <button class="zoom-btn">
+              <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="4"/><line x1="9.5" y1="9.5" x2="12" y2="12"/><line x1="6" y1="4" x2="6" y2="8"/><line x1="4" y1="6" x2="8" y2="6"/></svg>
+              Zoom In
+            </button>
+            <button class="zoom-btn">
+              <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="4"/><line x1="9.5" y1="9.5" x2="12" y2="12"/><line x1="4" y1="6" x2="8" y2="6"/></svg>
+              Zoom Out
+            </button>
+            <button class="zoom-btn">
+              <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="11" height="11" rx="1.5"/><line x1="4" y1="6.5" x2="9" y2="6.5"/><line x1="6.5" y1="4" x2="6.5" y2="9"/></svg>
+              Fit to Screen
+            </button>
+          </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="kc-wrapper" style="background:var(--bg-canvas);">
+          <div class="kc-scroll">
+            <div class="kc-track-line"></div>
+            <div class="kc-events" id="kc-events">
+
+              <!-- Event 1: Reconnaissance -->
+              <div class="kc-event down" onclick="showDetail(0)">
+                <div class="kc-card" id="kc-card-0">
+                  <div class="kce-time">Jan 14 · 22:47 IST</div>
+                  <div class="kce-phase" style="background:#EFF6FF;color:#1D4ED8;">Reconnaissance</div>
+                  <div class="kce-name">Credential Stuffing Probes</div>
+                  <div class="kce-desc">4 failed login attempts from bot network. Password spray pattern detected.</div>
+                </div>
+                <div class="kc-stem"></div>
+                <div class="kc-dot" style="background:#1D4ED8;">
+                  <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="4"/><path d="M16 16l-3.5-3.5"/></svg>
+                </div>
+              </div>
+
+              <!-- Event 2: Initial Access -->
+              <div class="kc-event up" onclick="showDetail(1)" style="margin-top:68px;">
+                <div class="kc-dot" style="background:#2563EB;">
+                  <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="7" width="12" height="9" rx="1.5"/><path d="M6 7V5a3 3 0 0 1 6 0v2"/></svg>
+                </div>
+                <div class="kc-stem"></div>
+                <div class="kc-card" id="kc-card-1">
+                  <div class="kce-time">Jul 16 · 02:12 IST</div>
+                  <div class="kce-phase" style="background:#EFF6FF;color:#2563EB;">Initial Access</div>
+                  <div class="kce-name">Legitimate Login Obtained</div>
+                  <div class="kce-desc">Victim authenticated from Mumbai. Adversary obtained session token via AiTM phishing.</div>
+                </div>
+              </div>
+
+              <!-- Event 3: New Device (Execution) -->
+              <div class="kc-event down" onclick="showDetail(2)">
+                <div class="kc-card" id="kc-card-2">
+                  <div class="kce-time">02:18 IST · +6 min</div>
+                  <div class="kce-phase" style="background:#ECFEFF;color:#0891B2;">Execution</div>
+                  <div class="kce-name">Device Change</div>
+                  <div class="kce-desc">New Samsung Galaxy S24 Ultra registered. Android device not in customer history.</div>
+                </div>
+                <div class="kc-stem"></div>
+                <div class="kc-dot" style="background:#0891B2;">
+                  <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="1" width="10" height="16" rx="2"/><line x1="9" y1="13" x2="9" y2="13.5" stroke-width="2.5"/></svg>
+                </div>
+              </div>
+
+              <!-- Event 4: VPN Detection (Persistence) -->
+              <div class="kc-event up" onclick="showDetail(3)" style="margin-top:68px;">
+                <div class="kc-dot" style="background:#D97706;">
+                  <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="9" r="7"/><path d="M9 2a10 10 0 0 0 0 14"/><path d="M2 9h14"/></svg>
+                </div>
+                <div class="kc-stem"></div>
+                <div class="kc-card" id="kc-card-3">
+                  <div class="kce-time">03:01 IST · +43 min</div>
+                  <div class="kce-phase" style="background:#FFFBEB;color:#D97706;">VPN & Geo-Spoof</div>
+                  <div class="kce-name">VPN Detection + Impossible Travel</div>
+                  <div class="kce-desc">NordVPN exit node. Mumbai → Moscow in 47 min. Physically impossible.</div>
+                </div>
+              </div>
+
+              <!-- Event 5: Privilege Escalation -->
+              <div class="kc-event down" onclick="showDetail(4)">
+                <div class="kc-card" id="kc-card-4">
+                  <div class="kce-time">03:01 IST · +8 sec</div>
+                  <div class="kce-phase" style="background:#FFF7ED;color:#EA580C;">Privilege Escalation</div>
+                  <div class="kce-name">Beneficiary Management Access</div>
+                  <div class="kce-desc">Attacker navigated to fund transfer module. New high-value beneficiary added without 2FA challenge.</div>
+                </div>
+                <div class="kc-stem"></div>
+                <div class="kc-dot" style="background:#EA580C;">
+                  <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 2v9"/><path d="M5 6l4-4 4 4"/><rect x="2" y="13" width="14" height="3" rx="1"/></svg>
+                </div>
+              </div>
+
+              <!-- Event 6: Large Transaction -->
+              <div class="kc-event up" onclick="showDetail(5)" style="margin-top:68px;">
+                <div class="kc-dot" style="background:#DC2626;">
+                  <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 8h14M10 4l6 4-6 4"/><path d="M8 4L2 8l6 4"/></svg>
+                </div>
+                <div class="kc-stem"></div>
+                <div class="kc-card" id="kc-card-5">
+                  <div class="kce-time">03:04 IST · +3 min</div>
+                  <div class="kce-phase" style="background:#FEF2F2;color:#DC2626;">Large Transaction</div>
+                  <div class="kce-name">₹14.72L NEFT Wire</div>
+                  <div class="kce-desc">NEFT initiated to new beneficiary. 1,847% above average. Crypto-linked MCC.</div>
+                </div>
+              </div>
+
+              <!-- Event 7: AI Detection -->
+              <div class="kc-event down" onclick="showDetail(6)">
+                <div class="kc-card active" id="kc-card-6">
+                  <div class="kce-time">03:04:20 IST · +9 sec</div>
+                  <div class="kce-phase" style="background:#F5F3FF;color:#6D28D9;">AI Detection</div>
+                  <div class="kce-name">RiskFusion AI Alert</div>
+                  <div class="kce-desc">Score 62→94. Auto-hold placed on TX-9841. INC-2026-0847 raised. Analyst paged.</div>
+                </div>
+                <div class="kc-stem"></div>
+                <div class="kc-dot" style="background:#7C3AED;">
+                  <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="14" height="10" rx="2"/><path d="M6 5V3.5a3 3 0 0 1 6 0V5"/><path d="M9 9v2"/><circle cx="6" cy="9" r="1"/><circle cx="12" cy="9" r="1"/></svg>
+                </div>
+              </div>
+
+            </div><!-- end kc-events -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Event Detail Panel -->
+      <div class="detail-panel" id="detail-panel">
+        <div class="dp-header">
+          <div class="dp-icon" style="background:#F5F3FF;" id="dp-icon">
+            <svg viewBox="0 0 26 26" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round">
+              <rect x="2" y="5" width="22" height="16" rx="2.5"/><path d="M9 5V4a4 4 0 0 1 8 0v1"/>
+              <path d="M13 13v3"/><circle cx="9" cy="13" r="1.5"/><circle cx="17" cy="13" r="1.5"/>
+            </svg>
+          </div>
+          <div>
+            <div class="dp-phase-label" id="dp-phase">AI DETECTION · STAGE 6 OF 6</div>
+            <div class="dp-title" id="dp-title">RiskFusion AI Detection — Incident Raised</div>
+            <div class="dp-sub" id="dp-sub">03:04:20 IST · Risk Score escalated 62 → 94 · Transaction TX-9841 placed on auto-hold</div>
+          </div>
+          <div style="margin-left:auto;flex-shrink:0;" id="dp-badge-wrap">
+            <span class="badge critical">Critical</span>
+          </div>
+        </div>
+
+        <div class="dp-grid" id="dp-grid">
+          <div class="dp-stat">
+            <div class="dp-stat-label">Risk Contribution</div>
+            <div class="dp-stat-val" style="color:var(--critical);">+32 points</div>
+          </div>
+          <div class="dp-stat">
+            <div class="dp-stat-label">Response Time</div>
+            <div class="dp-stat-val">0.8 seconds</div>
+          </div>
+          <div class="dp-stat">
+            <div class="dp-stat-label">Model Confidence</div>
+            <div class="dp-stat-val" style="color:var(--brand-blue-mid);">96.4%</div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;">
+          <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:12px;">Indicators of Compromise (IoC)</div>
+          <table class="ioc-table">
+            <thead>
+              <tr><th>Type</th><th>Value</th><th>Source</th><th>Confidence</th></tr>
+            </thead>
+            <tbody id="dp-ioc-tbody">
+              <tr><td><span class="badge info">IP Address</span></td><td class="mono">95.213.40.114</td><td>Geo-Intelligence Feed</td><td style="color:var(--critical);font-weight:700;">Critical</td></tr>
+              <tr><td><span class="badge medium">Device ID</span></td><td class="mono">3f8a921c-a7b4-4e12</td><td>Device Fingerprint DB</td><td style="color:var(--high);font-weight:700;">High</td></tr>
+              <tr><td><span class="badge high">VPN Node</span></td><td class="mono">NordVPN · Amsterdam-047</td><td>Threat Intel Feed</td><td style="color:var(--high);font-weight:700;">High</td></tr>
+              <tr><td><span class="badge critical">Transaction</span></td><td class="mono">TX-9841 · ₹14.72L</td><td>Core Banking System</td><td style="color:var(--critical);font-weight:700;">Critical</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Timeline Summary Table -->
+      <div class="card" style="margin-top:18px;">
+        <div class="card-head">
+          <div class="card-title">Kill Chain Event Summary</div>
+          <div style="font-size:0.8125rem;color:var(--text-muted);">6 events · Duration 47 min 20 sec</div>
+        </div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead>
+              <tr><th>#</th><th>Stage</th><th>Event</th><th>Time</th><th>Severity</th><th>MITRE</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <tr onclick="showDetail(0)"><td><strong>1</strong></td><td>Reconnaissance</td><td>Credential stuffing — 4 failed logins</td><td class="mono" style="font-size:0.75rem;">Jul 14 22:47</td><td><span class="badge medium">Medium</span></td><td class="mono" style="font-size:0.75rem;">T1589</td><td><span class="badge closed">Logged</span></td></tr>
+              <tr onclick="showDetail(1)"><td><strong>2</strong></td><td>Initial Access</td><td>Legitimate session compromised via AiTM</td><td class="mono" style="font-size:0.75rem;">Jul 16 02:12</td><td><span class="badge high">High</span></td><td class="mono" style="font-size:0.75rem;">T1078</td><td><span class="badge investigating">Analyzing</span></td></tr>
+              <tr onclick="showDetail(2)"><td><strong>3</strong></td><td>Execution</td><td>New unregistered device registered</td><td class="mono" style="font-size:0.75rem;">02:18:43</td><td><span class="badge high">High</span></td><td class="mono" style="font-size:0.75rem;">T1550</td><td><span class="badge investigating">Analyzing</span></td></tr>
+              <tr onclick="showDetail(3)"><td><strong>4</strong></td><td>Defense Evasion</td><td>VPN + impossible travel detected</td><td class="mono" style="font-size:0.75rem;">03:01:22</td><td><span class="badge critical">Critical</span></td><td class="mono" style="font-size:0.75rem;">T1090</td><td><span class="badge open">Open</span></td></tr>
+              <tr onclick="showDetail(4)"><td><strong>5</strong></td><td>Priv. Escalation</td><td>Beneficiary added, fund transfer module</td><td class="mono" style="font-size:0.75rem;">03:01:30</td><td><span class="badge critical">Critical</span></td><td class="mono" style="font-size:0.75rem;">T1098</td><td><span class="badge open">Open</span></td></tr>
+              <tr onclick="showDetail(5)"><td><strong>6</strong></td><td>Impact</td><td>₹14.72L NEFT to new beneficiary</td><td class="mono" style="font-size:0.75rem;">03:04:11</td><td><span class="badge critical">Critical</span></td><td class="mono" style="font-size:0.75rem;">T1020</td><td><span class="badge critical">Blocked</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- end page-content -->
+  </div>
+</div>
+
+<script src="scripts/shell.js"></script>
+<script src="scripts/app.js"></script>
+<script>
+  renderShell('killchain');
+
+  const details = [
+    {
+      phase: 'RECONNAISSANCE · STAGE 1 OF 6',
+      title: 'Credential Stuffing Probes',
+      sub: 'Jul 14, 2026 · 22:47 IST — 4 failed login attempts detected from bot network',
+      badge: '<span class="badge medium">Medium</span>',
+      iconBg: '#EFF6FF', iconColor: '#1D4ED8',
+      stats: [
+        { label: 'Attempts', val: '4 failed' },
+        { label: 'Pattern', val: 'Password Spray' },
+        { label: 'Risk Delta', val: '+8 points' },
+      ],
+      iocs: [
+        ['IP Range', '185.220.101.0/24', 'Tor Exit Feed', 'High'],
+        ['Pattern', 'Password Spray', 'Auth Log', 'Medium'],
+      ]
+    },
+    {
+      phase: 'INITIAL ACCESS · STAGE 2 OF 6',
+      title: 'Legitimate Login — Session Compromised',
+      sub: 'Jul 16, 2026 · 02:14:07 IST — Customer authenticated from Mumbai. Session token likely captured via AiTM phishing.',
+      badge: '<span class="badge high">High</span>',
+      iconBg: '#EFF6FF', iconColor: '#2563EB',
+      stats: [
+        { label: 'Source IP', val: '103.21.4.12' },
+        { label: 'Location', val: 'Mumbai, IN' },
+        { label: 'MFA', val: 'TOTP Passed' },
+      ],
+      iocs: [
+        ['Email', 'Phishing lure (suspected)', 'Threat Intel', 'Medium'],
+        ['Session Token', 'Captured via AiTM proxy', 'Net Sensor', 'High'],
+      ]
+    },
+    {
+      phase: 'EXECUTION · STAGE 3 OF 6',
+      title: 'New Device Registration — Samsung Galaxy S24 Ultra',
+      sub: 'Jul 16, 2026 · 02:18:43 IST — Attacker registered new device. First time this device ID appeared on account.',
+      badge: '<span class="badge high">High</span>',
+      iconBg: '#ECFEFF', iconColor: '#0891B2',
+      stats: [
+        { label: 'Device ID', val: '3f8a921c' },
+        { label: 'OS', val: 'Android 14' },
+        { label: 'Risk Delta', val: '+18 points' },
+      ],
+      iocs: [
+        ['Device ID', '3f8a921c-a7b4-4e12', 'Device Fingerprint', 'High'],
+        ['OS Build', 'Android 14 · rooted (suspected)', 'MDM', 'Medium'],
+      ]
+    },
+    {
+      phase: 'DEFENSE EVASION · STAGE 4 OF 6',
+      title: 'VPN + Impossible Travel Detected',
+      sub: 'Jul 16, 2026 · 03:01:22 IST — Moscow login via NordVPN. 7,242 km from Mumbai in 47 minutes. Physically impossible.',
+      badge: '<span class="badge critical">Critical</span>',
+      iconBg: '#FFF7ED', iconColor: '#D97706',
+      stats: [
+        { label: 'Distance', val: '7,242 km' },
+        { label: 'Travel Time', val: '47 minutes' },
+        { label: 'Risk Delta', val: '+42 points' },
+      ],
+      iocs: [
+        ['IP Address', '95.213.40.114', 'Geo-Intel Feed', 'Critical'],
+        ['VPN Provider', 'NordVPN · Amsterdam-047', 'Threat Intel', 'High'],
+        ['Geo', 'Moscow, Russia (VPN egress)', 'Geolocation DB', 'High'],
+      ]
+    },
+    {
+      phase: 'PRIVILEGE ESCALATION · STAGE 5 OF 6',
+      title: 'Beneficiary Management — Fund Transfer Access',
+      sub: 'Jul 16, 2026 · 03:01:30 IST — Attacker navigated to beneficiary management. New high-risk beneficiary added without 2FA challenge.',
+      badge: '<span class="badge critical">Critical</span>',
+      iconBg: '#FFF7ED', iconColor: '#EA580C',
+      stats: [
+        { label: 'Beneficiary Added', val: 'Acc 50100892714XX' },
+        { label: 'Added At', val: '01:02 IST (pre-staged)' },
+        { label: 'Risk Delta', val: '+10 points' },
+      ],
+      iocs: [
+        ['Beneficiary Account', '50100892714XX', 'Core Banking', 'High'],
+        ['MCC Code', '6011 (Crypto), 4829 (Money Tx)', 'TxMonitor', 'High'],
+      ]
+    },
+    {
+      phase: 'IMPACT · STAGE 6 OF 6',
+      title: '₹14.72L NEFT Wire Transfer — TX-9841',
+      sub: 'Jul 16, 2026 · 03:04:11 IST — High-value NEFT to new beneficiary. 1,847% above customer baseline. TX on auto-hold.',
+      badge: '<span class="badge critical">Critical</span>',
+      iconBg: '#FEF2F2', iconColor: '#DC2626',
+      stats: [
+        { label: 'Amount', val: '₹14,72,000' },
+        { label: 'vs Baseline', val: '↑ 1,847%' },
+        { label: 'Status', val: 'Blocked' },
+      ],
+      iocs: [
+        ['Transaction ID', 'TX-9841 · NEFT', 'Core Banking', 'Critical'],
+        ['Beneficiary', 'Acc 50100892714XX', 'CBS', 'Critical'],
+        ['Beneficiary MCC', '6011 · Crypto Exchange', 'TxMonitor', 'High'],
+      ]
+    },
+  ];
+
+  function showDetail(idx) {
+    const d = details[idx];
+    document.querySelectorAll('.kc-card').forEach((c,i) => c.classList.toggle('active', i === idx));
+    document.getElementById('dp-phase').textContent = d.phase;
+    document.getElementById('dp-title').textContent  = d.title;
+    document.getElementById('dp-sub').textContent    = d.sub;
+    document.getElementById('dp-badge-wrap').innerHTML = d.badge;
+    document.getElementById('dp-icon').style.background = d.iconBg;
+    document.getElementById('dp-icon').querySelector('svg').style.stroke = d.iconColor;
+    document.getElementById('dp-grid').innerHTML = d.stats.map(s => `
+      <div class="dp-stat">
+        <div class="dp-stat-label">${s.label}</div>
+        <div class="dp-stat-val">${s.val}</div>
+      </div>
+    `).join('');
+    document.getElementById('dp-ioc-tbody').innerHTML = d.iocs.map(([type, val, src, conf]) => `
+      <tr>
+        <td><span class="badge info">${type}</span></td>
+        <td class="mono">${val}</td>
+        <td>${src}</td>
+        <td style="font-weight:700;color:${conf==='Critical'?'var(--critical)':conf==='High'?'var(--high)':'var(--medium)'};">${conf}</td>
+      </tr>
+    `).join('');
+    document.getElementById('detail-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // Chip filter toggle (visual only)
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

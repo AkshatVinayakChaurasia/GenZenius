@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="RiskFusion AI — Incident Queue: All active, investigating and resolved incidents" />
+  <title>Incidents — RiskFusion AI</title>
+  <link rel="stylesheet" href="styles/design-system.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <style>
+    /* ── Stat Strip ── */
+    .stat-strip {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1px;
+      background: var(--border-default);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-xs);
+    }
+    .stat-cell {
+      background: var(--bg-surface);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .stat-cell-label {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+    }
+    .stat-cell-val {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+    .stat-cell-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* ── Advanced Table Controls ── */
+    .tbl-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-default);
+      background: var(--bg-subtle);
+      flex-wrap: wrap;
+    }
+
+    .tbl-search {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-md);
+      padding: 7px 12px;
+      flex: 1; max-width: 300px;
+    }
+    .tbl-search input {
+      border: none; background: transparent; outline: none;
+      font-size: 0.875rem; font-family: inherit; color: var(--text-primary); width: 100%;
+    }
+    .tbl-search input::placeholder { color: var(--text-muted); }
+    .tbl-search svg { color: var(--text-muted); flex-shrink: 0; }
+
+    .select-control {
+      padding: 7px 12px;
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-md);
+      font-size: 0.875rem;
+      font-family: inherit;
+      color: var(--text-secondary);
+      background: var(--bg-surface);
+      outline: none;
+      cursor: pointer;
+    }
+    .select-control:focus { border-color: var(--border-focus); }
+
+    /* ── Incident Row Expanded ── */
+    .inc-expand-row {
+      display: none;
+      background: var(--info-bg);
+      border-bottom: 1px solid var(--info-border);
+    }
+    .inc-expand-row.open { display: table-row; }
+    .inc-expand-cell { padding: 16px 24px; }
+
+    .inc-expand-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr) auto;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .inc-exp-block .exp-label { font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 4px; }
+    .inc-exp-block .exp-val { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); }
+    .inc-exp-block .exp-sub { font-size: 0.75rem; color: var(--text-tertiary); margin-top: 2px; }
+
+    /* ── View Toggle ── */
+    .view-toggle {
+      display: flex;
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-md);
+      overflow: hidden;
+    }
+    .view-btn {
+      padding: 6px 12px;
+      background: var(--bg-surface);
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      display: flex; align-items: center; gap: 5px;
+      font-size: 0.8125rem; font-weight: 500; font-family: inherit;
+      transition: all var(--t-fast);
+    }
+    .view-btn:hover { background: var(--bg-subtle); color: var(--text-primary); }
+    .view-btn.active { background: var(--brand-blue-mid); color: white; }
+    .view-btn + .view-btn { border-left: 1px solid var(--border-default); }
+    .view-btn svg { width: 14px; height: 14px; }
+
+    /* ── Bulk Actions ── */
+    .bulk-bar {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      background: var(--brand-blue-mid);
+      color: white;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+    .bulk-bar.show { display: flex; }
+    .bulk-bar .bb-count { background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: var(--r-full); font-size: 0.8125rem; }
+    .bulk-btn {
+      padding: 5px 12px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: var(--r-md);
+      color: white;
+      font-size: 0.8125rem; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      transition: all var(--t-fast);
+    }
+    .bulk-btn:hover { background: rgba(255,255,255,0.25); }
+    .bulk-btn.danger { background: rgba(239,68,68,0.25); border-color: rgba(239,68,68,0.4); }
+
+    /* ── Mini trend sparkline ── */
+    .sparkline { width: 70px; height: 24px; }
+
+    /* ── SLA Timer ── */
+    .sla-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 0.6875rem; font-weight: 700;
+      padding: 3px 8px;
+      border-radius: var(--r-full);
+    }
+    .sla-pill.breach  { background: var(--critical-bg); color: var(--critical); border: 1px solid var(--critical-border); }
+    .sla-pill.warning { background: var(--medium-bg); color: var(--medium); border: 1px solid var(--medium-border); }
+    .sla-pill.ok      { background: var(--low-bg); color: var(--low); border: 1px solid var(--low-border); }
+    .sla-pill.closed  { background: var(--bg-subtle); color: var(--text-muted); border: 1px solid var(--border-default); }
+
+    /* Analyst avatar cluster */
+    .av-cluster { display: flex; }
+    .av-cluster .av-mini {
+      width: 24px; height: 24px;
+      border-radius: 50%; border: 2px solid white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.5625rem; font-weight: 800; color: white;
+      margin-left: -6px;
+    }
+    .av-cluster .av-mini:first-child { margin-left: 0; }
+
+    /* Chart panel */
+    .mini-charts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .chart-sm { height: 140px; position: relative; }
+
+    /* ── Tag Pills ── */
+    .tag-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-full);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: var(--text-tertiary);
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="app-sidebar"></aside>
+  <div class="main-area">
+    <header class="topbar" id="app-topbar"></header>
+    <div class="page-content">
+
+      <!-- ── Page Header ── -->
+      <div class="pg-header">
+        <div>
+          <div class="pg-eyebrow">Operations · Security Incidents</div>
+          <h1 class="pg-title">Incident Queue</h1>
+          <p class="pg-sub">All incidents across HDFC Bank India · <span id="live-time">--:--:--</span> IST</p>
+        </div>
+        <div class="pg-actions">
+          <div class="view-toggle">
+            <button class="view-btn active">
+              <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="5" height="5" rx="0.8"/><rect x="8" y="1" width="5" height="5" rx="0.8"/><rect x="1" y="8" width="5" height="5" rx="0.8"/><rect x="8" y="8" width="5" height="5" rx="0.8"/></svg>
+              Table
+            </button>
+            <button class="view-btn">
+              <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2" width="12" height="3" rx="0.8"/><rect x="1" y="7" width="12" height="3" rx="0.8"/><rect x="1" y="12" width="7" height="2" rx="0.8"/></svg>
+              Board
+            </button>
+          </div>
+          <button class="btn btn-secondary btn-sm">
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4h10M4 7h6M6 10h2"/></svg>
+            Filters
+          </button>
+          <button class="btn btn-secondary btn-sm">
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 7h10M7 2l5 5-5 5"/></svg>
+            Export
+          </button>
+          <button class="btn btn-primary btn-sm">
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/></svg>
+            Create Incident
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Stat Strip ── -->
+      <div class="stat-strip">
+        <div class="stat-cell">
+          <div class="stat-cell-label">Total Active</div>
+          <div class="stat-cell-val">47</div>
+          <div class="stat-cell-sub"><span class="delta up">↑ 6</span> vs yesterday</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-cell-label">Critical</div>
+          <div class="stat-cell-val" style="color:var(--critical);">12</div>
+          <div class="stat-cell-sub"><span class="delta up">↑ 3</span> last 6h</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-cell-label">SLA Breaching</div>
+          <div class="stat-cell-val" style="color:var(--high);">4</div>
+          <div class="stat-cell-sub">Require immediate action</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-cell-label">Resolved Today</div>
+          <div class="stat-cell-val" style="color:var(--low);">23</div>
+          <div class="stat-cell-sub"><span class="delta down">↑ 38%</span> resolution rate</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-cell-label">MTTR</div>
+          <div class="stat-cell-val">1h 42m</div>
+          <div class="stat-cell-sub"><span class="delta down">↓ 14min</span> vs last week</div>
+        </div>
+      </div>
+
+      <!-- ── Mini Charts ── -->
+      <div class="mini-charts">
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Incidents by Severity — Today</div>
+          </div>
+          <div class="card-body">
+            <div class="chart-sm"><canvas id="sevChart"></canvas></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Incident Volume — Last 7 Days</div>
+          </div>
+          <div class="card-body">
+            <div class="chart-sm"><canvas id="volChart"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Incident Table ── -->
+      <div class="card">
+
+        <!-- Tabs -->
+        <div class="tabs" style="padding:0 20px;">
+          <div class="tab active">All Incidents <span style="background:var(--bg-subtle);color:var(--text-muted);font-size:0.6875rem;font-weight:700;padding:1px 7px;border-radius:var(--r-full);margin-left:6px;">47</span></div>
+          <div class="tab">Open <span style="background:var(--info-bg);color:var(--brand-blue-mid);font-size:0.6875rem;font-weight:700;padding:1px 7px;border-radius:var(--r-full);margin-left:6px;">24</span></div>
+          <div class="tab">Investigating <span style="background:var(--medium-bg);color:var(--medium);font-size:0.6875rem;font-weight:700;padding:1px 7px;border-radius:var(--r-full);margin-left:6px;">15</span></div>
+          <div class="tab">Resolved <span style="background:var(--low-bg);color:var(--low);font-size:0.6875rem;font-weight:700;padding:1px 7px;border-radius:var(--r-full);margin-left:6px;">8</span></div>
+          <div class="tab">Closed</div>
+        </div>
+
+        <!-- Bulk Actions Bar -->
+        <div class="bulk-bar" id="bulk-bar">
+          <span class="bb-count" id="bulk-count">0 selected</span>
+          <button class="bulk-btn">Assign To</button>
+          <button class="bulk-btn">Change Status</button>
+          <button class="bulk-btn">Export Selected</button>
+          <button class="bulk-btn danger">Close Selected</button>
+          <button class="bulk-btn" style="margin-left:auto;" onclick="clearSelection()">✕ Clear</button>
+        </div>
+
+        <!-- Controls -->
+        <div class="tbl-controls">
+          <div class="tbl-search">
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px;"><circle cx="6" cy="6" r="4"/><path d="M14 14l-3-3"/></svg>
+            <input type="text" placeholder="Search by ID, customer, analyst…" id="search-input" oninput="filterTable(this.value)" />
+          </div>
+          <select class="select-control" onchange="filterSeverity(this.value)">
+            <option value="">All Severities</option>
+            <option value="Critical">Critical</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+          <select class="select-control" onchange="filterStatus(this.value)">
+            <option value="">All Statuses</option>
+            <option value="Open">Open</option>
+            <option value="Investigating">Investigating</option>
+            <option value="Resolved">Resolved</option>
+          </select>
+          <select class="select-control">
+            <option>Assigned to Anyone</option>
+            <option>Priya Sharma</option>
+            <option>Rohan Mehta</option>
+            <option>Ananya Iyer</option>
+            <option>Vikram Nair</option>
+          </select>
+          <div style="margin-left:auto;font-size:0.8125rem;color:var(--text-muted);">
+            Showing <strong id="row-count" style="color:var(--text-primary);">10</strong> of 47 incidents
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="tbl-wrap">
+          <table class="tbl" id="incidents-table">
+            <thead>
+              <tr>
+                <th style="width:36px;">
+                  <input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" style="width:15px;height:15px;accent-color:var(--brand-blue-mid);" />
+                </th>
+                <th>Incident ID ↕</th>
+                <th>Description</th>
+                <th>Risk Score ↕</th>
+                <th>Severity</th>
+                <th>Status</th>
+                <th>Category</th>
+                <th>Assigned To</th>
+                <th>SLA</th>
+                <th>Updated ↕</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="incidents-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>Page 1 of 5 · 47 total incidents</span>
+          <div style="display:flex;gap:4px;align-items:center;">
+            <button class="btn btn-ghost btn-sm">←</button>
+            <button class="btn btn-ghost btn-sm" style="background:var(--info-bg);color:var(--brand-blue-mid);font-weight:700;">1</button>
+            <button class="btn btn-ghost btn-sm">2</button>
+            <button class="btn btn-ghost btn-sm">3</button>
+            <span style="color:var(--text-muted);padding:0 4px;">…</span>
+            <button class="btn btn-ghost btn-sm">5</button>
+            <button class="btn btn-ghost btn-sm">→</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--text-muted);">
+            Rows per page:
+            <select class="select-control" style="padding:4px 8px;font-size:0.8125rem;">
+              <option>10</option><option>25</option><option>50</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end page-content -->
+  </div>
+</div>
+
+<script src="scripts/shell.js"></script>
+<script src="scripts/app.js"></script>
+<script>
+  renderShell('incidents');
+
+  /* ── Incident Data ── */
+  const incidents = [
+    { id:'INC-2026-0847', desc:'Account Takeover — Impossible Travel', detail:'CUS-84721 · Mumbai → Moscow in 47 min', risk:94, sev:'Critical', status:'Open',         cat:'ATO',         analyst:'PS', analystFull:'Priya Sharma',  sla:'breach',  slaLabel:'SLA Breach',    time:'14m ago' },
+    { id:'INC-2026-0846', desc:'Suspicious Wire Transfer',             detail:'AC-20918 · ₹14.7L to unknown entity',  risk:81, sev:'High',     status:'Investigating', cat:'Fraud Txn',   analyst:'RM', analystFull:'Rohan Mehta',   sla:'warning', slaLabel:'58 min left',   time:'42m ago' },
+    { id:'INC-2026-0845', desc:'Multiple Failed OTP Attempts',         detail:'CUS-12047 · 23 attempts in 5 min',     risk:67, sev:'Medium',   status:'Investigating', cat:'Auth Abuse',  analyst:'AI', analystFull:'Ananya Iyer',   sla:'ok',      slaLabel:'3h 12m left',   time:'1h 08m'  },
+    { id:'INC-2026-0844', desc:'Privilege Escalation — Admin Access',  detail:'User UAT-449 · outside office hours',  risk:89, sev:'Critical', status:'Open',          cat:'Priv Esc',    analyst:'VN', analystFull:'Vikram Nair',   sla:'breach',  slaLabel:'SLA Breach',    time:'2h 31m'  },
+    { id:'INC-2026-0843', desc:'ATM Skimming — Bengaluru South',       detail:'ATM cluster · 47 cards affected',      risk:76, sev:'High',     status:'Resolved',      cat:'Card Fraud',  analyst:'PS', analystFull:'Priya Sharma',  sla:'closed',  slaLabel:'Resolved',      time:'5h 14m'  },
+    { id:'INC-2026-0842', desc:'SIM Swap Fraud Attempt',               detail:'CUS-77312 · BSNL Mumbai circle',       risk:83, sev:'Critical', status:'Investigating', cat:'SIM Swap',    analyst:'RM', analystFull:'Rohan Mehta',   sla:'warning', slaLabel:'1h 20m left',   time:'3h 02m'  },
+    { id:'INC-2026-0841', desc:'Credential Stuffing — 1,200 Accounts', detail:'CIDR 185.220.101.0/24 · Tor exit node',risk:71, sev:'High',     status:'Open',          cat:'Auth Abuse',  analyst:'AI', analystFull:'Ananya Iyer',   sla:'ok',      slaLabel:'4h 08m left',   time:'4h 45m'  },
+    { id:'INC-2026-0840', desc:'Insider Threat — Bulk Data Export',    detail:'Staff ID EMP-3312 · 84K records',      risk:91, sev:'Critical', status:'Open',          cat:'Insider',     analyst:'VN', analystFull:'Vikram Nair',   sla:'breach',  slaLabel:'SLA Breach',    time:'6h 22m'  },
+    { id:'INC-2026-0839', desc:'Phishing Campaign — HDFC Lookalike',   detail:'Domain: hdfcbank-secure.ml · 142 clicks',risk:58,sev:'Medium',  status:'Investigating', cat:'Phishing',    analyst:'PS', analystFull:'Priya Sharma',  sla:'ok',      slaLabel:'5h 40m left',   time:'7h 11m'  },
+    { id:'INC-2026-0838', desc:'Rooted Device — High-Value Account',   detail:'CUS-44821 · Samsung S21 rooted OS',    risk:64, sev:'Medium',   status:'Resolved',      cat:'Device Risk', analyst:'RM', analystFull:'Rohan Mehta',   sla:'closed',  slaLabel:'Resolved',      time:'8h 55m'  },
+  ];
+
+  const sevColors = { Critical:'var(--critical)', High:'var(--high)', Medium:'var(--medium)', Low:'var(--low)' };
+  const avColors  = { PS:'#2563EB', RM:'#0891B2', AI:'#7C3AED', VN:'#059669' };
+
+  function renderRow(inc) {
+    const riskClass = inc.risk >= 80 ? 'critical' : inc.risk >= 60 ? 'high' : inc.risk >= 40 ? 'medium' : 'low';
+    return `
+      <tr data-id="${inc.id}" data-sev="${inc.sev}" data-status="${inc.status}" onclick="rowClick(event,'${inc.id}')">
+        <td onclick="event.stopPropagation()">
+          <input type="checkbox" class="row-check" data-id="${inc.id}" onchange="updateBulk()" style="width:15px;height:15px;accent-color:var(--brand-blue-mid);" />
+        </td>
+        <td><a href="incident.html" style="color:var(--brand-blue-mid);font-weight:700;font-family:monospace;font-size:0.8125rem;">${inc.id}</a></td>
+        <td>
+          <div style="font-weight:600;color:var(--text-primary);margin-bottom:2px;">${inc.desc}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);">${inc.detail}</div>
+        </td>
+        <td>
+          <div class="risk-bar-wrap">
+            <div class="risk-bar" style="min-width:50px;"><div class="risk-fill ${riskClass}" style="width:${inc.risk}%;"></div></div>
+            <span class="risk-num ${riskClass}">${inc.risk}</span>
+          </div>
+        </td>
+        <td><span class="badge ${inc.sev.toLowerCase()}"><span class="dot"></span>${inc.sev}</span></td>
+        <td><span class="badge ${inc.status.toLowerCase().replace(' ','')}">${inc.status}</span></td>
+        <td><span class="tag-pill">${inc.cat}</span></td>
+        <td>
+          <div style="display:flex;align-items:center;gap:7px;">
+            <div style="width:26px;height:26px;border-radius:50%;background:${avColors[inc.analyst]};display:flex;align-items:center;justify-content:center;font-size:0.5625rem;font-weight:800;color:white;">${inc.analyst}</div>
+            <span style="font-size:0.875rem;color:var(--text-secondary);">${inc.analystFull}</span>
+          </div>
+        </td>
+        <td><span class="sla-pill ${inc.sla}">${inc.slaLabel}</span></td>
+        <td><span style="font-size:0.8125rem;color:var(--text-muted);">${inc.time}</span></td>
+        <td onclick="event.stopPropagation()">
+          <div style="display:flex;gap:4px;">
+            <a href="incident.html" class="btn btn-primary btn-sm">Investigate</a>
+            <button class="btn btn-ghost btn-sm" style="padding:6px;">
+              <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px;"><circle cx="7" cy="2" r="1"/><circle cx="7" cy="7" r="1"/><circle cx="7" cy="12" r="1"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+
+  function renderTable(data) {
+    document.getElementById('incidents-tbody').innerHTML = data.map(renderRow).join('');
+    document.getElementById('row-count').textContent = data.length;
+  }
+
+  renderTable(incidents);
+
+  function filterTable(q) {
+    const filtered = incidents.filter(i =>
+      i.id.toLowerCase().includes(q.toLowerCase()) ||
+      i.desc.toLowerCase().includes(q.toLowerCase()) ||
+      i.analystFull.toLowerCase().includes(q.toLowerCase())
+    );
+    renderTable(filtered);
+  }
+
+  function filterSeverity(sev) {
+    renderTable(sev ? incidents.filter(i => i.sev === sev) : incidents);
+  }
+  function filterStatus(st) {
+    renderTable(st ? incidents.filter(i => i.status === st) : incidents);
+  }
+
+  function rowClick(e, id) {
+    if (e.target.type === 'checkbox') return;
+    window.location.href = 'incident.html';
+  }
+
+  function updateBulk() {
+    const checked = document.querySelectorAll('.row-check:checked').length;
+    const bar = document.getElementById('bulk-bar');
+    bar.classList.toggle('show', checked > 0);
+    document.getElementById('bulk-count').textContent = checked + ' selected';
+  }
+
+  function toggleSelectAll(checked) {
+    document.querySelectorAll('.row-check').forEach(c => c.checked = checked);
+    updateBulk();
+  }
+
+  function clearSelection() {
+    document.querySelectorAll('.row-check, #select-all').forEach(c => c.checked = false);
+    updateBulk();
+  }
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  // View toggle
+  document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  /* ── Charts ── */
+  new Chart(document.getElementById('sevChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: ['Critical','High','Medium','Low'],
+      datasets: [{
+        data: [12, 18, 14, 3],
+        backgroundColor: ['#DC2626','#EA580C','#D97706','#059669'],
+        borderRadius: 6, borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false } },
+        y: { beginAtZero: true, grid: { color: '#F1F5F9' } }
+      }
+    }
+  });
+
+  const days7 = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  new Chart(document.getElementById('volChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: days7,
+      datasets: [{
+        label: 'Incidents',
+        data: [28, 35, 22, 41, 38, 19, 47],
+        borderColor: '#2563EB',
+        backgroundColor: 'rgba(37,99,235,0.07)',
+        fill: true, tension: 0.4, borderWidth: 2,
+        pointRadius: 3, pointBackgroundColor: '#2563EB',
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false } },
+        y: { beginAtZero: true, grid: { color: '#F1F5F9' } }
+      }
+    }
+  });
+</script>
+</body>
+</html>

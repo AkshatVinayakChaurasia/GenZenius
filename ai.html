@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="RiskFusion AI — AI Analyst Investigation Report for INC-2026-0847" />
+  <title>AI Analyst Report — RiskFusion AI</title>
+  <link rel="stylesheet" href="styles/design-system.css" />
+  <style>
+    .report-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    /* Report Sections */
+    .report-section {
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      background: var(--bg-surface);
+      margin-bottom: 16px;
+    }
+
+    .report-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .rs-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-default);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      background: var(--bg-subtle);
+    }
+
+    .rs-head svg {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+    }
+
+    .rs-head .section-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--bg-muted);
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .rs-body {
+      padding: 20px;
+    }
+
+    /* Executive summary */
+    .exec-summary {
+      font-size: 1.0625rem;
+      color: var(--text-primary);
+      line-height: 1.7;
+    }
+
+    .exec-summary strong {
+      font-weight: 700;
+    }
+
+    /* Reasoning steps */
+    .reasoning-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px;
+      border-radius: var(--r-lg);
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-default);
+      margin-bottom: 8px;
+    }
+
+    .reasoning-step:last-child {
+      margin-bottom: 0;
+    }
+
+    .rs-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--brand-gradient);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .rs-content .rs-title {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .rs-content .rs-detail {
+      font-size: 0.875rem;
+      color: var(--text-tertiary);
+      line-height: 1.5;
+    }
+
+    .rs-content .rs-weight {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 6px;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: var(--r-full);
+    }
+
+    /* Correlated events table */
+    .ce-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-default);
+      font-size: 0.875rem;
+    }
+
+    .ce-row:last-child {
+      border-bottom: none;
+    }
+
+    .ce-time {
+      font-family: monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      min-width: 80px;
+    }
+
+    .ce-event {
+      flex: 1;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .ce-source {
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+      font-family: monospace;
+      min-width: 80px;
+      text-align: right;
+    }
+
+    /* Confidence meter */
+    .conf-section {
+      background: linear-gradient(135deg, var(--info-bg) 0%, #F0FAFB 100%);
+      border: 1px solid var(--info-border);
+      border-radius: var(--r-xl);
+      padding: 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .conf-section::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: rgba(37, 99, 235, 0.05);
+    }
+
+    .conf-val {
+      font-size: 4rem;
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      color: var(--brand-blue-mid);
+      line-height: 1;
+    }
+
+    .conf-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .conf-bar-full {
+      height: 12px;
+      background: var(--bg-muted);
+      border-radius: var(--r-full);
+      overflow: hidden;
+      margin: 16px 0 8px;
+    }
+
+    .conf-bar-fill-full {
+      height: 100%;
+      border-radius: var(--r-full);
+      background: linear-gradient(90deg, var(--brand-blue-mid), var(--brand-cyan-light));
+      width: 0%;
+      transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Risk Level */
+    .risk-level-display {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px;
+      background: var(--critical-bg);
+      border: 1px solid var(--critical-border);
+      border-radius: var(--r-xl);
+      margin-bottom: 0;
+    }
+
+    .rld-icon {
+      width: 56px;
+      height: 56px;
+      background: rgba(220, 38, 38, 0.1);
+      border-radius: var(--r-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .rld-icon svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .rld-val {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--critical);
+      letter-spacing: -0.05em;
+      line-height: 1;
+    }
+
+    .rld-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #991B1B;
+      margin-top: 2px;
+    }
+
+    .rld-sub {
+      font-size: 0.8125rem;
+      color: #B91C1C;
+    }
+
+    /* Recommended Actions */
+    .rec-action {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px;
+      border-radius: var(--r-lg);
+      border: 1px solid var(--border-default);
+      background: var(--bg-surface);
+      margin-bottom: 8px;
+      transition: all var(--t-fast);
+    }
+
+    .rec-action:hover {
+      border-color: var(--brand-blue-mid);
+      background: var(--info-bg);
+    }
+
+    .rec-action:last-child {
+      margin-bottom: 0;
+    }
+
+    .rec-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--r-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .rec-icon svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .rec-title {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 3px;
+    }
+
+    .rec-detail {
+      font-size: 0.8125rem;
+      color: var(--text-tertiary);
+      line-height: 1.45;
+    }
+
+    /* Right panel */
+    .meta-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .meta-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .mc-head {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-default);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      background: var(--bg-subtle);
+    }
+
+    .mc-body {
+      padding: 16px;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border-default);
+      font-size: 0.875rem;
+    }
+
+    .meta-row:last-child {
+      border-bottom: none;
+    }
+
+    .meta-key {
+      color: var(--text-tertiary);
+      font-weight: 500;
+    }
+
+    .meta-value {
+      font-weight: 700;
+      color: var(--text-primary);
+      text-align: right;
+    }
+
+    /* MITRE tags */
+    .mitre-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      background: #F5F3FF;
+      border: 1px solid #DDD6FE;
+      border-radius: var(--r-full);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #5B21B6;
+      margin: 3px;
+    }
+
+    /* Report stamp / watermark */
+    .report-stamp {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: var(--low-bg);
+      border: 1px solid var(--low-border);
+      border-radius: var(--r-md);
+      font-size: 0.75rem;
+      color: var(--low);
+      font-weight: 600;
+    }
+
+    .report-stamp svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+
+    /* Report header */
+    .report-header-card {
+      background: var(--brand-gradient);
+      border-radius: var(--r-xl);
+      padding: 28px 32px;
+      margin-bottom: 20px;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .report-header-card::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .rhc-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: var(--r-full);
+      padding: 4px 12px;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .rhc-tag .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #6EE7B7;
+      animation: pulseDot 2s ease infinite;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="app-sidebar"></aside>
+    <div class="main-area">
+      <header class="topbar" id="app-topbar"></header>
+      <div class="page-content">
+
+        <!-- Breadcrumb -->
+        <div
+          style="display:flex;align-items:center;gap:6px;font-size:0.8125rem;color:var(--text-muted);margin-bottom:14px;">
+          <a href="dashboard.html" style="color:var(--brand-blue-mid);font-weight:600;">SOC Dashboard</a>
+          <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" style="width:10px;height:10px;">
+            <path d="M3 2l4 3-4 3" />
+          </svg>
+          <a href="incident.html" style="color:var(--brand-blue-mid);font-weight:600;">INC-2026-0847</a>
+          <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" style="width:10px;height:10px;">
+            <path d="M3 2l4 3-4 3" />
+          </svg>
+          <span>AI Investigation Report</span>
+        </div>
+
+        <!-- ── Report Header ── -->
+        <div class="report-header-card">
+          <div class="rhc-tag">
+            <div class="dot"></div>RiskFusion AI · Automated Analysis
+          </div>
+          <h1
+            style="font-size:1.625rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:6px;position:relative;z-index:1;">
+            AI Analyst Investigation Report
+          </h1>
+          <p style="font-size:1rem;color:rgba(255,255,255,0.75);position:relative;z-index:1;margin-bottom:16px;">
+            Incident INC-2026-0847 · Account Takeover — Impossible Travel · Generated <span
+              id="live-time">--:--:--</span> IST
+          </p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;position:relative;z-index:1;">
+            <div
+              style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:var(--r-md);padding:10px 16px;">
+              <div
+                style="font-size:0.6875rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.6);margin-bottom:3px;">
+                Classification</div>
+              <div style="font-weight:700;font-size:0.9375rem;">Account Takeover — Credential Compromise</div>
+            </div>
+            <div
+              style="background:rgba(220,38,38,0.2);border:1px solid rgba(220,38,38,0.3);border-radius:var(--r-md);padding:10px 16px;">
+              <div
+                style="font-size:0.6875rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.6);margin-bottom:3px;">
+                Risk Score</div>
+              <div style="font-weight:800;font-size:1.25rem;color:#FCA5A5;">94 / 100 — CRITICAL</div>
+            </div>
+            <div
+              style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:var(--r-md);padding:10px 16px;">
+              <div
+                style="font-size:0.6875rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.6);margin-bottom:3px;">
+                AI Confidence</div>
+              <div style="font-weight:800;font-size:1.25rem;color:#67E8F9;">96.4%</div>
+            </div>
+            <div
+              style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:var(--r-md);padding:10px 16px;">
+              <div
+                style="font-size:0.6875rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.6);margin-bottom:3px;">
+                MITRE ATT&CK</div>
+              <div style="font-weight:700;font-size:0.9375rem;">T1078 · T1550 · T1190</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Two-column Layout ── -->
+        <div class="report-layout">
+
+          <!-- LEFT: Report Content -->
+          <div>
+
+            <!-- 1. Executive Summary -->
+            <div class="report-section">
+              <div class="rs-head">
+                <div class="section-num">1</div>
+                <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                  <rect x="1" y="2" width="13" height="11" rx="1.5" />
+                  <line x1="4" y1="5.5" x2="11" y2="5.5" />
+                  <line x1="4" y1="8" x2="11" y2="8" />
+                  <line x1="4" y1="10.5" x2="8" y2="10.5" />
+                </svg>
+                Executive Summary
+              </div>
+              <div class="rs-body">
+                <p class="exec-summary">
+                  RiskFusion AI has classified Incident <strong>INC-2026-0847</strong> as a high-confidence
+                  <strong>Account Takeover (ATO)</strong> attack against customer <strong>Arjun Kapoor</strong>
+                  (CUS-84721).
+                  The threat actor gained access to the customer's credentials — likely via phishing or credential
+                  stuffing —
+                  and authenticated using a <strong>new, unregistered device</strong> from a VPN exit node in Moscow,
+                  Russia,
+                  47 minutes after a legitimate login from Mumbai, India.
+                </p>
+                <br>
+                <p class="exec-summary">
+                  The attacker immediately initiated a <strong>₹14,72,000 NEFT transfer</strong> to a newly added
+                  beneficiary
+                  account associated with cryptocurrency and money transfer MCCs, strongly indicating this is a
+                  <strong>financial fraud event</strong>. The AI model has flagged this with a risk score of
+                  <strong>94/100</strong>
+                  (Critical) and recommends <strong>immediate transaction block, account quarantine, and customer
+                    notification</strong>
+                  per RBI Fraud Guidelines 2024.
+                </p>
+                <br>
+                <div class="report-stamp">
+                  <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                    <path d="M7 1l1.6 3.2 3.5.5-2.5 2.4.6 3.5L7 9l-3.2 1.6.6-3.5-2.5-2.4 3.5-.5L7 1z" />
+                  </svg>
+                  AI Verdict: This incident is consistent with Account Takeover (ATO) attack pattern with 96.4%
+                  certainty. Immediate action required.
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. AI Reasoning Chain -->
+            <div class="report-section">
+              <div class="rs-head">
+                <div class="section-num">2</div>
+                <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                  <path d="M2 7.5C2 4.5 4.5 2 7.5 2S13 4.5 13 7.5s-2.5 5.5-5.5 5.5" />
+                  <path d="M7.5 10v.5M7.5 5.5v3" />
+                </svg>
+                AI Reasoning Chain
+              </div>
+              <div class="rs-body">
+
+                <div class="reasoning-step">
+                  <div class="rs-num">1</div>
+                  <div class="rs-content">
+                    <div class="rs-title">Impossible Travel Detected — Physical Violation</div>
+                    <div class="rs-detail">
+                      Login at 02:14 IST from Mumbai (IP: 103.21.4.12) followed by successful authentication at 03:01
+                      IST from Moscow, Russia (IP: 95.213.40.114).
+                      Distance of 7,242 km in 47 minutes requires travel speed of 9,243 km/h — exceeding commercial
+                      aviation maximum (Mach 0.85 ≈ 900 km/h).
+                      This is a categorical impossibility confirming the second session is adversarial.
+                    </div>
+                    <span class="rs-weight" style="background:var(--critical-bg);color:var(--critical);">Weight: +42
+                      points → Highest signal</span>
+                  </div>
+                </div>
+
+                <div class="reasoning-step">
+                  <div class="rs-num">2</div>
+                  <div class="rs-content">
+                    <div class="rs-title">New Device Fingerprint on Adversarial Session</div>
+                    <div class="rs-detail">
+                      The Moscow session used a Samsung Galaxy S24 Ultra (Android 14, Device ID: 3f8a921c) — never
+                      previously registered on CUS-84721's account.
+                      Legitimate session used iPhone 14 Pro (iOS 17), the customer's consistent device for 18 months.
+                      Device entropy score: 0.14 (near-zero trust).
+                    </div>
+                    <span class="rs-weight" style="background:var(--high-bg);color:var(--high);">Weight: +24 points →
+                      Critical corroborator</span>
+                  </div>
+                </div>
+
+                <div class="reasoning-step">
+                  <div class="rs-num">3</div>
+                  <div class="rs-content">
+                    <div class="rs-title">VPN Exit Node Confirmed — Anonymisation Attempt</div>
+                    <div class="rs-detail">
+                      IP 95.213.40.114 is listed in RiskFusion's VPN/Proxy threat intelligence feed as a NordVPN exit
+                      node.
+                      This IP has been associated with 23 prior banking fraud attempts across 6 Indian banks in the last
+                      90 days.
+                      Geolocation shows Moscow, but true origin is unknown (Amsterdam or Eastern Europe most probable
+                      per IP cluster analysis).
+                    </div>
+                    <span class="rs-weight" style="background:var(--high-bg);color:var(--high);">Weight: +18 points →
+                      Confirms adversarial intent</span>
+                  </div>
+                </div>
+
+                <div class="reasoning-step">
+                  <div class="rs-num">4</div>
+                  <div class="rs-content">
+                    <div class="rs-title">High-Value Transaction to Newly Added Beneficiary</div>
+                    <div class="rs-detail">
+                      Beneficiary account (50100892714XX) was added at 01:02 IST — 73 minutes before the attack session.
+                      Transaction of ₹14.72L exceeds 30-day average by 1,847%. Beneficiary MCC codes include Crypto
+                      Exchange (MCG 6011) and Money Transfer (MCG 4829),
+                      both high-risk for money laundering per FATF typologies.
+                    </div>
+                    <span class="rs-weight" style="background:var(--medium-bg);color:var(--medium);">Weight: +10 points
+                      → Strong financial fraud indicator</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- 3. Correlated Events -->
+            <div class="report-section">
+              <div class="rs-head">
+                <div class="section-num">3</div>
+                <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                  <circle cx="3" cy="7.5" r="2" />
+                  <circle cx="12" cy="3" r="2" />
+                  <circle cx="12" cy="12" r="2" />
+                  <line x1="5" y1="7.5" x2="10" y2="3.4" />
+                  <line x1="5" y1="7.5" x2="10" y2="11.6" />
+                </svg>
+                Correlated Events
+              </div>
+              <div class="rs-body" style="padding:0;">
+                <div style="padding:12px 20px;">
+                  <div class="ce-row">
+                    <div class="ce-time">02:12:41</div>
+                    <div class="ce-event"><span class="badge medium"
+                        style="font-size:0.6rem;margin-right:8px;">Medium</span>4 failed login attempts — credential
+                      stuffing pattern</div>
+                    <div class="ce-source">auth-svc</div>
+                  </div>
+                  <div class="ce-row">
+                    <div class="ce-time">02:14:07</div>
+                    <div class="ce-event"><span class="badge low"
+                        style="font-size:0.6rem;margin-right:8px;">Clean</span>Legitimate login — Mumbai, iPhone 14 Pro,
+                      TOTP MFA passed</div>
+                    <div class="ce-source">auth-svc</div>
+                  </div>
+                  <div class="ce-row">
+                    <div class="ce-time">02:18:43</div>
+                    <div class="ce-event"><span class="badge high"
+                        style="font-size:0.6rem;margin-right:8px;">High</span>New device registered — Samsung Galaxy S24
+                      Ultra (first seen)</div>
+                    <div class="ce-source">device-mgr</div>
+                  </div>
+                  <div class="ce-row">
+                    <div class="ce-time">01:02:19</div>
+                    <div class="ce-event"><span class="badge high"
+                        style="font-size:0.6rem;margin-right:8px;">High</span>New beneficiary added: Acc 50100892714XX
+                      (pre-staged 73 min before attack)</div>
+                    <div class="ce-source">benef-svc</div>
+                  </div>
+                  <div class="ce-row">
+                    <div class="ce-time">03:01:22</div>
+                    <div class="ce-event"><span class="badge critical"
+                        style="font-size:0.6rem;margin-right:8px;">Critical</span>Login from Moscow, RU via NordVPN —
+                      impossible travel flagged</div>
+                    <div class="ce-source">geo-engine</div>
+                  </div>
+                  <div class="ce-row">
+                    <div class="ce-time">03:04:11</div>
+                    <div class="ce-event"><span class="badge critical"
+                        style="font-size:0.6rem;margin-right:8px;">Critical</span>₹14.72L NEFT to new beneficiary —
+                      1,847% above 30d avg</div>
+                    <div class="ce-source">tx-monitor</div>
+                  </div>
+                  <div class="ce-row">
+                    <div class="ce-time">03:04:18</div>
+                    <div class="ce-event"><span class="badge info"
+                        style="font-size:0.6rem;margin-right:8px;">AI</span>Risk score 62 → 94. Transaction TX-9841
+                      placed on auto-hold</div>
+                    <div class="ce-source">risk-ai</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Confidence Score -->
+            <div class="report-section">
+              <div class="rs-head">
+                <div class="section-num">4</div>
+                <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                  <path d="M7.5 1l1.4 2.8 3.1.45-2.2 2.15.52 3.1L7.5 8l-2.82 1.5.52-3.1L3 4.25l3.1-.45L7.5 1z" />
+                </svg>
+                Model Confidence Score
+              </div>
+              <div class="rs-body">
+                <div class="conf-section">
+                  <div
+                    style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:8px;">
+                    RiskFusion AI · Ensemble Model v3.2</div>
+                  <div class="conf-val" id="conf-display">0%</div>
+                  <div class="conf-label">Prediction Confidence — Account Takeover</div>
+                  <div class="conf-bar-full">
+                    <div class="conf-bar-fill-full" id="conf-bar"></div>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;font-size:0.6875rem;color:var(--text-muted);">
+                    <span>0% — Uncertain</span>
+                    <span>100% — Definitive</span>
+                  </div>
+                  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px;">
+                    <div
+                      style="background:rgba(255,255,255,0.7);border-radius:var(--r-md);padding:12px;text-align:center;">
+                      <div style="font-size:1.125rem;font-weight:800;color:var(--brand-blue-mid);">98.1%</div>
+                      <div style="font-size:0.75rem;color:var(--text-muted);">Impossible Travel</div>
+                    </div>
+                    <div
+                      style="background:rgba(255,255,255,0.7);border-radius:var(--r-md);padding:12px;text-align:center;">
+                      <div style="font-size:1.125rem;font-weight:800;color:var(--brand-blue-mid);">94.7%</div>
+                      <div style="font-size:0.75rem;color:var(--text-muted);">New Device Anomaly</div>
+                    </div>
+                    <div
+                      style="background:rgba(255,255,255,0.7);border-radius:var(--r-md);padding:12px;text-align:center;">
+                      <div style="font-size:1.125rem;font-weight:800;color:var(--brand-blue-mid);">92.8%</div>
+                      <div style="font-size:0.75rem;color:var(--text-muted);">Fraud Transaction</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. Risk Level -->
+            <div class="report-section">
+              <div class="rs-head">
+                <div class="section-num">5</div>
+                <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                  <path d="M7.5 1.5L1 13h13L7.5 1.5z" />
+                  <path d="M7.5 5.5v4" />
+                  <circle cx="7.5" cy="11" r="0.5" fill="currentColor" />
+                </svg>
+                Risk Assessment
+              </div>
+              <div class="rs-body">
+                <div class="risk-level-display">
+                  <div class="rld-icon">
+                    <svg viewBox="0 0 28 28" fill="none" stroke="var(--critical)" stroke-width="2"
+                      stroke-linecap="round">
+                      <path d="M14 3L2 24h24L14 3z" />
+                      <path d="M14 11v6" />
+                      <circle cx="14" cy="20" r="1" fill="var(--critical)" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="rld-val">CRITICAL</div>
+                    <div class="rld-label">Risk Score 94 / 100</div>
+                    <div class="rld-sub">Exceeds critical threshold (90). Immediate escalation required. P1 SLA breach
+                      in 46 minutes.</div>
+                  </div>
+                  <div style="margin-left:auto;text-align:center;">
+                    <div style="font-size:1.75rem;font-weight:800;color:var(--critical);">P1</div>
+                    <div style="font-size:0.75rem;color:var(--critical);font-weight:600;">Priority</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 6. Recommended Actions -->
+            <div class="report-section">
+              <div class="rs-head">
+                <div class="section-num">6</div>
+                <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                  <path d="M13 4L5.5 11.5 2 8" />
+                </svg>
+                AI-Recommended Actions
+              </div>
+              <div class="rs-body">
+
+                <div class="rec-action">
+                  <div class="rec-icon" style="background:var(--critical-bg);">
+                    <svg viewBox="0 0 17 17" fill="none" stroke="var(--critical)" stroke-width="1.5"
+                      stroke-linecap="round">
+                      <rect x="2" y="5" width="13" height="10" rx="1.5" />
+                      <path d="M5 5V3.5A3.5 3.5 0 0 1 12 3.5V5" />
+                      <line x1="8.5" y1="9" x2="8.5" y2="11" />
+                    </svg>
+                  </div>
+                  <div style="flex:1;">
+                    <div class="rec-title">Block Transaction TX-9841 — Immediate</div>
+                    <div class="rec-detail">Place ₹14.72L NEFT on indefinite hold. Contact NEFT receiving bank to freeze
+                      Account 50100892714XX. File STR under PMLA 2002 Section 12.</div>
+                  </div>
+                  <div style="flex-shrink:0;"><span class="badge critical">P1</span></div>
+                </div>
+
+                <div class="rec-action">
+                  <div class="rec-icon" style="background:var(--high-bg);">
+                    <svg viewBox="0 0 17 17" fill="none" stroke="var(--high)" stroke-width="1.5" stroke-linecap="round">
+                      <circle cx="8.5" cy="6" r="3" />
+                      <path d="M3 16a5.5 5.5 0 0 1 11 0" />
+                      <path d="M14 10l-2 2" />
+                    </svg>
+                  </div>
+                  <div style="flex:1;">
+                    <div class="rec-title">Quarantine Account — Force Re-authentication</div>
+                    <div class="rec-detail">Kill all active sessions for CUS-84721. Require Aadhaar OTP + video KYC
+                      re-verification before restoring access. Update auth policy to geo-fenced.</div>
+                  </div>
+                  <div style="flex-shrink:0;"><span class="badge high">P1</span></div>
+                </div>
+
+                <div class="rec-action">
+                  <div class="rec-icon" style="background:var(--medium-bg);">
+                    <svg viewBox="0 0 17 17" fill="none" stroke="var(--medium)" stroke-width="1.5"
+                      stroke-linecap="round">
+                      <circle cx="8.5" cy="8.5" r="6.5" />
+                      <path d="M5.5 8.5h6M8.5 5.5v6" />
+                    </svg>
+                  </div>
+                  <div style="flex:1;">
+                    <div class="rec-title">Block VPN IP Range — Network Level</div>
+                    <div class="rec-detail">Add 95.213.40.0/24 to WAF blocklist. Update NordVPN exit node threat feed.
+                      Cross-reference with other RBI-regulated banks via FS-ISAC.</div>
+                  </div>
+                  <div style="flex-shrink:0;"><span class="badge medium">P2</span></div>
+                </div>
+
+                <div class="rec-action">
+                  <div class="rec-icon" style="background:var(--info-bg);">
+                    <svg viewBox="0 0 17 17" fill="none" stroke="var(--brand-blue-mid)" stroke-width="1.5"
+                      stroke-linecap="round">
+                      <rect x="2" y="3" width="13" height="11" rx="1.5" />
+                      <polyline points="2 7 8.5 11 15 7" />
+                    </svg>
+                  </div>
+                  <div style="flex:1;">
+                    <div class="rec-title">Notify Customer + File Regulatory Report</div>
+                    <div class="rec-detail">Send SMS + email to registered contact. File Suspicious Transaction Report
+                      (STR) with FIU-IND within 7 days per PMLA Section 12A.</div>
+                  </div>
+                  <div style="flex-shrink:0;"><span class="badge info">P2</span></div>
+                </div>
+
+              </div>
+            </div>
+
+          </div><!-- end left report -->
+
+          <!-- RIGHT: Meta panel -->
+          <div class="meta-panel">
+
+            <!-- Actions -->
+            <div style="display:flex;gap:8px;">
+              <a href="incident.html" class="btn btn-secondary btn-sm" style="flex:1;justify-content:center;">←
+                Incident</a>
+              <button class="btn btn-primary btn-sm" style="flex:1;" onclick="window.print()">Export PDF</button>
+            </div>
+
+            <!-- Incident Context -->
+            <div class="meta-card">
+              <div class="mc-head">Incident Context</div>
+              <div class="mc-body">
+                <div class="meta-row"><span class="meta-key">Incident ID</span><span class="meta-value mono"
+                    style="color:var(--brand-blue-mid);font-size:0.8125rem;">INC-2026-0847</span></div>
+                <div class="meta-row"><span class="meta-key">Customer</span><span class="meta-value">CUS-84721</span>
+                </div>
+                <div class="meta-row"><span class="meta-key">Account</span><span class="meta-value">AC-20917</span>
+                </div>
+                <div class="meta-row"><span class="meta-key">Status</span><span class="meta-value"><span
+                      class="badge open">Open</span></span></div>
+                <div class="meta-row"><span class="meta-key">Severity</span><span class="meta-value"><span
+                      class="badge critical">Critical</span></span></div>
+                <div class="meta-row"><span class="meta-key">Risk Score</span><span class="meta-value"
+                    style="color:var(--critical);">94 / 100</span></div>
+                <div class="meta-row"><span class="meta-key">SLA Remaining</span><span class="meta-value"
+                    style="color:var(--critical);">46 min</span></div>
+                <div class="meta-row"><span class="meta-key">Analyst</span><span class="meta-value">Akshat</span></div>
+              </div>
+            </div>
+
+            <!-- AI Model Info -->
+            <div class="meta-card">
+              <div class="mc-head">AI Model Details</div>
+              <div class="mc-body">
+                <div class="meta-row"><span class="meta-key">Model</span><span class="meta-value">RiskFusion v3.2</span>
+                </div>
+                <div class="meta-row"><span class="meta-key">Architecture</span><span class="meta-value">Ensemble +
+                    GNN</span></div>
+                <div class="meta-row"><span class="meta-key">Confidence</span><span class="meta-value"
+                    style="color:var(--brand-blue-mid);">96.4%</span></div>
+                <div class="meta-row"><span class="meta-key">Signals Used</span><span class="meta-value">7 / 7</span>
+                </div>
+                <div class="meta-row"><span class="meta-key">Processing Time</span><span class="meta-value">0.8
+                    sec</span></div>
+                <div class="meta-row"><span class="meta-key">Training Data</span><span class="meta-value">340M
+                    events</span></div>
+              </div>
+            </div>
+
+            <!-- MITRE ATT&CK -->
+            <div class="meta-card">
+              <div class="mc-head">MITRE ATT&CK Mapping</div>
+              <div class="mc-body">
+                <div style="margin-bottom:6px;font-size:0.8125rem;color:var(--text-tertiary);">Detected Techniques</div>
+                <div>
+                  <span class="mitre-tag">T1078 — Valid Accounts</span>
+                  <span class="mitre-tag">T1550 — Use Alternate Auth</span>
+                  <span class="mitre-tag">T1190 — Exploit Public App</span>
+                  <span class="mitre-tag">T1563 — Remote Session Hijack</span>
+                  <span class="mitre-tag">T1020 — Automated Exfiltration</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Similar Incidents -->
+            <div class="meta-card">
+              <div class="mc-head">Similar Incidents (Last 30 Days)</div>
+              <div class="mc-body" style="padding:0;">
+                <div style="padding:10px 14px;border-bottom:1px solid var(--border-default);font-size:0.8125rem;">
+                  <div style="font-weight:600;color:var(--brand-blue-mid);margin-bottom:2px;">INC-2026-0802</div>
+                  <div style="color:var(--text-muted);">ATO via impossible travel · Risk 91 · Resolved</div>
+                </div>
+                <div style="padding:10px 14px;border-bottom:1px solid var(--border-default);font-size:0.8125rem;">
+                  <div style="font-weight:600;color:var(--brand-blue-mid);margin-bottom:2px;">INC-2026-0779</div>
+                  <div style="color:var(--text-muted);">VPN + new device + high-value Tx · Risk 88 · Resolved</div>
+                </div>
+                <div style="padding:10px 14px;font-size:0.8125rem;">
+                  <div style="font-weight:600;color:var(--brand-blue-mid);margin-bottom:2px;">INC-2026-0741</div>
+                  <div style="color:var(--text-muted);">Credential stuffing → wire fraud · Risk 86 · Closed</div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- end meta panel -->
+        </div><!-- end report-layout -->
+      </div>
+    </div>
+  </div>
+
+  <script src="scripts/shell.js"></script>
+  <script src="scripts/app.js"></script>
+  <script>
+    renderShell('ai');
+
+    // Animate confidence bar on load
+    setTimeout(() => {
+      const bar = document.getElementById('conf-bar');
+      const display = document.getElementById('conf-display');
+      if (bar) bar.style.width = '96.4%';
+
+      // Count up animation
+      let count = 0;
+      const target = 96.4;
+      const step = target / 60;
+      const interval = setInterval(() => {
+        count = Math.min(count + step, target);
+        if (display) display.textContent = count.toFixed(1) + '%';
+        if (count >= target) clearInterval(interval);
+      }, 25);
+    }, 300);
+  </script>
+</body>
+
+</html>

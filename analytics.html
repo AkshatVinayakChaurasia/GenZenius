@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="RiskFusion AI — Customer Behaviour, Transaction, Device and Geo Analytics" />
+  <title>Analytics — RiskFusion AI</title>
+  <link rel="stylesheet" href="styles/design-system.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <style>
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 18px;
+    }
+    .col-2 { grid-column: span 2; }
+    .col-3 { grid-column: span 3; }
+
+    .chart-h-160 { height: 160px; position: relative; }
+    .chart-h-200 { height: 200px; position: relative; }
+    .chart-h-240 { height: 240px; position: relative; }
+
+    .metric-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-default);
+      font-size: 0.875rem;
+    }
+    .metric-row:last-child { border-bottom: none; }
+    .metric-label { color: var(--text-tertiary); font-weight: 500; }
+    .metric-val   { font-weight: 700; color: var(--text-primary); }
+
+    .behavior-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-default);
+      font-size: 0.8125rem;
+    }
+    .behavior-bar:last-child { border-bottom: none; }
+    .bb-label { width: 120px; color: var(--text-tertiary); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bb-bar   { flex: 1; height: 8px; background: var(--bg-muted); border-radius: var(--r-full); overflow: hidden; }
+    .bb-fill  { height: 100%; border-radius: var(--r-full); }
+    .bb-val   { min-width: 40px; text-align: right; font-weight: 700; color: var(--text-primary); }
+
+    .geo-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-default);
+      font-size: 0.875rem;
+    }
+    .geo-row:last-child { border-bottom: none; }
+    .geo-flag { font-size: 1.125rem; width: 24px; }
+    .geo-country { flex: 1; font-weight: 500; color: var(--text-primary); }
+    .geo-count { color: var(--text-tertiary); font-weight: 600; min-width: 60px; text-align: right; }
+
+    .device-stat {
+      text-align: center;
+      padding: 16px 8px;
+    }
+    .device-stat .dv-val { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.04em; color: var(--text-primary); }
+    .device-stat .dv-lbl { font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; }
+
+    .ai-insight-chip {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 12px;
+      background: var(--bg-subtle);
+      border-radius: var(--r-lg);
+      border: 1px solid var(--border-default);
+      margin-bottom: 8px;
+      font-size: 0.8125rem;
+    }
+    .ai-insight-chip svg { width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px; }
+    .ai-insight-chip strong { display: block; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+    .ai-insight-chip span { color: var(--text-tertiary); line-height: 1.45; }
+
+    .segment-pill {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-md);
+      margin-bottom: 6px;
+      font-size: 0.8125rem;
+      cursor: pointer;
+      transition: all var(--t-fast);
+    }
+    .segment-pill:hover { border-color: var(--border-focus); background: var(--info-bg); }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="app-sidebar"></aside>
+  <div class="main-area">
+    <header class="topbar" id="app-topbar"></header>
+    <div class="page-content">
+
+      <!-- ── Header ── -->
+      <div class="pg-header">
+        <div>
+          <div class="pg-eyebrow">Intelligence · Behavioural Analysis</div>
+          <h1 class="pg-title">Analytics</h1>
+          <p class="pg-sub">Customer behaviour, transaction patterns, device signals and geo risk · <span id="live-time">--:--:--</span></p>
+        </div>
+        <div class="pg-actions">
+          <div style="display:flex;align-items:center;gap:8px;padding:7px 14px;background:var(--bg-surface);border:1px solid var(--border-default);border-radius:var(--r-md);font-size:0.8125rem;color:var(--text-tertiary);">
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="width:13px;height:13px;"><rect x="1" y="2" width="12" height="10" rx="1.5"/><path d="M5 2v10M9 2v10"/></svg>
+            Last 30 Days
+            <svg viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5" style="width:10px;height:10px;"><path d="M1 1l4 4 4-4"/></svg>
+          </div>
+          <button class="btn btn-primary btn-sm">
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px;"><path d="M2 7h10M7 2l5 5-5 5"/></svg>
+            Export Report
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Summary KPIs ── -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;">
+        <div class="kpi" style="padding:16px;">
+          <div class="kpi-top-bar blue"></div>
+          <div class="kpi-label" style="margin-bottom:8px;">Txn Analysed</div>
+          <div class="kpi-value" style="font-size:1.625rem;">3.4M</div>
+          <div class="kpi-footer"><span class="delta down">↓ 2.1%</span><span>vs last month</span></div>
+        </div>
+        <div class="kpi" style="padding:16px;">
+          <div class="kpi-top-bar red"></div>
+          <div class="kpi-label" style="margin-bottom:8px;">Anomalies</div>
+          <div class="kpi-value" style="font-size:1.625rem;">1,248</div>
+          <div class="kpi-footer"><span class="delta up">↑ 18%</span><span>vs last month</span></div>
+        </div>
+        <div class="kpi" style="padding:16px;">
+          <div class="kpi-top-bar orange"></div>
+          <div class="kpi-label" style="margin-bottom:8px;">High-Risk Users</div>
+          <div class="kpi-value" style="font-size:1.625rem;">342</div>
+          <div class="kpi-footer"><span class="delta up">↑ 47</span><span>new this week</span></div>
+        </div>
+        <div class="kpi" style="padding:16px;">
+          <div class="kpi-top-bar green"></div>
+          <div class="kpi-label" style="margin-bottom:8px;">Fraud Prevented</div>
+          <div class="kpi-value" style="font-size:1.625rem;">₹2.1Cr</div>
+          <div class="kpi-footer"><span class="delta down">↑ 34%</span><span>YTD savings</span></div>
+        </div>
+        <div class="kpi" style="padding:16px;">
+          <div class="kpi-top-bar purple"></div>
+          <div class="kpi-label" style="margin-bottom:8px;">AI Accuracy</div>
+          <div class="kpi-value" style="font-size:1.625rem;">99.1<span style="font-size:1rem;">%</span></div>
+          <div class="kpi-footer"><span class="delta down">↑ 0.4%</span><span>precision</span></div>
+        </div>
+      </div>
+
+      <!-- ── Main Analytics Grid ── -->
+      <div class="analytics-grid">
+
+        <!-- Risk Trend Line (col 2) -->
+        <div class="card col-2">
+          <div class="card-head">
+            <div class="card-title">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="1 12 5 7 8 9 12 4 15 6"/></svg>
+              Portfolio Risk Trend — 30 Days
+            </div>
+            <div style="display:flex;gap:12px;font-size:0.75rem;">
+              <div style="display:flex;align-items:center;gap:5px;"><div style="width:8px;height:2px;background:#2563EB;border-radius:1px;"></div>Risk Score</div>
+              <div style="display:flex;align-items:center;gap:5px;"><div style="width:8px;height:2px;background:#DC2626;border-radius:1px;"></div>Fraud Events</div>
+              <div style="display:flex;align-items:center;gap:5px;"><div style="width:8px;height:2px;background:#D97706;border-radius:1px;"></div>Baseline</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-h-200"><canvas id="riskTrendChart"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Behaviour Comparison (col 1) -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2v12M2 8h12"/><circle cx="8" cy="8" r="6"/></svg>
+              Behaviour Comparison
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-h-200"><canvas id="radarChart"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Customer Behaviour (col 1) -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="5" r="3"/><path d="M2 15c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+              Customer Behaviour Signals
+            </div>
+          </div>
+          <div class="card-body" style="padding:12px 20px;">
+            <div class="behavior-bar">
+              <div class="bb-label">Login Frequency</div>
+              <div class="bb-bar"><div class="bb-fill" style="width:84%;background:var(--brand-blue-mid);"></div></div>
+              <div class="bb-val">84%</div>
+            </div>
+            <div class="behavior-bar">
+              <div class="bb-label">Device Consistency</div>
+              <div class="bb-bar"><div class="bb-fill" style="width:62%;background:var(--brand-cyan-light);"></div></div>
+              <div class="bb-val">62%</div>
+            </div>
+            <div class="behavior-bar">
+              <div class="bb-label">Geo Consistency</div>
+              <div class="bb-bar"><div class="bb-fill" style="width:78%;background:var(--low);"></div></div>
+              <div class="bb-val">78%</div>
+            </div>
+            <div class="behavior-bar">
+              <div class="bb-label">Txn Regularity</div>
+              <div class="bb-bar"><div class="bb-fill" style="width:56%;background:var(--medium);"></div></div>
+              <div class="bb-val">56%</div>
+            </div>
+            <div class="behavior-bar">
+              <div class="bb-label">Night Activity</div>
+              <div class="bb-bar"><div class="bb-fill" style="width:32%;background:var(--high);"></div></div>
+              <div class="bb-val">32%</div>
+            </div>
+            <div class="behavior-bar">
+              <div class="bb-label">VPN Usage</div>
+              <div class="bb-bar"><div class="bb-fill" style="width:18%;background:var(--critical);"></div></div>
+              <div class="bb-val">18%</div>
+            </div>
+            <div class="behavior-bar">
+              <div class="bb-label">New Beneficiaries</div>
+              <div class="bb-bar"><div class="bb-fill" style="width:44%;background:var(--medium);"></div></div>
+              <div class="bb-val">44%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transaction Analytics (col 1) -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 8h12M10 4l4 4-4 4"/><path d="M6 4L2 8l4 4"/></svg>
+              Transaction Analytics
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-h-160"><canvas id="txnChart"></canvas></div>
+            <div style="display:flex;gap:16px;margin-top:14px;">
+              <div class="device-stat" style="flex:1;background:var(--bg-subtle);border-radius:var(--r-md);">
+                <div class="dv-val">₹3.2Cr</div>
+                <div class="dv-lbl">Total Volume</div>
+              </div>
+              <div class="device-stat" style="flex:1;background:var(--critical-bg);border-radius:var(--r-md);">
+                <div class="dv-val" style="color:var(--critical);">247</div>
+                <div class="dv-lbl">Flagged Txns</div>
+              </div>
+              <div class="device-stat" style="flex:1;background:var(--low-bg);border-radius:var(--r-md);">
+                <div class="dv-val" style="color:var(--low);">₹18.4L</div>
+                <div class="dv-lbl">Blocked</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Device Analytics (col 1) -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="3" width="14" height="10" rx="2"/><path d="M5 13v2M11 13v2M3 15h10"/></svg>
+              Device Analytics
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-h-160"><canvas id="deviceChart"></canvas></div>
+            <div style="margin-top:12px;">
+              <div class="metric-row">
+                <span class="metric-label">New Devices Registered</span>
+                <span class="metric-val">2,841</span>
+              </div>
+              <div class="metric-row">
+                <span class="metric-label">Rooted / Jailbroken</span>
+                <span class="metric-val" style="color:var(--critical);">47 <span class="badge critical" style="font-size:0.6rem;">Risk</span></span>
+              </div>
+              <div class="metric-row">
+                <span class="metric-label">Device Switches (7d)</span>
+                <span class="metric-val" style="color:var(--high);">312</span>
+              </div>
+              <div class="metric-row">
+                <span class="metric-label">Emulator Detected</span>
+                <span class="metric-val" style="color:var(--critical);">9</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Geo Risk Analysis (col 2) -->
+        <div class="card col-2">
+          <div class="card-head">
+            <div class="card-title">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="7" r="3"/><path d="M8 14s-5-3.5-5-7A5 5 0 0 1 13 7c0 3.5-5 7-5 7z"/></svg>
+              Geo Risk Analysis — Top Threat Origins
+            </div>
+          </div>
+          <div class="card-body" style="padding:12px 20px 16px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <div class="geo-row"><div class="geo-flag">🇷🇺</div><div class="geo-country">Russia</div><div><span class="badge critical">94 Risk</span></div><div class="geo-count">847 events</div></div>
+                <div class="geo-row"><div class="geo-flag">🇨🇳</div><div class="geo-country">China</div><div><span class="badge high">78 Risk</span></div><div class="geo-count">634 events</div></div>
+                <div class="geo-row"><div class="geo-flag">🇳🇬</div><div class="geo-country">Nigeria</div><div><span class="badge high">74 Risk</span></div><div class="geo-count">412 events</div></div>
+                <div class="geo-row"><div class="geo-flag">🇧🇷</div><div class="geo-country">Brazil</div><div><span class="badge medium">61 Risk</span></div><div class="geo-count">289 events</div></div>
+                <div class="geo-row"><div class="geo-flag">🇦🇪</div><div class="geo-country">UAE</div><div><span class="badge medium">58 Risk</span></div><div class="geo-count">211 events</div></div>
+              </div>
+              <div>
+                <div style="height:100%;display:flex;flex-direction:column;justify-content:center;">
+                  <div class="chart-h-200"><canvas id="geoChart"></canvas></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Insights (col 1) -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="4" width="12" height="9" rx="2"/><path d="M5 4V2.5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1V4"/></svg>
+              AI Analytical Insights
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="ai-insight-chip">
+              <svg viewBox="0 0 15 15" fill="none" stroke="var(--critical)" stroke-width="1.5"><path d="M7.5 2L1 13h13L7.5 2z"/><path d="M7.5 6v3"/></svg>
+              <div>
+                <strong>Spike: Night-Time Transactions</strong>
+                <span>02:00–04:00 IST transactions are 8× above the 30-day baseline. Consistent with account takeover playbook.</span>
+              </div>
+            </div>
+            <div class="ai-insight-chip">
+              <svg viewBox="0 0 15 15" fill="none" stroke="var(--medium)" stroke-width="1.5"><circle cx="7.5" cy="7.5" r="5.5"/><path d="M7.5 5v3l2 1.5"/></svg>
+              <div>
+                <strong>Device Switching Cluster</strong>
+                <span>312 users switched primary device in 7 days. 47 co-occur with suspicious login events — high correlation.</span>
+              </div>
+            </div>
+            <div class="ai-insight-chip">
+              <svg viewBox="0 0 15 15" fill="none" stroke="var(--brand-blue-mid)" stroke-width="1.5"><path d="M12 4L6 10l-3-3"/></svg>
+              <div>
+                <strong>Geo-Risk Model Updated</strong>
+                <span>Russia threat score recalibrated following 847 login events. VPN exit node list expanded by 14 IPs.</span>
+              </div>
+            </div>
+            <div class="ai-insight-chip">
+              <svg viewBox="0 0 15 15" fill="none" stroke="#7C3AED" stroke-width="1.5"><rect x="2" y="3" width="11" height="9" rx="1.5"/><path d="M5 3V2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1"/></svg>
+              <div>
+                <strong>Rooted Devices Flagged</strong>
+                <span>47 rooted/jailbroken devices detected on the network. All sessions quarantined for step-up auth review.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Risk Segment Breakdown (col 3) -->
+        <div class="card col-3">
+          <div class="card-head">
+            <div class="card-title">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+              Customer Risk Segment Breakdown — Live Portfolio
+            </div>
+            <button class="btn btn-secondary btn-sm">Download CSV</button>
+          </div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;">
+              <div class="segment-pill">
+                <div>
+                  <div style="font-weight:700;color:var(--critical);font-size:1.125rem;">342</div>
+                  <div style="font-size:0.75rem;color:var(--text-muted);">Critical Risk</div>
+                </div>
+                <span class="badge critical">≥ 80</span>
+              </div>
+              <div class="segment-pill">
+                <div>
+                  <div style="font-weight:700;color:var(--high);font-size:1.125rem;">1,204</div>
+                  <div style="font-size:0.75rem;color:var(--text-muted);">High Risk</div>
+                </div>
+                <span class="badge high">60–79</span>
+              </div>
+              <div class="segment-pill">
+                <div>
+                  <div style="font-weight:700;color:var(--medium);font-size:1.125rem;">8,741</div>
+                  <div style="font-size:0.75rem;color:var(--text-muted);">Medium Risk</div>
+                </div>
+                <span class="badge medium">40–59</span>
+              </div>
+              <div class="segment-pill">
+                <div>
+                  <div style="font-weight:700;color:var(--low);font-size:1.125rem;">48,290</div>
+                  <div style="font-size:0.75rem;color:var(--text-muted);">Low Risk</div>
+                </div>
+                <span class="badge low">20–39</span>
+              </div>
+              <div class="segment-pill">
+                <div>
+                  <div style="font-weight:700;color:var(--text-muted);font-size:1.125rem;">312,841</div>
+                  <div style="font-size:0.75rem;color:var(--text-muted);">Normal</div>
+                </div>
+                <span class="badge closed">&lt; 20</span>
+              </div>
+            </div>
+            <div style="margin-top:16px;">
+              <div style="display:flex;height:10px;border-radius:var(--r-full);overflow:hidden;gap:2px;">
+                <div style="width:0.9%;background:var(--critical);"></div>
+                <div style="width:3.3%;background:var(--high);"></div>
+                <div style="width:23.8%;background:var(--medium);"></div>
+                <div style="width:13.1%;background:var(--low);"></div>
+                <div style="flex:1;background:var(--bg-muted);"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:0.6875rem;color:var(--text-muted);margin-top:5px;">
+                <span>Critical 0.9%</span><span>High 3.3%</span><span>Medium 23.8%</span><span>Low 13.1%</span><span>Normal 58.9%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="scripts/shell.js"></script>
+<script src="scripts/app.js"></script>
+<script>
+  renderShell('analytics');
+
+  // Risk Trend
+  const labels30 = Array.from({length:30},(_,i)=>{const d=new Date('2026-06-17');d.setDate(d.getDate()+i);return d.toLocaleDateString('en-IN',{month:'short',day:'numeric'});});
+  const riskData = [48,52,49,55,58,62,60,65,63,70,68,66,72,74,71,75,73,78,76,80,77,82,79,84,81,86,83,89,87,92];
+  const fraudData = [2,3,2,4,5,6,4,7,5,8,6,5,9,10,8,11,9,12,10,13,11,14,12,15,12,16,13,17,15,18];
+  const baseData = Array(30).fill(55);
+
+  new Chart(document.getElementById('riskTrendChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: labels30.filter((_,i)=>i%3===0),
+      datasets: [
+        { label:'Risk Score', data: riskData.filter((_,i)=>i%3===0), borderColor:'#2563EB', backgroundColor:'rgba(37,99,235,0.05)', fill:true, tension:0.4, borderWidth:2, pointRadius:2 },
+        { label:'Fraud Events', data: fraudData.filter((_,i)=>i%3===0), borderColor:'#DC2626', backgroundColor:'transparent', tension:0.4, borderWidth:2, pointRadius:2, yAxisID:'y1' },
+        { label:'Baseline', data: baseData.filter((_,i)=>i%3===0), borderColor:'#D97706', borderDash:[5,5], borderWidth:1.5, pointRadius:0, tension:0 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position:'top', align:'end' } },
+      scales: {
+        x: { grid:{display:false} },
+        y: { beginAtZero:false, min:30, grid:{color:'#F1F5F9'} },
+        y1: { position:'right', beginAtZero:true, grid:{display:false} }
+      }
+    }
+  });
+
+  // Radar
+  new Chart(document.getElementById('radarChart').getContext('2d'), {
+    type: 'radar',
+    data: {
+      labels: ['Login Patterns','Txn Volume','Geo Spread','Device Trust','Night Activity','VPN Usage'],
+      datasets: [
+        { label:'Flagged Users', data:[85,72,90,45,88,76], borderColor:'#DC2626', backgroundColor:'rgba(220,38,38,0.1)', borderWidth:2, pointRadius:3, pointBackgroundColor:'#DC2626' },
+        { label:'Normal Users', data:[42,55,30,92,15,8],  borderColor:'#2563EB', backgroundColor:'rgba(37,99,235,0.08)', borderWidth:2, pointRadius:3, pointBackgroundColor:'#2563EB' },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position:'bottom' } },
+      scales: { r: { beginAtZero:true, max:100, ticks:{display:false}, grid:{color:'#F1F5F9'}, pointLabels:{font:{size:10}} } }
+    }
+  });
+
+  // Transaction Chart
+  new Chart(document.getElementById('txnChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: ['<1K','1K–10K','10K–50K','50K–1L','1L–5L','>5L'],
+      datasets: [
+        { label:'Normal', data:[120000,85000,42000,18000,7200,1400], backgroundColor:'rgba(37,99,235,0.6)', borderRadius:4 },
+        { label:'Flagged', data:[420,1840,3200,2100,980,247], backgroundColor:'rgba(220,38,38,0.7)', borderRadius:4 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{position:'top',align:'end'} },
+      scales: { x:{grid:{display:false}}, y:{beginAtZero:true,grid:{color:'#F1F5F9'}, ticks:{callback:v=>v>=1000?v/1000+'K':v}} }
+    }
+  });
+
+  // Device Donut
+  new Chart(document.getElementById('deviceChart').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Android','iOS','Web','Other'],
+      datasets:[{ data:[52,31,14,3], backgroundColor:['#2563EB','#06B6D4','#7C3AED','#D97706'], borderWidth:0, hoverOffset:5 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, cutout:'65%', plugins:{legend:{position:'right'}} }
+  });
+
+  // Geo Chart
+  new Chart(document.getElementById('geoChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: ['RU','CN','NG','BR','AE','US','ID'],
+      datasets:[{ data:[94,78,74,61,58,42,38], backgroundColor:['#DC2626','#EA580C','#D97706','#D97706','#D97706','#2563EB','#2563EB'], borderRadius:5, borderSkipped:false }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{ x:{grid:{display:false}}, y:{beginAtZero:true, max:100, grid:{color:'#F1F5F9'}} }
+    }
+  });
+</script>
+</body>
+</html>
