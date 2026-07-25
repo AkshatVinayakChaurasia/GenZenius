@@ -300,6 +300,19 @@
   let redirecting = false;
 
   /**
+   * Discards a session the server has rejected.
+   *
+   * A stored session can still look valid here — unexpired, well formed —
+   * while the API refuses it, for instance when it was issued by a different
+   * project or revoked elsewhere. Without dropping it, the sign-in page would
+   * see a "valid" session and forward straight back to the workspace, which
+   * would bounce again: an endless loop. Clearing it breaks that cycle.
+   */
+  function invalidateSession() {
+    clearSession();
+  }
+
+  /**
    * Sends the visitor to sign in, remembering where they were headed.
    *
    * Several things can discover a dead session at once — the route guard and
@@ -365,5 +378,6 @@
     providerEnabled,
     requireSession,
     redirectToLogin,
+    invalidateSession,
   };
 })();

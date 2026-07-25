@@ -26,6 +26,9 @@ async function authHeaders() {
 /** Turns a non-2xx response into an Error carrying the API's own message. */
 async function toError(response, path) {
   if (response.status === 401) {
+    // The API refused this session, so it must not be treated as usable again;
+    // otherwise the sign-in page would forward straight back here.
+    window.RiskFusionAuth.invalidateSession();
     window.RiskFusionAuth.redirectToLogin();
     return new Error('Your session has expired. Please sign in again.');
   }
