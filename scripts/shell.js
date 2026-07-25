@@ -86,7 +86,7 @@ function renderShell(activePage) {
       <button class="avatar-btn" type="button" id="profile-button" aria-label="Sign out of the demo">
         <div class="avatar">AD</div>
         <div class="avatar-info">
-          <div class="av-name">Admin</div>
+          <div class="av-name">Demo Analyst</div>
           <div class="av-role">HDFC · SOC L3</div>
         </div>
         ${iconChevron()}

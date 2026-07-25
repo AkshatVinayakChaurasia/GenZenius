@@ -8,6 +8,33 @@
   const severityClass = (value) => ['critical', 'high', 'medium', 'low'].includes(String(value).toLowerCase()) ? String(value).toLowerCase() : 'info';
 
   try {
+    if (page === 'dashboard.html') {
+      const refreshDashboard = async () => {
+        const data = await fetchJSON('/dashboard');
+        const kpis = document.querySelectorAll('.kpi-value');
+        if (kpis[0]) kpis[0].textContent = data.active_incidents;
+        if (kpis[1]) kpis[1].textContent = data.critical_alerts;
+        if (kpis[2]) kpis[2].textContent = data.average_risk_score;
+        if (kpis[3]) kpis[3].innerHTML = `${data.ai_confidence}<span style="font-size:1.2rem;font-weight:600;">%</span>`;
+        const distribution = typeof Chart !== 'undefined' && Chart.getChart('riskChart');
+        if (distribution) {
+          const order = ['Critical', 'High', 'Medium', 'Low'];
+          distribution.data.datasets[0].data = order.map(severity => data.risk_distribution.find(item => item.severity === severity)?.count || 0);
+          distribution.update();
+        }
+        const incidents = await fetchJSON('/incidents');
+        const counts = { incidents: incidents.filter(item => !['Resolved', 'Closed'].includes(item.status)).length, investigation: incidents.filter(item => item.status === 'Investigating').length };
+        document.querySelectorAll('.nav-link').forEach(link => {
+          const label = link.querySelector('span:not(.nav-count)')?.textContent;
+          const count = link.querySelector('.nav-count');
+          if (count && label === 'Incidents') count.textContent = counts.incidents;
+          if (count && label === 'Investigations') count.textContent = counts.investigation;
+        });
+      };
+      await refreshDashboard();
+      window.setInterval(() => { if (!document.hidden) refreshDashboard().catch(error => reportApiError('Dashboard refresh failed', error)); }, 30000);
+    }
+
     if (page === 'analytics.html') {
       const data = await fetchJSON('/analytics');
       const kpis = document.querySelectorAll('.kpi-value');
