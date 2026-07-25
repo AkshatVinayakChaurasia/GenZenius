@@ -266,7 +266,7 @@
           <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
             <div style="flex:1;">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
-                <span class="badge critical"><span class="dot"></span>Critical</span>
+                <span class="badge critical" id="severity-badge"><span class="dot"></span>Critical</span>
                 <span class="badge open">Open</span>
                 <span class="badge new">New Evidence</span>
                 <span style="font-size:0.75rem;color:var(--text-muted);">Opened 14 minutes ago</span>
@@ -275,7 +275,7 @@
                 style="font-size:1.25rem;font-weight:800;color:var(--text-primary);letter-spacing:-0.03em;margin-bottom:6px;">
                 Account Takeover — Impossible Travel Detected
               </h1>
-              <p style="font-size:0.9375rem;color:var(--text-tertiary);line-height:1.5;">
+              <p style="font-size:0.9375rem;color:var(--text-tertiary);line-height:1.5;" id="ai-explanation">
                 Customer <strong style="color:var(--text-primary);">Arjun Kapoor</strong> (CUS-84721) authenticated from
                 Mumbai at 02:14 IST,
                 followed by a login attempt from Moscow, Russia 47 minutes later — physically impossible.
@@ -298,14 +298,14 @@
                   <path d="M20 80 A60 60 0 0 1 140 80" fill="none" stroke="#F1F5F9" stroke-width="12"
                     stroke-linecap="round" />
                   <!-- Fill (94/100 = ~169° of 180°) -->
-                  <path d="M20 80 A60 60 0 0 1 140 80" fill="none" stroke="url(#gaugeGrad)" stroke-width="12"
+                  <path id="risk-gauge-fill" d="M20 80 A60 60 0 0 1 140 80" fill="none" stroke="url(#gaugeGrad)" stroke-width="12"
                     stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="11.3" />
                   <!-- Needle -->
                   <line x1="80" y1="80" x2="26" y2="26" stroke="#0F172A" stroke-width="2.5" stroke-linecap="round" />
                   <circle cx="80" cy="80" r="5" fill="#0F172A" />
                 </svg>
               </div>
-              <div
+              <div id="risk-score-value"
                 style="font-size:2.25rem;font-weight:800;letter-spacing:-0.05em;color:var(--critical);line-height:1;">94
               </div>
               <div
@@ -338,6 +338,10 @@
             <div class="inc-meta-item">
               <span class="inc-meta-label">SLA Deadline</span>
               <span class="inc-meta-val" style="color:var(--critical);">46 min remaining</span>
+            </div>
+            <div class="inc-meta-item">
+              <span class="inc-meta-label">AI Confidence</span>
+              <span class="inc-meta-val" id="ai-confidence-value">96.4%</span>
             </div>
             <div class="pg-actions" style="margin-left:auto;">
               <a href="ai.html" class="btn btn-primary btn-sm">
@@ -490,7 +494,7 @@
                 </div>
                 <span class="badge critical">P1 — SLA: 46min</span>
               </div>
-              <div class="card-body">
+              <div class="card-body" id="recommended-actions-list">
 
                 <div class="action-row">
                   <div class="action-num">1</div>
@@ -556,13 +560,13 @@
                     <line x1="5" y1="8" x2="11" y2="12" />
                   </svg>
                   Correlated Signals
-                  <span
+                  <span id="signals-detected-badge"
                     style="background:var(--critical-bg);color:var(--critical);font-size:0.6875rem;font-weight:700;padding:2px 8px;border-radius:var(--r-full);border:1px solid var(--critical-border);">7
                     Detected</span>
                 </div>
               </div>
               <div class="card-body">
-                <div class="signals-grid">
+                <div class="signals-grid" id="signals-grid">
 
                   <div class="signal-card flagged">
                     <div class="sc-icon" style="background:rgba(220,38,38,0.12);">
@@ -728,7 +732,13 @@
 
   <script src="scripts/shell.js"></script>
   <script src="scripts/app.js"></script>
-  <script>renderShell('incident');</script>
+  <script src="scripts/api.js"></script>
+  <script src="scripts/risk-assessment.js"></script>
+  <script>
+    renderShell('incident');
+    loadLiveRiskAssessment();
+  </script>
+  <script src="scripts/live-state.js"></script>
 </body>
 
 </html>

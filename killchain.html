@@ -165,6 +165,16 @@
       letter-spacing: 0.06em; color: white;
       white-space: nowrap;
     }
+
+    @media (max-width: 760px) {
+      .kc-wrapper { overflow: hidden; }
+      .kc-scroll { padding-inline: 16px; }
+      .detail-panel { padding: 18px; }
+      .dp-header { flex-wrap: wrap; }
+      .dp-grid { grid-template-columns: 1fr; }
+      .phase-bar { overflow-x: auto; border-radius: var(--r-md); }
+      .phase-seg { min-width: 100px; }
+    }
   </style>
 </head>
 <body>
@@ -558,5 +568,7 @@
     });
   });
 </script>
+  <script src="scripts/api.js"></script>
+  <script src="scripts/live-state.js"></script>
 </body>
 </html>

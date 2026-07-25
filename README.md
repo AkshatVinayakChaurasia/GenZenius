@@ -88,6 +88,18 @@ python -m http.server 3000
 
 Then open: `http://localhost:3000`
 
+## Backend API
+
+The FastAPI backend lives in [`backend/`](backend/README.md). It uses SQLite and seeds realistic banking-risk incidents automatically on first start.
+
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+Open `http://127.0.0.1:8000/docs` to explore the dashboard, incidents, incident detail, and analytics endpoints.
+
 ---
 
 ## Key Features Demonstrated

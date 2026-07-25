@@ -344,25 +344,25 @@
                   <div style="display:flex;align-items:center;gap:6px;"><span
                       style="width:10px;height:10px;border-radius:2px;background:var(--critical);display:inline-block;"></span><span>Critical</span>
                   </div>
-                  <span style="font-weight:700;color:var(--critical);">23%</span>
+                  <span style="font-weight:700;color:var(--critical);" id="risk-pct-critical">23%</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.8125rem;">
                   <div style="display:flex;align-items:center;gap:6px;"><span
                       style="width:10px;height:10px;border-radius:2px;background:var(--high);display:inline-block;"></span><span>High</span>
                   </div>
-                  <span style="font-weight:700;color:var(--high);">34%</span>
+                  <span style="font-weight:700;color:var(--high);" id="risk-pct-high">34%</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.8125rem;">
                   <div style="display:flex;align-items:center;gap:6px;"><span
                       style="width:10px;height:10px;border-radius:2px;background:var(--medium);display:inline-block;"></span><span>Medium</span>
                   </div>
-                  <span style="font-weight:700;color:var(--medium);">28%</span>
+                  <span style="font-weight:700;color:var(--medium);" id="risk-pct-medium">28%</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.8125rem;">
                   <div style="display:flex;align-items:center;gap:6px;"><span
                       style="width:10px;height:10px;border-radius:2px;background:var(--low);display:inline-block;"></span><span>Low</span>
                   </div>
-                  <span style="font-weight:700;color:var(--low);">15%</span>
+                  <span style="font-weight:700;color:var(--low);" id="risk-pct-low">15%</span>
                 </div>
               </div>
             </div>
@@ -738,6 +738,7 @@
 
   <script src="scripts/shell.js"></script>
   <script src="scripts/app.js"></script>
+  <script src="scripts/api.js"></script>
   <script>
     renderShell('dashboard');
 
@@ -779,7 +780,7 @@
 
     // ── Risk Distribution Donut ──
     const riskCtx = document.getElementById('riskChart').getContext('2d');
-    new Chart(riskCtx, {
+    const riskChartObj = new Chart(riskCtx, {
       type: 'doughnut',
       data: {
         labels: ['Critical', 'High', 'Medium', 'Low'],
@@ -899,6 +900,44 @@
     `;
       stream.appendChild(row);
     });
+
+    // ── Live backend data (falls back to the mock values above if unreachable) ──
+    (async function loadLiveDashboard() {
+      try {
+        const data = await fetchJSON('/dashboard');
+        const kpiValues = document.querySelectorAll('.kpi-value');
+        if (kpiValues[0]) kpiValues[0].textContent = data.active_incidents;
+        if (kpiValues[1]) kpiValues[1].textContent = data.critical_alerts;
+        if (kpiValues[2]) kpiValues[2].textContent = data.average_risk_score;
+        if (kpiValues[3]) kpiValues[3].innerHTML = data.ai_confidence + '<span style="font-size:1.2rem;font-weight:600;">%</span>';
+
+        const order = ['Critical', 'High', 'Medium', 'Low'];
+        const counts = order.map(sev => {
+          const entry = data.risk_distribution.find(d => d.severity === sev);
+          return entry ? entry.count : 0;
+        });
+        riskChartObj.data.datasets[0].data = counts;
+        riskChartObj.update();
+
+        const total = counts.reduce((a, b) => a + b, 0) || 1;
+        const pctIds = { Critical: 'risk-pct-critical', High: 'risk-pct-high', Medium: 'risk-pct-medium', Low: 'risk-pct-low' };
+        order.forEach((sev, i) => {
+          const el = document.getElementById(pctIds[sev]);
+          if (el) el.textContent = Math.round((counts[i] / total) * 100) + '%';
+        });
+
+        // The dashboard starts empty until an analyst creates a real incident.
+        // Do not retain the prototype event stream or map pins as fake activity.
+        const stream = document.getElementById('event-stream');
+        if (stream) stream.innerHTML = data.incident_trend.length
+          ? data.incident_trend.map(item => `<div class="event-row"><div class="event-type-dot" style="background:#2563EB;"></div><div class="event-time">${item.date}</div><div class="event-desc">${item.count} incident${item.count === 1 ? '' : 's'} recorded</div><div class="event-source">live database</div></div>`).join('')
+          : '<div class="empty-state">No live incidents yet. Use New Incident to create the first record.</div>';
+        const pins = document.getElementById('map-pins');
+        if (pins) pins.innerHTML = '';
+      } catch (err) {
+        reportApiError('Dashboard data could not be refreshed', err);
+      }
+    })();
   </script>
 </body>
 

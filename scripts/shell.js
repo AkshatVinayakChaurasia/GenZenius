@@ -3,6 +3,10 @@
  * Injected by each page via script
  */
 function renderShell(activePage) {
+  if (!localStorage.getItem('riskfusion-user')) {
+    window.location.replace('index.html');
+    return;
+  }
 
   const navItems = [
     {
@@ -58,8 +62,8 @@ function renderShell(activePage) {
       <div class="nav-link" style="cursor:default;">
         ${iconUser()}
         <div>
-          <div style="font-size:0.8125rem;font-weight:600;color:var(--text-primary);">Akshat</div>
-          <div style="font-size:0.6875rem;color:var(--text-muted);">Senior SOC Analyst</div>
+          <div style="font-size:0.8125rem;font-weight:600;color:var(--text-primary);">Admin</div>
+          <div style="font-size:0.6875rem;color:var(--text-muted);">SOC Administrator</div>
         </div>
       </div>
     </div>
@@ -80,9 +84,9 @@ function renderShell(activePage) {
       </button>
       <button class="icon-btn" data-tip="Settings">${iconGear()}</button>
       <div class="avatar-btn">
-        <div class="avatar">AS</div>
+        <div class="avatar">AD</div>
         <div class="avatar-info">
-          <div class="av-name">Akshat</div>
+          <div class="av-name">Admin</div>
           <div class="av-role">HDFC · SOC L3</div>
         </div>
         ${iconChevron()}

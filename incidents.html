@@ -192,6 +192,18 @@
 
     .chart-sm { height: 140px; position: relative; }
 
+    @media (max-width: 760px) {
+      .stat-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .stat-cell { padding: 14px; }
+      .stat-cell:last-child { grid-column: span 2; }
+      .mini-charts { grid-template-columns: 1fr; }
+      .tabs { overflow-x: auto; white-space: nowrap; }
+      .tbl-controls { padding: 12px; }
+      .tbl-search { flex-basis: 100%; max-width: none; }
+      .bulk-bar { flex-wrap: wrap; padding: 10px 12px; }
+      .inc-expand-grid { grid-template-columns: 1fr 1fr; }
+    }
+
     /* ── Tag Pills ── */
     .tag-pill {
       display: inline-flex;
@@ -301,10 +313,10 @@
 
         <!-- Tabs -->
         <div class="tabs" style="padding:0 20px;">
-          <div class="tab active">All Incidents <span style="background:var(--bg-subtle);color:var(--text-muted);font-size:0.6875rem;font-weight:700;padding:1px 7px;border-radius:var(--r-full);margin-left:6px;">47</span></div>
-          <div class="tab">Open <span style="background:var(--info-bg);color:var(--brand-blue-mid);font-size:0.6875rem;font-weight:700;padding:1px 7px;border-radius:var(--r-full);margin-left:6px;">24</span></div>
-          <div class="tab">Investigating <span style="background:var(--medium-bg);color:var(--medium);font-size:0.6875rem;font-weight:700;padding:1px 7px;border-radius:var(--r-full);margin-left:6px;">15</span></div>
-          <div class="tab">Resolved <span style="background:var(--low-bg);color:var(--low);font-size:0.6875rem;font-weight:700;padding:1px 7px;border-radius:var(--r-full);margin-left:6px;">8</span></div>
+          <div class="tab active">All Incidents <span id="tab-count-all" style="background:var(--bg-subtle);color:var(--text-muted);font-size:0.6875rem;font-weight:700;padding:1px 7px;border-radius:var(--r-full);margin-left:6px;">47</span></div>
+          <div class="tab">Open <span id="tab-count-open" style="background:var(--info-bg);color:var(--brand-blue-mid);font-size:0.6875rem;font-weight:700;padding:1px 7px;border-radius:var(--r-full);margin-left:6px;">24</span></div>
+          <div class="tab">Investigating <span id="tab-count-investigating" style="background:var(--medium-bg);color:var(--medium);font-size:0.6875rem;font-weight:700;padding:1px 7px;border-radius:var(--r-full);margin-left:6px;">15</span></div>
+          <div class="tab">Resolved <span id="tab-count-resolved" style="background:var(--low-bg);color:var(--low);font-size:0.6875rem;font-weight:700;padding:1px 7px;border-radius:var(--r-full);margin-left:6px;">8</span></div>
           <div class="tab">Closed</div>
         </div>
 
@@ -400,11 +412,12 @@
 
 <script src="scripts/shell.js"></script>
 <script src="scripts/app.js"></script>
+<script src="scripts/api.js"></script>
 <script>
   renderShell('incidents');
 
   /* ── Incident Data ── */
-  const incidents = [
+  let incidents = [
     { id:'INC-2026-0847', desc:'Account Takeover — Impossible Travel', detail:'CUS-84721 · Mumbai → Moscow in 47 min', risk:94, sev:'Critical', status:'Open',         cat:'ATO',         analyst:'PS', analystFull:'Priya Sharma',  sla:'breach',  slaLabel:'SLA Breach',    time:'14m ago' },
     { id:'INC-2026-0846', desc:'Suspicious Wire Transfer',             detail:'AC-20918 · ₹14.7L to unknown entity',  risk:81, sev:'High',     status:'Investigating', cat:'Fraud Txn',   analyst:'RM', analystFull:'Rohan Mehta',   sla:'warning', slaLabel:'58 min left',   time:'42m ago' },
     { id:'INC-2026-0845', desc:'Multiple Failed OTP Attempts',         detail:'CUS-12047 · 23 attempts in 5 min',     risk:67, sev:'Medium',   status:'Investigating', cat:'Auth Abuse',  analyst:'AI', analystFull:'Ananya Iyer',   sla:'ok',      slaLabel:'3h 12m left',   time:'1h 08m'  },
@@ -439,7 +452,7 @@
           </div>
         </td>
         <td><span class="badge ${inc.sev.toLowerCase()}"><span class="dot"></span>${inc.sev}</span></td>
-        <td><span class="badge ${inc.status.toLowerCase().replace(' ','')}">${inc.status}</span></td>
+        <td><span class="badge ${inc.statusClassOverride || inc.status.toLowerCase().replace(' ','')}">${inc.status}</span></td>
         <td><span class="tag-pill">${inc.cat}</span></td>
         <td>
           <div style="display:flex;align-items:center;gap:7px;">
@@ -523,7 +536,7 @@
   });
 
   /* ── Charts ── */
-  new Chart(document.getElementById('sevChart').getContext('2d'), {
+  const sevChartObj = new Chart(document.getElementById('sevChart').getContext('2d'), {
     type: 'bar',
     data: {
       labels: ['Critical','High','Medium','Low'],
@@ -566,6 +579,72 @@
       }
     }
   });
+
+  // ── Live backend data (falls back to the mock rows above if unreachable) ──
+  const analystPool = [
+    { code: 'PS', full: 'Priya Sharma' },
+    { code: 'RM', full: 'Rohan Mehta' },
+    { code: 'AI', full: 'Ananya Iyer' },
+    { code: 'VN', full: 'Vikram Nair' },
+  ];
+
+  function relativeTime(iso) {
+    const mins = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+    if (mins < 60) return mins + 'm ago';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + 'h ' + (mins % 60) + 'm';
+    return Math.floor(hrs / 24) + 'd ago';
+  }
+
+  function mapLiveIncident(inc) {
+    const statusClassMap = { Open: 'open', Investigating: 'investigating', Resolved: 'resolved', Contained: 'low', Monitoring: 'info' };
+    const hash = [...inc.customer_id].reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+    const analyst = analystPool[hash % analystPool.length];
+
+    let sla = 'ok', slaLabel = 'On Track';
+    if (inc.status === 'Resolved' || inc.status === 'Contained') { sla = 'closed'; slaLabel = inc.status; }
+    else if (inc.risk_score >= 85) { sla = 'breach'; slaLabel = 'SLA Breach'; }
+    else if (inc.risk_score >= 65) { sla = 'warning'; slaLabel = 'Review Due'; }
+
+    return {
+      id: inc.id,
+      desc: inc.title,
+      detail: `${inc.customer_name} (${inc.customer_id}) · ${inc.bank}`,
+      risk: inc.risk_score,
+      sev: inc.severity,
+      status: inc.status,
+      statusClassOverride: statusClassMap[inc.status] || 'closed',
+      cat: inc.incident_type,
+      analyst: analyst.code,
+      analystFull: analyst.full,
+      sla, slaLabel,
+      time: relativeTime(inc.detected_at),
+    };
+  }
+
+  (async function loadLiveIncidents() {
+    try {
+      const data = await fetchJSON('/incidents');
+      incidents = data.map(mapLiveIncident);
+      renderTable(incidents);
+
+      const sevOrder = ['Critical', 'High', 'Medium', 'Low'];
+      const sevCounts = sevOrder.map(sev => incidents.filter(i => i.sev === sev).length);
+      sevChartObj.data.datasets[0].data = sevCounts;
+      sevChartObj.update();
+
+      const setTabCount = (id, count) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = count;
+      };
+      setTabCount('tab-count-all', incidents.length);
+      setTabCount('tab-count-open', incidents.filter(i => i.status === 'Open').length);
+      setTabCount('tab-count-investigating', incidents.filter(i => i.status === 'Investigating').length);
+      setTabCount('tab-count-resolved', incidents.filter(i => i.status === 'Resolved').length);
+    } catch (err) {
+      reportApiError('Incident queue could not be refreshed', err);
+    }
+  })();
 </script>
 </body>
 </html>

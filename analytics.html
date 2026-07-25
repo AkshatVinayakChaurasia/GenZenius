@@ -15,6 +15,20 @@
     }
     .col-2 { grid-column: span 2; }
     .col-3 { grid-column: span 3; }
+    .analytics-kpi-grid { min-width: 0; }
+
+    @media (max-width: 1180px) {
+      .analytics-grid { grid-template-columns: 1fr 1fr; }
+      .analytics-grid .col-3 { grid-column: span 2; }
+      .analytics-kpi-grid { grid-template-columns: repeat(3, 1fr) !important; }
+    }
+
+    @media (max-width: 760px) {
+      .analytics-grid { grid-template-columns: 1fr; }
+      .analytics-grid .col-2, .analytics-grid .col-3 { grid-column: span 1; }
+      .analytics-kpi-grid { grid-template-columns: 1fr 1fr !important; }
+      .analytics-kpi-grid > :last-child { grid-column: span 2; }
+    }
 
     .chart-h-160 { height: 160px; position: relative; }
     .chart-h-200 { height: 200px; position: relative; }
@@ -115,7 +129,7 @@
       </div>
 
       <!-- ── Summary KPIs ── -->
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;">
+      <div class="analytics-kpi-grid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;">
         <div class="kpi" style="padding:16px;">
           <div class="kpi-top-bar blue"></div>
           <div class="kpi-label" style="margin-bottom:8px;">Txn Analysed</div>
@@ -510,5 +524,7 @@
     }
   });
 </script>
+  <script src="scripts/api.js"></script>
+  <script src="scripts/live-state.js"></script>
 </body>
 </html>

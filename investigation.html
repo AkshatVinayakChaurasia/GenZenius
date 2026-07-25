@@ -356,6 +356,11 @@
       grid-template-columns: 1fr 320px;
       gap: 18px;
     }
+
+    @media (max-width: 760px) {
+      .inv-grid, .workload-grid, .evidence-workspace, .two-col { grid-template-columns: 1fr; }
+      .detail-panel { min-width: 0; }
+    }
   </style>
 </head>
 
@@ -940,6 +945,8 @@
   <script src="scripts/shell.js"></script>
   <script src="scripts/app.js"></script>
   <script>renderShell('investigation');</script>
+  <script src="scripts/api.js"></script>
+  <script src="scripts/live-state.js"></script>
 </body>
 
 </html>
