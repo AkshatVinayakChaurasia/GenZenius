@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
   <meta name="description" content="RiskFusion AI — Incident INC-2026-0847 Investigation Details" />
   <title>Incident Details — RiskFusion AI</title>
   <link rel="stylesheet" href="styles/design-system.css" />
@@ -276,7 +277,7 @@
                 Account Takeover — Impossible Travel Detected
               </h1>
               <p style="font-size:0.9375rem;color:var(--text-tertiary);line-height:1.5;" id="ai-explanation">
-                Customer <strong style="color:var(--text-primary);">Arjun Kapoor</strong> (CUS-84721) authenticated from
+                Customer <strong style="color:var(--text-primary);">Example Customer</strong> (CUS-84721) authenticated from
                 Mumbai at 02:14 IST,
                 followed by a login attempt from Moscow, Russia 47 minutes later — physically impossible.
                 Followed by a ₹14.7L wire transfer to an unverified beneficiary.
@@ -322,7 +323,7 @@
             </div>
             <div class="inc-meta-item">
               <span class="inc-meta-label">Customer</span>
-              <span class="inc-meta-val">Arjun Kapoor · CUS-84721</span>
+              <span class="inc-meta-val">Example Customer · CUS-84721</span>
             </div>
             <div class="inc-meta-item">
               <span class="inc-meta-label">Account</span>
@@ -330,7 +331,7 @@
             </div>
             <div class="inc-meta-item">
               <span class="inc-meta-label">Assigned Analyst</span>
-              <span class="inc-meta-val">Akshat (L3)</span>
+              <span class="inc-meta-val">L3 Analyst</span>
             </div>
             <div class="inc-meta-item">
               <span class="inc-meta-label">MITRE ATT&CK</span>
@@ -396,7 +397,7 @@
                     <div class="v-body">
                       <div class="v-time">Jul 16, 2026 · 02:14:07 IST</div>
                       <div class="v-title">Legitimate Login — Mumbai</div>
-                      <div class="v-desc">Successful authentication via HDFC Mobile App (iOS). Device: iPhone 14 Pro.
+                      <div class="v-desc">Successful authentication via Mobile banking app (iOS). Device: registered iOS handset.
                         IP: 103.21.4.12 (Mumbai, IN). MFA passed via TOTP.</div>
                     </div>
                   </div>
@@ -412,7 +413,7 @@
                     <div class="v-body">
                       <div class="v-time">02:18:43 IST · +4 min</div>
                       <div class="v-title">New Device Fingerprint Detected</div>
-                      <div class="v-desc">Samsung Galaxy S24 Ultra (Android 14) registered. Device ID never seen before
+                      <div class="v-desc">Android handset (Android 14) registered. Device ID never seen before
                         on account. OS fingerprint mismatch from baseline.</div>
                     </div>
                   </div>
@@ -430,7 +431,7 @@
                       <div class="v-time">03:01:22 IST · +47 min</div>
                       <div class="v-title">Login from Moscow, Russia — CRITICAL</div>
                       <div class="v-desc">Authentication attempt from IP 95.213.40.114 (Moscow, RU). Distance from prior
-                        login: 7,242 km in 47 minutes. Physically impossible. NordVPN exit node confirmed.</div>
+                        login: 7,242 km in 47 minutes. Physically impossible. Commercial VPN exit node confirmed.</div>
                     </div>
                   </div>
 
@@ -446,7 +447,7 @@
                     <div class="v-body">
                       <div class="v-time">03:04:11 IST · +3 min</div>
                       <div class="v-title">High-Value Transaction Initiated</div>
-                      <div class="v-desc">NEFT transfer of ₹14,72,000 to beneficiary "HDFC Acc: 50100892714XX". First
+                      <div class="v-desc">NEFT transfer of ₹14,72,000 to beneficiary account ••••2714. First
                         transaction to this beneficiary. Above 98th percentile for this customer.</div>
                     </div>
                   </div>
@@ -477,7 +478,7 @@
                     <div class="v-body">
                       <div class="v-time">03:04:20 IST · Auto-response</div>
                       <div class="v-title">AI Alert Raised — Analyst Notified</div>
-                      <div class="v-desc">RiskFusion AI raised INC-2026-0847 and notified Akshat (L3 Analyst) via
+                      <div class="v-desc">RiskFusion AI raised INC-2026-0847 and notified the on-call L3 analyst via
                         PagerDuty + SMS. Transaction placed in pending hold pending review.</div>
                     </div>
                   </div>
@@ -517,7 +518,7 @@
                   <div class="action-num">2</div>
                   <div class="action-content">
                     <div class="ac-title">Force Account Step-Down Authentication</div>
-                    <div class="ac-desc">Terminate all active sessions. Require Aadhaar OTP + biometric re-verification
+                    <div class="ac-desc">Terminate all active sessions. Require step-up OTP + biometric re-verification
                       before next login.</div>
                     <div class="ac-owner"><span class="priority-chip p1">P1 — Urgent</span> · Auth Service</div>
                   </div>
@@ -532,7 +533,7 @@
                   <div class="action-content">
                     <div class="ac-title">Geoblock IP Range — Moscow Exit Node</div>
                     <div class="ac-desc">Add IP 95.213.40.114 and associated /24 subnet to network blocklist. Escalate
-                      to Threat Intel team for NordVPN node mapping.</div>
+                      to Threat Intel team for VPN exit-node mapping.</div>
                     <div class="ac-owner"><span class="priority-chip p2">P2 — High</span> · Network Team</div>
                   </div>
                   <button class="btn btn-secondary btn-sm" style="flex-shrink:0;" type="button" data-action="record"
@@ -544,7 +545,7 @@
                   <div class="action-num">4</div>
                   <div class="action-content">
                     <div class="ac-title">Customer Notification (Regulatory)</div>
-                    <div class="ac-desc">Per RBI guidelines, notify customer Arjun Kapoor of suspicious activity within
+                    <div class="ac-desc">Per RBI guidelines, notify customer Example Customer of suspicious activity within
                       30 minutes via registered mobile and email.</div>
                     <div class="ac-owner"><span class="priority-chip p2">P2 — High</span> · Compliance</div>
                   </div>
@@ -593,7 +594,7 @@
                       </svg>
                     </div>
                     <div class="sc-name">New Device</div>
-                    <div class="sc-val">Samsung Galaxy S24 Ultra — never seen before on account</div>
+                    <div class="sc-val">Android handset — never seen before on account</div>
                     <div class="sc-sep"></div>
                     <div class="sc-time">02:18 IST · <span class="badge critical"
                         style="font-size:0.6rem;">CRITICAL</span></div>
@@ -624,7 +625,7 @@
                       </svg>
                     </div>
                     <div class="sc-name">VPN Detected</div>
-                    <div class="sc-val">NordVPN exit node — Amsterdam server, Moscow egress</div>
+                    <div class="sc-val">Commercial VPN exit node — Amsterdam server, Moscow egress</div>
                     <div class="sc-sep"></div>
                     <div class="sc-time">03:01 IST · <span class="badge critical"
                         style="font-size:0.6rem;">CRITICAL</span></div>
@@ -655,7 +656,7 @@
                       </svg>
                     </div>
                     <div class="sc-name">New Beneficiary</div>
-                    <div class="sc-val">First transfer to Acc 50100892714XX · added 2h before Tx</div>
+                    <div class="sc-val">First transfer to Acc ••••2714 · added 2h before Tx</div>
                     <div class="sc-sep"></div>
                     <div class="sc-time">01:02 IST · <span class="badge high" style="font-size:0.6rem;">HIGH</span>
                     </div>
@@ -719,17 +720,17 @@
                   <div style="color:#64748B;"># Auth Log — 2026-07-16</div>
                   <div><span style="color:#059669;">2026-07-16T02:14:07+05:30</span> <span
                       style="color:#2563EB;">AUTH</span> <span style="color:#0F172A;">SUCCESS</span> CUS-84721
-                    ip=103.21.4.12 device=iPhone14Pro geo=Mumbai,IN mfa=TOTP</div>
+                    ip=103.21.4.12 device=ios-handset geo=Mumbai,IN mfa=TOTP</div>
                   <div><span style="color:#D97706;">2026-07-16T02:18:43+05:30</span> <span
                       style="color:#7C3AED;">DEVICE</span> <span style="color:#0F172A;">NEW_DEVICE</span> CUS-84721
-                    device=SamsungGalaxyS24Ultra os=Android14 first_seen=TRUE</div>
+                    device=android-handset os=Android14 first_seen=TRUE</div>
                   <div><span style="color:#DC2626;">2026-07-16T03:01:22+05:30</span> <span
                       style="color:#DC2626;">AUTH</span> <span style="color:#0F172A;">SUCCESS</span> CUS-84721
-                    ip=95.213.40.114 device=SamsungGalaxyS24Ultra geo=Moscow,RU vpn=NordVPN</div>
+                    ip=95.213.40.114 device=android-handset geo=Moscow,RU vpn=commercial-vpn</div>
                   <div style="color:#DC2626;"> ^ IMPOSSIBLE_TRAVEL: dist=7242km time=47min speed_required=9243kph</div>
                   <div><span style="color:#DC2626;">2026-07-16T03:04:11+05:30</span> <span
                       style="color:#DC2626;">TXN</span> <span style="color:#0F172A;">INITIATED</span> type=NEFT
-                    amt=1472000 benef=50100892714XX new_benef=TRUE added_at=01:02</div>
+                    amt=1472000 benef=••••2714 new_benef=TRUE added_at=01:02</div>
                   <div><span style="color:#2563EB;">2026-07-16T03:04:18+05:30</span> <span
                       style="color:#7C3AED;">RISKAI</span> <span style="color:#0F172A;">ESCALATE</span> score=62→94
                     threshold=90 INC=INC-2026-0847 auto_hold=TX-9841</div>

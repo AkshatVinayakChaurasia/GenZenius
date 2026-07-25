@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
   <meta name="description" content="RiskFusion AI — AI Analyst Investigation Report for INC-2026-0847" />
   <title>AI Analyst Report — RiskFusion AI</title>
   <link rel="stylesheet" href="styles/design-system.css" />
@@ -539,7 +540,7 @@
               <div class="rs-body">
                 <p class="exec-summary">
                   RiskFusion AI has classified Incident <strong>INC-2026-0847</strong> as a high-confidence
-                  <strong>Account Takeover (ATO)</strong> attack against customer <strong>Arjun Kapoor</strong>
+                  <strong>Account Takeover (ATO)</strong> attack against customer <strong>Example Customer</strong>
                   (CUS-84721).
                   The threat actor gained access to the customer's credentials — likely via phishing or credential
                   stuffing —
@@ -602,9 +603,9 @@
                   <div class="rs-content">
                     <div class="rs-title">New Device Fingerprint on Adversarial Session</div>
                     <div class="rs-detail">
-                      The Moscow session used a Samsung Galaxy S24 Ultra (Android 14, Device ID: 3f8a921c) — never
+                      The Moscow session used an unrecognised Android handset (Android 14, Device ID: 3f8a921c) — never
                       previously registered on CUS-84721's account.
-                      Legitimate session used iPhone 14 Pro (iOS 17), the customer's consistent device for 18 months.
+                      Legitimate session used iOS handset (iOS 17), the customer's consistent device for 18 months.
                       Device entropy score: 0.14 (near-zero trust).
                     </div>
                     <span class="rs-weight" style="background:var(--high-bg);color:var(--high);">Weight: +24 points →
@@ -617,7 +618,7 @@
                   <div class="rs-content">
                     <div class="rs-title">VPN Exit Node Confirmed — Anonymisation Attempt</div>
                     <div class="rs-detail">
-                      IP 95.213.40.114 is listed in RiskFusion's VPN/Proxy threat intelligence feed as a NordVPN exit
+                      IP 95.213.40.114 is listed in RiskFusion's VPN/Proxy threat intelligence feed as a commercial VPN exit
                       node.
                       This IP has been associated with 23 prior banking fraud attempts across 6 Indian banks in the last
                       90 days.
@@ -634,7 +635,7 @@
                   <div class="rs-content">
                     <div class="rs-title">High-Value Transaction to Newly Added Beneficiary</div>
                     <div class="rs-detail">
-                      Beneficiary account (50100892714XX) was added at 01:02 IST — 73 minutes before the attack session.
+                      Beneficiary account (••••2714) was added at 01:02 IST — 73 minutes before the attack session.
                       Transaction of ₹14.72L exceeds 30-day average by 1,847%. Beneficiary MCC codes include Crypto
                       Exchange (MCG 6011) and Money Transfer (MCG 4829),
                       both high-risk for money laundering per FATF typologies.
@@ -672,28 +673,28 @@
                   <div class="ce-row">
                     <div class="ce-time">02:14:07</div>
                     <div class="ce-event"><span class="badge low"
-                        style="font-size:0.6rem;margin-right:8px;">Clean</span>Legitimate login — Mumbai, iPhone 14 Pro,
+                        style="font-size:0.6rem;margin-right:8px;">Clean</span>Legitimate login — Mumbai, iOS handset,
                       TOTP MFA passed</div>
                     <div class="ce-source">auth-svc</div>
                   </div>
                   <div class="ce-row">
                     <div class="ce-time">02:18:43</div>
                     <div class="ce-event"><span class="badge high"
-                        style="font-size:0.6rem;margin-right:8px;">High</span>New device registered — Samsung Galaxy S24
+                        style="font-size:0.6rem;margin-right:8px;">High</span>New device registered — Android handset
                       Ultra (first seen)</div>
                     <div class="ce-source">device-mgr</div>
                   </div>
                   <div class="ce-row">
                     <div class="ce-time">01:02:19</div>
                     <div class="ce-event"><span class="badge high"
-                        style="font-size:0.6rem;margin-right:8px;">High</span>New beneficiary added: Acc 50100892714XX
+                        style="font-size:0.6rem;margin-right:8px;">High</span>New beneficiary added: Acc ••••2714
                       (pre-staged 73 min before attack)</div>
                     <div class="ce-source">benef-svc</div>
                   </div>
                   <div class="ce-row">
                     <div class="ce-time">03:01:22</div>
                     <div class="ce-event"><span class="badge critical"
-                        style="font-size:0.6rem;margin-right:8px;">Critical</span>Login from Moscow, RU via NordVPN —
+                        style="font-size:0.6rem;margin-right:8px;">Critical</span>Login from Moscow, RU via commercial VPN —
                       impossible travel flagged</div>
                     <div class="ce-source">geo-engine</div>
                   </div>
@@ -817,7 +818,7 @@
                   <div style="flex:1;">
                     <div class="rec-title">Block Transaction TX-9841 — Immediate</div>
                     <div class="rec-detail">Place ₹14.72L NEFT on indefinite hold. Contact NEFT receiving bank to freeze
-                      Account 50100892714XX. File STR under PMLA 2002 Section 12.</div>
+                      Account ••••2714. File STR under PMLA 2002 Section 12.</div>
                   </div>
                   <div style="flex-shrink:0;"><span class="badge critical">P1</span></div>
                 </div>
@@ -832,7 +833,7 @@
                   </div>
                   <div style="flex:1;">
                     <div class="rec-title">Quarantine Account — Force Re-authentication</div>
-                    <div class="rec-detail">Kill all active sessions for CUS-84721. Require Aadhaar OTP + video KYC
+                    <div class="rec-detail">Kill all active sessions for CUS-84721. Require step-up OTP + video KYC
                       re-verification before restoring access. Update auth policy to geo-fenced.</div>
                   </div>
                   <div style="flex-shrink:0;"><span class="badge high">P1</span></div>
@@ -848,8 +849,8 @@
                   </div>
                   <div style="flex:1;">
                     <div class="rec-title">Block VPN IP Range — Network Level</div>
-                    <div class="rec-detail">Add 95.213.40.0/24 to WAF blocklist. Update NordVPN exit node threat feed.
-                      Cross-reference with other RBI-regulated banks via FS-ISAC.</div>
+                    <div class="rec-detail">Add 95.213.40.0/24 to WAF blocklist. Update commercial VPN exit node threat feed.
+                      Cross-reference with other RBI-regulated banks via threat intelligence.</div>
                   </div>
                   <div style="flex-shrink:0;"><span class="badge medium">P2</span></div>
                 </div>
@@ -903,7 +904,7 @@
                     style="color:var(--critical);">94 / 100</span></div>
                 <div class="meta-row"><span class="meta-key">SLA Remaining</span><span class="meta-value"
                     style="color:var(--critical);">46 min</span></div>
-                <div class="meta-row"><span class="meta-key">Analyst</span><span class="meta-value">Akshat</span></div>
+                <div class="meta-row"><span class="meta-key">Analyst</span><span class="meta-value">L3 Analyst</span></div>
               </div>
             </div>
 

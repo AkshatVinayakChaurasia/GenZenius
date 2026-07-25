@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
   <meta name="description" content="RiskFusion AI — Attack Kill Chain Visualisation for INC-2026-0847" />
   <title>Attack Kill Chain — RiskFusion AI</title>
   <link rel="stylesheet" href="styles/design-system.css" />
@@ -282,7 +283,7 @@
                   <div class="kce-time">02:18 IST · +6 min</div>
                   <div class="kce-phase" style="background:#ECFEFF;color:#0891B2;">Execution</div>
                   <div class="kce-name">Device Change</div>
-                  <div class="kce-desc">New Samsung Galaxy S24 Ultra registered. Android device not in customer history.</div>
+                  <div class="kce-desc">New Android handset registered. Android device not in customer history.</div>
                 </div>
                 <div class="kc-stem"></div>
                 <div class="kc-dot" style="background:#0891B2;">
@@ -300,7 +301,7 @@
                   <div class="kce-time">03:01 IST · +43 min</div>
                   <div class="kce-phase" style="background:#FFFBEB;color:#D97706;">VPN & Geo-Spoof</div>
                   <div class="kce-name">VPN Detection + Impossible Travel</div>
-                  <div class="kce-desc">NordVPN exit node. Mumbai → Moscow in 47 min. Physically impossible.</div>
+                  <div class="kce-desc">commercial VPN exit node. Mumbai → Moscow in 47 min. Physically impossible.</div>
                 </div>
               </div>
 
@@ -394,7 +395,7 @@
             <tbody id="dp-ioc-tbody">
               <tr><td><span class="badge info">IP Address</span></td><td class="mono">95.213.40.114</td><td>Geo-Intelligence Feed</td><td style="color:var(--critical);font-weight:700;">Critical</td></tr>
               <tr><td><span class="badge medium">Device ID</span></td><td class="mono">3f8a921c-a7b4-4e12</td><td>Device Fingerprint DB</td><td style="color:var(--high);font-weight:700;">High</td></tr>
-              <tr><td><span class="badge high">VPN Node</span></td><td class="mono">NordVPN · Amsterdam-047</td><td>Threat Intel Feed</td><td style="color:var(--high);font-weight:700;">High</td></tr>
+              <tr><td><span class="badge high">VPN Node</span></td><td class="mono">commercial VPN · Amsterdam-047</td><td>Threat Intel Feed</td><td style="color:var(--high);font-weight:700;">High</td></tr>
               <tr><td><span class="badge critical">Transaction</span></td><td class="mono">TX-9841 · ₹14.72L</td><td>Core Banking System</td><td style="color:var(--critical);font-weight:700;">Critical</td></tr>
             </tbody>
           </table>
@@ -470,7 +471,7 @@
     },
     {
       phase: 'EXECUTION · STAGE 3 OF 6',
-      title: 'New Device Registration — Samsung Galaxy S24 Ultra',
+      title: 'New Device Registration — Android handset',
       sub: 'Jul 16, 2026 · 02:18:43 IST — Attacker registered new device. First time this device ID appeared on account.',
       badge: '<span class="badge high">High</span>',
       iconBg: '#ECFEFF', iconColor: '#0891B2',
@@ -487,7 +488,7 @@
     {
       phase: 'DEFENSE EVASION · STAGE 4 OF 6',
       title: 'VPN + Impossible Travel Detected',
-      sub: 'Jul 16, 2026 · 03:01:22 IST — Moscow login via NordVPN. 7,242 km from Mumbai in 47 minutes. Physically impossible.',
+      sub: 'Jul 16, 2026 · 03:01:22 IST — Moscow login via commercial VPN. 7,242 km from Mumbai in 47 minutes. Physically impossible.',
       badge: '<span class="badge critical">Critical</span>',
       iconBg: '#FFF7ED', iconColor: '#D97706',
       stats: [
@@ -497,7 +498,7 @@
       ],
       iocs: [
         ['IP Address', '95.213.40.114', 'Geo-Intel Feed', 'Critical'],
-        ['VPN Provider', 'NordVPN · Amsterdam-047', 'Threat Intel', 'High'],
+        ['VPN Provider', 'commercial VPN · Amsterdam-047', 'Threat Intel', 'High'],
         ['Geo', 'Moscow, Russia (VPN egress)', 'Geolocation DB', 'High'],
       ]
     },
@@ -508,12 +509,12 @@
       badge: '<span class="badge critical">Critical</span>',
       iconBg: '#FFF7ED', iconColor: '#EA580C',
       stats: [
-        { label: 'Beneficiary Added', val: 'Acc 50100892714XX' },
+        { label: 'Beneficiary Added', val: 'Acc ••••2714' },
         { label: 'Added At', val: '01:02 IST (pre-staged)' },
         { label: 'Risk Delta', val: '+10 points' },
       ],
       iocs: [
-        ['Beneficiary Account', '50100892714XX', 'Core Banking', 'High'],
+        ['Beneficiary Account', '••••2714', 'Core Banking', 'High'],
         ['MCC Code', '6011 (Crypto), 4829 (Money Tx)', 'TxMonitor', 'High'],
       ]
     },
@@ -530,7 +531,7 @@
       ],
       iocs: [
         ['Transaction ID', 'TX-9841 · NEFT', 'Core Banking', 'Critical'],
-        ['Beneficiary', 'Acc 50100892714XX', 'CBS', 'Critical'],
+        ['Beneficiary', 'Acc ••••2714', 'CBS', 'Critical'],
         ['Beneficiary MCC', '6011 · Crypto Exchange', 'TxMonitor', 'High'],
       ]
     },

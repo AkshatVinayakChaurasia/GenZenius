@@ -23,6 +23,10 @@
       ]
     },
     {
+      "source": "/:page(dashboard|incidents|incident|investigation|killchain|ai|analytics|config|callback|signin).html",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
       "source": "/scripts/(.*)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
     },
