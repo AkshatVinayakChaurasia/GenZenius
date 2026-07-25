@@ -258,7 +258,7 @@
           <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" style="width:10px;height:10px;">
             <path d="M3 2l4 3-4 3" />
           </svg>
-          <span class="mono" style="font-weight:700;color:var(--text-primary);">INC-2026-0847</span>
+          <span class="mono" id="incident-id-breadcrumb" style="font-weight:700;color:var(--text-primary);">INC-2026-0847</span>
         </div>
 
         <!-- ── Incident Summary Card ── -->
@@ -267,11 +267,11 @@
             <div style="flex:1;">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
                 <span class="badge critical" id="severity-badge"><span class="dot"></span>Critical</span>
-                <span class="badge open">Open</span>
+                <span class="badge open" id="incident-status-badge">Open</span>
                 <span class="badge new">New Evidence</span>
                 <span style="font-size:0.75rem;color:var(--text-muted);">Opened 14 minutes ago</span>
               </div>
-              <h1
+              <h1 id="incident-title"
                 style="font-size:1.25rem;font-weight:800;color:var(--text-primary);letter-spacing:-0.03em;margin-bottom:6px;">
                 Account Takeover — Impossible Travel Detected
               </h1>
@@ -281,6 +281,7 @@
                 followed by a login attempt from Moscow, Russia 47 minutes later — physically impossible.
                 Followed by a ₹14.7L wire transfer to an unverified beneficiary.
               </p>
+              <button type="button" class="btn btn-secondary btn-sm" id="resolve-incident-btn" style="margin-top:14px;">Resolve Incident</button>
             </div>
             <div style="text-align:center;flex-shrink:0;">
               <!-- Risk Gauge -->
@@ -738,7 +739,7 @@
     renderShell('incident');
     loadLiveRiskAssessment();
   </script>
-  <script src="scripts/live-state.js"></script>
+  <script src="scripts/live-state.js?v=2"></script>
 </body>
 
 </html>

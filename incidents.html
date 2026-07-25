@@ -440,7 +440,7 @@
         <td onclick="event.stopPropagation()">
           <input type="checkbox" class="row-check" data-id="${inc.id}" onchange="updateBulk()" style="width:15px;height:15px;accent-color:var(--brand-blue-mid);" />
         </td>
-        <td><a href="incident.html" style="color:var(--brand-blue-mid);font-weight:700;font-family:monospace;font-size:0.8125rem;">${inc.id}</a></td>
+        <td><a href="incident.html?id=${encodeURIComponent(inc.id)}" style="color:var(--brand-blue-mid);font-weight:700;font-family:monospace;font-size:0.8125rem;">${inc.id}</a></td>
         <td>
           <div style="font-weight:600;color:var(--text-primary);margin-bottom:2px;">${inc.desc}</div>
           <div style="font-size:0.75rem;color:var(--text-muted);">${inc.detail}</div>
@@ -464,10 +464,8 @@
         <td><span style="font-size:0.8125rem;color:var(--text-muted);">${inc.time}</span></td>
         <td onclick="event.stopPropagation()">
           <div style="display:flex;gap:4px;">
-            <a href="incident.html" class="btn btn-primary btn-sm">Investigate</a>
-            <button class="btn btn-ghost btn-sm" style="padding:6px;">
-              <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px;"><circle cx="7" cy="2" r="1"/><circle cx="7" cy="7" r="1"/><circle cx="7" cy="12" r="1"/></svg>
-            </button>
+            <a href="incident.html?id=${encodeURIComponent(inc.id)}" class="btn btn-primary btn-sm">Investigate</a>
+            ${inc.status === 'Resolved' ? '<span class="badge resolved">Resolved</span>' : `<button type="button" class="btn btn-secondary btn-sm" onclick="resolveIncident('${inc.id}')">Resolve</button>`}
           </div>
         </td>
       </tr>
@@ -499,7 +497,24 @@
 
   function rowClick(e, id) {
     if (e.target.type === 'checkbox') return;
-    window.location.href = 'incident.html';
+    window.location.href = 'incident.html?id=' + encodeURIComponent(id);
+  }
+
+  async function resolveIncident(id) {
+    const incident = incidents.find(item => item.id === id);
+    if (!incident || incident.status === 'Resolved') return;
+    if (!confirm(`Resolve ${id}? This keeps the incident history for the demo.`)) return;
+    try {
+      await patchJSON('/incident/' + encodeURIComponent(id), { status: 'Resolved' });
+      incident.status = 'Resolved';
+      incident.statusClassOverride = 'resolved';
+      incident.sla = 'closed';
+      incident.slaLabel = 'Resolved';
+      renderTable(incidents);
+      notify(`${id} marked as resolved.`);
+    } catch (error) {
+      reportApiError(`Could not resolve ${id}`, error);
+    }
   }
 
   function updateBulk() {

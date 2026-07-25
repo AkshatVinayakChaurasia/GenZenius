@@ -56,8 +56,10 @@
 
       if (page === 'incident.html') {
         const detail = await fetchJSON(`/incident/${encodeURIComponent(selected.id)}`);
-        const title = document.querySelector('.pg-title');
+        const title = document.getElementById('incident-title');
         if (title) title.textContent = detail.title;
+        const breadcrumb = document.getElementById('incident-id-breadcrumb');
+        if (breadcrumb) breadcrumb.textContent = detail.id;
         const desc = document.getElementById('ai-explanation');
         if (desc) desc.textContent = detail.description;
         const score = document.getElementById('risk-score-value');
@@ -68,6 +70,27 @@
         if (badge) {
           badge.className = `badge ${severityClass(detail.severity)}`;
           badge.innerHTML = `<span class="dot"></span>${escapeHtml(detail.severity)}`;
+        }
+        const status = document.getElementById('incident-status-badge');
+        if (status) {
+          status.className = `badge ${severityClass(detail.status)}`;
+          status.textContent = detail.status;
+        }
+        const resolveButton = document.getElementById('resolve-incident-btn');
+        if (resolveButton) {
+          resolveButton.dataset.incidentId = detail.id;
+          resolveButton.disabled = detail.status === 'Resolved';
+          resolveButton.textContent = detail.status === 'Resolved' ? 'Incident Resolved' : 'Resolve Incident';
+          resolveButton.addEventListener('click', async () => {
+            if (!confirm(`Resolve ${detail.id}? This keeps the incident history.`)) return;
+            try {
+              await patchJSON(`/incident/${encodeURIComponent(detail.id)}`, { status: 'Resolved' });
+              notify(`${detail.id} marked as resolved.`);
+              location.href = 'incidents.html';
+            } catch (error) {
+              reportApiError(`Could not resolve ${detail.id}`, error);
+            }
+          }, { once: true });
         }
       }
     }
