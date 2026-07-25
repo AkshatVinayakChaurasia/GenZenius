@@ -5,6 +5,7 @@
     { "source": "/incidents", "destination": "/api" },
     { "source": "/incident/(.*)", "destination": "/api" },
     { "source": "/analytics", "destination": "/api" },
+    { "source": "/health", "destination": "/api" },
     { "source": "/calculate-risk", "destination": "/api" }
   ]
 }

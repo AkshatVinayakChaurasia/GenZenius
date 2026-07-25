@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuration · RiskFusion AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles/design-system.css" />
+  <style>
+    .config-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,.8fr);gap:20px}.config-stack{display:grid;gap:20px}.setting-row{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:17px 0;border-bottom:1px solid var(--border-default)}.setting-row:last-child{border-bottom:0}.setting-title{font-weight:700;color:var(--text-primary);font-size:.875rem}.setting-copy{font-size:.78rem;color:var(--text-tertiary);margin-top:4px;line-height:1.45}.switch{appearance:none;width:42px;height:24px;border-radius:20px;background:#cbd5e1;position:relative;transition:.2s;flex-shrink:0}.switch:checked{background:var(--brand-blue-mid)}.switch::after{content:"";position:absolute;width:18px;height:18px;top:3px;left:3px;border-radius:50%;background:white;box-shadow:0 1px 3px rgba(15,23,42,.25);transition:.2s}.switch:checked::after{left:21px}.status-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border-default);font-size:.8125rem}.status-row:last-child{border:0}@media(max-width:900px){.config-grid{grid-template-columns:1fr}}@media(max-width:540px){.setting-row{align-items:flex-start}.setting-row .btn{white-space:nowrap}}
+  </style>
+</head>
+<body>
+  <div class="app-shell"><aside class="sidebar" id="app-sidebar"></aside><div class="main-area"><header class="topbar" id="app-topbar"></header>
+    <main class="page-content">
+      <div class="pg-header"><div><div class="pg-eyebrow">Settings</div><h1 class="pg-title">Workspace Configuration</h1><p class="pg-sub">Manage demo safeguards, alerts, and analyst workspace preferences.</p></div><div class="pg-actions"><button class="btn btn-primary btn-sm" id="save-settings">Save changes</button></div></div>
+      <div class="config-grid">
+        <div class="config-stack">
+          <section class="card"><div class="card-head"><div class="card-title">Alert & notification policy</div><span class="badge low">Operational</span></div><div class="card-body">
+            <div class="setting-row"><div><div class="setting-title">Critical incident alerts</div><div class="setting-copy">Notify the SOC workspace when a critical incident is detected.</div></div><input class="switch" id="critical-alerts" type="checkbox" checked></div>
+            <div class="setting-row"><div><div class="setting-title">Real-time dashboard refresh</div><div class="setting-copy">Refresh live operational metrics while the dashboard is open.</div></div><input class="switch" id="auto-refresh" type="checkbox" checked></div>
+            <div class="setting-row"><div><div class="setting-title">Investigation evidence updates</div><div class="setting-copy">Show the latest correlated evidence as it becomes available.</div></div><input class="switch" id="evidence-updates" type="checkbox" checked></div>
+          </div></section>
+          <section class="card"><div class="card-head"><div class="card-title">Demo controls</div></div><div class="card-body">
+            <div class="setting-row"><div><div class="setting-title">Demo account</div><div class="setting-copy">The demo uses a dedicated, strong credential and never accepts legacy credentials.</div></div><span class="badge info mono">demo.admin</span></div>
+            <div class="setting-row"><div><div class="setting-title">Clear local demo session</div><div class="setting-copy">Sign out and return to the secure login screen.</div></div><button class="btn btn-secondary btn-sm" id="sign-out">Sign out</button></div>
+          </div></section>
+        </div>
+        <aside class="config-stack">
+          <section class="card"><div class="card-head"><div class="card-title">Service health</div></div><div class="card-body" id="service-health"><div class="status-row"><span>RiskFusion API</span><span class="badge info">Checking…</span></div><div class="status-row"><span>Incident data store</span><span class="badge info">Checking…</span></div><div class="status-row"><span>Workspace status</span><span class="badge low">Operational</span></div></div></section>
+          <section class="card"><div class="card-head"><div class="card-title">Demo readiness</div></div><div class="card-body"><p class="setting-copy" style="margin:0">This workspace is configured to preserve incident history. Use <strong>Resolve</strong> to close an incident without removing it.</p></div></section>
+        </aside>
+      </div>
+    </main>
+  </div></div>
+  <script src="scripts/shell.js"></script><script src="scripts/app.js"></script><script src="scripts/api.js"></script>
+  <script>
+    renderShell('settings');
+    const ids = ['critical-alerts','auto-refresh','evidence-updates'];
+    ids.forEach(id => { const control = document.getElementById(id); control.checked = localStorage.getItem(`riskfusion-${id}`) !== 'false'; });
+    document.getElementById('save-settings').addEventListener('click', () => { ids.forEach(id => localStorage.setItem(`riskfusion-${id}`, document.getElementById(id).checked)); notify('Workspace preferences saved.'); });
+    document.getElementById('sign-out').addEventListener('click', () => { localStorage.removeItem('riskfusion-user'); location.href = 'index.html'; });
+    (async () => { try { await fetchJSON('/health'); document.getElementById('service-health').innerHTML = '<div class="status-row"><span>RiskFusion API</span><span class="badge low">Operational</span></div><div class="status-row"><span>Incident data store</span><span class="badge low">Connected</span></div><div class="status-row"><span>Workspace status</span><span class="badge low">Operational</span></div>'; } catch (error) { document.getElementById('service-health').innerHTML = '<div class="status-row"><span>RiskFusion API</span><span class="badge medium">Unavailable</span></div><div class="setting-copy">The workspace will continue with locally rendered demo content.</div>'; reportApiError('Service health check failed', error); } })();
+  </script>
+</body></html>

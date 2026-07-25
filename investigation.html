@@ -947,6 +947,17 @@
   <script>renderShell('investigation');</script>
   <script src="scripts/api.js"></script>
   <script src="scripts/live-state.js?v=2"></script>
+  <script>
+    document.querySelectorAll('.note-input').forEach(input => {
+      const save = input.parentElement.querySelector('button');
+      if (!save) return;
+      save.addEventListener('click', () => {
+        if (!input.value.trim()) return notify('Add a note before saving.');
+        input.value = '';
+        notify('Investigation note saved to this demo session.');
+      });
+    });
+  </script>
 </body>
 
 </html>

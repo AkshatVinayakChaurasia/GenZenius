@@ -560,13 +560,35 @@
     document.getElementById('detail-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
-  // Chip filter toggle (visual only)
+  // Filter the timeline without disturbing the selected event details.
   document.querySelectorAll('.chip').forEach(chip => {
     chip.addEventListener('click', function() {
       document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
       this.classList.add('active');
+      const filter = this.textContent.trim();
+      const events = document.querySelectorAll('.kc-event');
+      events.forEach((event, index) => {
+        const text = event.textContent;
+        const visible = filter === 'All Events' ||
+          (filter === 'Critical Only' && /Critical|Impact|Defense Evasion|Privilege/.test(text)) ||
+          (filter === 'Auth Events' && /Reconnaissance|Initial Access|Defense Evasion/.test(text)) ||
+          (filter === 'Transactions' && /Impact|Privilege/.test(text)) ||
+          (filter === 'Network' && /Reconnaissance|Defense Evasion/.test(text));
+        event.style.display = visible ? '' : 'none';
+      });
+      notify(`${filter} filter applied.`);
     });
   });
+
+  let timelineScale = 1;
+  document.querySelectorAll('.zoom-btn').forEach(button => button.addEventListener('click', () => {
+    const label = button.textContent.trim();
+    timelineScale = label === 'Zoom In' ? Math.min(1.25, timelineScale + 0.1) : label === 'Zoom Out' ? Math.max(0.8, timelineScale - 0.1) : 1;
+    const timeline = document.getElementById('kc-events');
+    timeline.style.transformOrigin = 'left center';
+    timeline.style.transform = `scale(${timelineScale})`;
+    notify(label === 'Fit to Screen' ? 'Timeline reset to fit the workspace.' : `Timeline zoom: ${Math.round(timelineScale * 100)}%.`);
+  }));
 </script>
   <script src="scripts/api.js"></script>
   <script src="scripts/live-state.js?v=2"></script>

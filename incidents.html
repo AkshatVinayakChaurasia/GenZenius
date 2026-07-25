@@ -336,20 +336,20 @@
             <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px;"><circle cx="6" cy="6" r="4"/><path d="M14 14l-3-3"/></svg>
             <input type="text" placeholder="Search by ID, customer, analyst…" id="search-input" oninput="filterTable(this.value)" />
           </div>
-          <select class="select-control" onchange="filterSeverity(this.value)">
+          <select class="select-control" id="severity-filter" onchange="filterSeverity(this.value)">
             <option value="">All Severities</option>
             <option value="Critical">Critical</option>
             <option value="High">High</option>
             <option value="Medium">Medium</option>
             <option value="Low">Low</option>
           </select>
-          <select class="select-control" onchange="filterStatus(this.value)">
+          <select class="select-control" id="status-filter" onchange="filterStatus(this.value)">
             <option value="">All Statuses</option>
             <option value="Open">Open</option>
             <option value="Investigating">Investigating</option>
             <option value="Resolved">Resolved</option>
           </select>
-          <select class="select-control">
+          <select class="select-control" id="analyst-filter" onchange="filterAnalyst(this.value)">
             <option>Assigned to Anyone</option>
             <option>Priya Sharma</option>
             <option>Rohan Mehta</option>
@@ -479,21 +479,25 @@
 
   renderTable(incidents);
 
-  function filterTable(q) {
-    const filtered = incidents.filter(i =>
+  function currentFilteredIncidents() {
+    const q = document.getElementById('search-input').value.trim().toLowerCase();
+    const severity = document.getElementById('severity-filter').value;
+    const status = document.getElementById('status-filter').value;
+    const analyst = document.getElementById('analyst-filter').value;
+    return incidents.filter(i =>
       i.id.toLowerCase().includes(q.toLowerCase()) ||
       i.desc.toLowerCase().includes(q.toLowerCase()) ||
       i.analystFull.toLowerCase().includes(q.toLowerCase())
-    );
-    renderTable(filtered);
+    ).filter(i => !severity || i.sev === severity)
+     .filter(i => !status || i.status === status)
+     .filter(i => analyst === 'Assigned to Anyone' || i.analystFull === analyst);
   }
 
-  function filterSeverity(sev) {
-    renderTable(sev ? incidents.filter(i => i.sev === sev) : incidents);
-  }
-  function filterStatus(st) {
-    renderTable(st ? incidents.filter(i => i.status === st) : incidents);
-  }
+  function filterTable() { renderTable(currentFilteredIncidents()); }
+
+  function filterSeverity() { filterTable(); }
+  function filterStatus() { filterTable(); }
+  function filterAnalyst() { filterTable(); }
 
   function rowClick(e, id) {
     if (e.target.type === 'checkbox') return;
@@ -510,7 +514,7 @@
       incident.statusClassOverride = 'resolved';
       incident.sla = 'closed';
       incident.slaLabel = 'Resolved';
-      renderTable(incidents);
+      renderTable(currentFilteredIncidents());
       notify(`${id} marked as resolved.`);
     } catch (error) {
       reportApiError(`Could not resolve ${id}`, error);
@@ -539,6 +543,9 @@
     tab.addEventListener('click', function() {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       this.classList.add('active');
+      const status = this.textContent.trim().split(' ')[0];
+      document.getElementById('status-filter').value = ['Open', 'Investigating', 'Resolved'].includes(status) ? status : '';
+      filterTable();
     });
   });
 
@@ -547,6 +554,7 @@
     btn.addEventListener('click', function() {
       document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
       this.classList.add('active');
+      notify(this.textContent.trim() === 'Board' ? 'Board view is coming next; table view remains active for live data.' : 'Table view active.');
     });
   });
 
@@ -641,7 +649,9 @@
     try {
       const data = await fetchJSON('/incidents');
       incidents = data.map(mapLiveIncident);
-      renderTable(incidents);
+      const searchQuery = new URLSearchParams(location.search).get('q');
+      if (searchQuery) document.getElementById('search-input').value = searchQuery;
+      renderTable(currentFilteredIncidents());
 
       const sevOrder = ['Critical', 'High', 'Medium', 'Low'];
       const sevCounts = sevOrder.map(sev => incidents.filter(i => i.sev === sev).length);

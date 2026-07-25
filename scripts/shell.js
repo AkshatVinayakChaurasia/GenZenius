@@ -29,7 +29,7 @@ function renderShell(activePage) {
     {
       group: 'Settings',
       items: [
-        { icon: iconSettings, label: 'Configuration', href: '#', id: 'settings', count: null },
+        { icon: iconSettings, label: 'Configuration', href: 'config.html', id: 'settings', count: null },
       ]
     }
   ];
@@ -78,19 +78,19 @@ function renderShell(activePage) {
       <div class="topbar-chip"><div class="dot"></div>All Systems Operational</div>
       <div style="width:1px;height:20px;background:var(--border-default);margin:0 4px;"></div>
       <span style="font-size:0.75rem;color:var(--text-muted);font-weight:600;font-family:monospace;" id="live-time">--:--:--</span>
-      <button class="icon-btn" data-tip="Notifications">
+      <button class="icon-btn" type="button" data-tip="Notifications" id="notifications-button" aria-label="Open notifications">
         ${iconBell()}
         <span class="badge-dot"></span>
       </button>
-      <button class="icon-btn" data-tip="Settings">${iconGear()}</button>
-      <div class="avatar-btn">
+      <button class="icon-btn" type="button" data-tip="Settings" id="settings-button" aria-label="Open configuration">${iconGear()}</button>
+      <button class="avatar-btn" type="button" id="profile-button" aria-label="Sign out of the demo">
         <div class="avatar">AD</div>
         <div class="avatar-info">
           <div class="av-name">Admin</div>
           <div class="av-role">HDFC · SOC L3</div>
         </div>
         ${iconChevron()}
-      </div>
+      </button>
     </div>
   `;
 }

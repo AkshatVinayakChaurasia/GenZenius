@@ -1,5 +1,7 @@
 from collections import Counter
 from datetime import datetime, timezone
+import hmac
+import os
 from pathlib import Path
 from uuid import uuid4
 
@@ -103,9 +105,19 @@ def edit_incident(incident_id: str, payload: IncidentUpdate):
 
 @app.post("/auth/login", tags=["Authentication"])
 def login(credentials: dict):
-    if credentials.get("username") == "admin" and credentials.get("password") == "admin123":
-        return {"authenticated": True, "username": "admin"}
+    # Demo access is deliberately strong and configurable.  Keeping this check
+    # server-side also means weak legacy credentials can never authenticate.
+    username = os.getenv("DEMO_USERNAME", "demo.admin")
+    password = os.getenv("DEMO_PASSWORD", "RiskFusion@2026!")
+    if hmac.compare_digest(str(credentials.get("username", "")), username) and hmac.compare_digest(str(credentials.get("password", "")), password):
+        return {"authenticated": True, "username": username, "display_name": "Demo Administrator"}
     raise HTTPException(status_code=401, detail="Invalid username or password")
+
+
+@app.get("/health", tags=["System"])
+def health():
+    """Small, cache-safe readiness probe used by the demo UI and deployment."""
+    return {"status": "operational", "service": "RiskFusion AI", "timestamp": datetime.now(timezone.utc).isoformat()}
 
 
 # Serve the unchanged static frontend during local demos so its API requests

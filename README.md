@@ -88,6 +88,16 @@ python -m http.server 3000
 
 Then open: `http://localhost:3000`
 
+## Demo access
+
+Use the dedicated demo account below. The former weak demo credentials are not accepted.
+
+| Username | Password |
+|---|---|
+| `demo.admin` | `RiskFusion@2026!` |
+
+For a different controlled demo credential, set `DEMO_USERNAME` and `DEMO_PASSWORD` in the deployment environment.
+
 ## Backend API
 
 The FastAPI backend lives in [`backend/`](backend/README.md). It uses SQLite and seeds realistic banking-risk incidents automatically on first start.

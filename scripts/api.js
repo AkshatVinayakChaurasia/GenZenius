@@ -67,6 +67,19 @@ function notify(message) {
   setTimeout(() => toast.remove(), 2800);
 }
 
+function downloadCsv(filename, rows) {
+  if (!rows.length) return notify('There is no data available to export.');
+  const headers = Object.keys(rows[0]);
+  const quote = value => `"${String(value ?? '').replaceAll('"', '""')}"`;
+  const csv = [headers.join(','), ...rows.map(row => headers.map(header => quote(row[header])).join(','))].join('\n');
+  const anchor = document.createElement('a');
+  anchor.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(anchor.href);
+  notify(`${filename} downloaded.`);
+}
+
 async function createIncidentFromPrompt() {
   const title = prompt('Incident title');
   if (!title) return;
@@ -85,11 +98,24 @@ document.addEventListener('click', (event) => {
   const button = event.target.closest('button, a');
   if (!button) return;
   const label = button.textContent.replace(/\s+/g, ' ').trim();
-  if (label === 'New Incident') {
+  if (label === 'New Incident' || label === 'Create Incident' || label === 'Start Investigation') {
     event.preventDefault();
     createIncidentFromPrompt();
-  } else if (label === 'Export' || label === 'Export PDF' || label === 'Download') {
+  } else if (label === 'Download CSV') {
+    event.preventDefault();
+    fetchJSON('/incidents').then(data => downloadCsv('riskfusion-incidents.csv', data)).catch(error => reportApiError('CSV export failed', error));
+  } else if (label === 'Export' || label === 'Export PDF' || label === 'Download' || label === 'Export Timeline') {
     event.preventDefault();
     window.print();
+  } else if (['Apply', 'Block', 'Send', 'Escalate'].includes(label)) {
+    event.preventDefault();
+    button.disabled = true;
+    button.textContent = label === 'Apply' ? 'Applied' : label === 'Block' ? 'Blocked' : label === 'Send' ? 'Sent' : 'Escalated';
+    notify(`${button.textContent} successfully. The action has been recorded in this demo session.`);
+  } else if (label === 'Filter' || label === 'Filters') {
+    event.preventDefault();
+    const controls = document.querySelector('.tbl-controls, .filter-bar');
+    if (controls) controls.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    notify('Use the available filters to refine the current view.');
   }
 });

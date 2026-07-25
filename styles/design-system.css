@@ -1139,4 +1139,14 @@ svg { display: block; flex-shrink: 0; }
   .pg-header, .card-head { align-items: flex-start; flex-direction: column; }
   .pg-actions { flex-wrap: wrap; }
   .kpi-grid { grid-template-columns: 1fr; }
+  .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tbl { min-width: 980px; }
+  .card { min-width: 0; }
+  .pg-actions { width: 100%; }
+  .pg-actions .btn { flex: 1 1 auto; justify-content: center; }
 }
+
+/* Protect dense security workspaces from accidental flex/grid overflow. */
+.main-area, .page-content, .card, .card-body, .dashboard-grid, .incident-grid, .report-layout, .two-col { min-width: 0; }
+.chart-sm, .chart-area, .chart-container { position: relative; min-width: 0; }
+canvas { max-width: 100%; }
