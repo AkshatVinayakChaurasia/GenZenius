@@ -4,11 +4,40 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="RiskFusion AI — Sign in to the AI-Powered Banking Incident Correlation Platform" />
-  <title>Sign In — RiskFusion AI</title>
+  <title>Sign in · RiskFusion AI</title>
+  <meta name="description"
+    content="RiskFusion AI is a security operations platform that correlates cybersecurity and transaction telemetry into explainable risk scores for banking security teams. Sign in to your workspace." />
+  <meta name="author" content="RiskFusion AI" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0F172A" />
+  <link rel="canonical" href="https://riskfusion-ai.vercel.app/" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="RiskFusion AI" />
+  <meta property="og:title" content="RiskFusion AI — Security Operations Platform" />
+  <meta property="og:description"
+    content="Correlate cybersecurity and transaction telemetry into explainable risk scores for banking security operations teams." />
+  <meta property="og:url" content="https://riskfusion-ai.vercel.app/" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="RiskFusion AI — Security Operations Platform" />
+  <meta name="twitter:description"
+    content="Correlate cybersecurity and transaction telemetry into explainable risk scores for banking security operations teams." />
+
   <link rel="stylesheet" href="styles/design-system.css" />
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "RiskFusion AI",
+      "applicationCategory": "SecurityApplication",
+      "operatingSystem": "Web",
+      "description": "Security operations platform that correlates cybersecurity and transaction telemetry into explainable risk scores for banking security teams.",
+      "url": "https://riskfusion-ai.vercel.app/",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+    }
+  </script>
   <style>
-    /* Login-page-specific overrides */
+    /* Sign-in page layout overrides */
     .login-brand-panel {
       display: flex;
       flex-direction: column;
@@ -39,13 +68,6 @@
       color: white;
     }
 
-    .brand-title {
-      font-size: 1.375rem;
-      font-weight: 800;
-      color: white;
-      letter-spacing: -0.03em;
-    }
-
     .brand-headline {
       font-size: 2.5rem;
       font-weight: 800;
@@ -70,6 +92,7 @@
     .brand-stats {
       display: flex;
       gap: 32px;
+      flex-wrap: wrap;
     }
 
     .brand-stat-val {
@@ -117,64 +140,41 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
+      gap: 10px;
     }
 
     .bmc-label {
       font-size: 0.75rem;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.6);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    .bmc-badge {
-      font-size: 0.6875rem;
       font-weight: 700;
-      padding: 3px 9px;
-      border-radius: 100px;
-      background: rgba(239, 68, 68, 0.2);
-      color: #FCA5A5;
-      border: 1px solid rgba(239, 68, 68, 0.3);
-    }
-
-    .bmc-badge.warn {
-      background: rgba(245, 158, 11, 0.2);
-      color: #FCD34D;
-      border-color: rgba(245, 158, 11, 0.3);
-    }
-
-    .bmc-val {
-      font-size: 2rem;
-      font-weight: 800;
-      letter-spacing: -0.04em;
       color: white;
-      line-height: 1;
+      letter-spacing: -0.01em;
+    }
+
+    .bmc-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .bmc-icon svg {
+      width: 14px;
+      height: 14px;
+      color: #67E8F9;
     }
 
     .bmc-sub {
       font-size: 0.8125rem;
-      color: rgba(255, 255, 255, 0.5);
-      margin-top: 4px;
+      line-height: 1.55;
+      color: rgba(255, 255, 255, 0.6);
     }
 
-    .bmc-bar-wrap {
-      margin-top: 12px;
-    }
-
-    .bmc-bar {
-      height: 4px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 100px;
-      overflow: hidden;
-    }
-
-    .bmc-bar-fill {
-      height: 100%;
-      border-radius: 100px;
-    }
-
-    .sso-btn {
+    .oauth-btn {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -192,14 +192,39 @@
       font-family: inherit;
     }
 
-    .sso-btn:hover {
+    .oauth-btn:hover:not(:disabled) {
       background: var(--bg-subtle);
       border-color: var(--border-strong);
     }
 
-    .sso-btn svg {
+    .oauth-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .oauth-btn svg {
       width: 18px;
       height: 18px;
+    }
+
+    .oauth-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .oauth-divider::before,
+    .oauth-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border-default);
     }
 
     .form-footer {
@@ -209,39 +234,18 @@
       color: var(--text-muted);
     }
 
-    .form-footer a {
+    .link-btn {
+      background: none;
+      border: none;
+      padding: 0;
+      font: inherit;
       color: var(--brand-blue-mid);
       font-weight: 600;
+      cursor: pointer;
     }
 
-    .trusted-by {
-      margin-top: 36px;
-      padding-top: 24px;
-      border-top: 1px solid var(--border-default);
-    }
-
-    .trusted-label {
-      font-size: 0.6875rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-muted);
-      font-weight: 600;
-      margin-bottom: 12px;
-    }
-
-    .trusted-logos {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-
-    .trusted-logo-item {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      letter-spacing: 0.05em;
-      opacity: 0.6;
+    .link-btn:hover {
+      text-decoration: underline;
     }
 
     .input-pw-wrap {
@@ -274,6 +278,31 @@
       width: 16px;
       height: 16px;
     }
+
+    .form-message {
+      margin: 14px 0 0;
+      padding: 10px 12px;
+      border-radius: var(--r-md);
+      font-size: 0.8125rem;
+      line-height: 1.5;
+    }
+
+    .form-message.error {
+      background: var(--critical-bg, #FEF2F2);
+      border: 1px solid var(--critical-border, #FECACA);
+      color: var(--critical);
+    }
+
+    .form-message.success {
+      background: var(--info-bg);
+      border: 1px solid var(--info-border);
+      color: var(--brand-blue-mid);
+    }
+
+    .login-brand-bottom {
+      font-size: 0.6875rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
   </style>
 </head>
 
@@ -286,7 +315,7 @@
         <div class="brand-logo-wrap">
           <div class="brand-logo-mark">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round">
+              stroke-linejoin="round" aria-hidden="true">
               <path d="M12 2L2 7l10 5 10-5-10-5z" />
               <path d="M2 17l10 5 10-5" />
               <path d="M2 12l10 5 10-5" />
@@ -297,7 +326,7 @@
                 style="color:#67E8F9;">Fusion</span> AI</div>
             <div
               style="font-size:0.625rem;color:rgba(255,255,255,0.55);font-weight:600;letter-spacing:0.1em;text-transform:uppercase;">
-              Banking Security Platform</div>
+              Security Operations Platform</div>
           </div>
         </div>
 
@@ -306,82 +335,79 @@
         </h1>
 
         <p class="brand-body">
-          Enterprise-grade AI threat detection and incident correlation purpose-built for banking security operations
-          centres. Monitor millions of transactions in real time.
+          RiskFusion AI unifies cybersecurity and transaction telemetry in one workspace, so security operations teams
+          can investigate correlated threats with an explainable risk score behind every decision.
         </p>
 
         <div class="brand-stats">
           <div>
-            <div class="brand-stat-val">99.7%</div>
-            <div class="brand-stat-lbl">Detection Accuracy</div>
+            <div class="brand-stat-val">Unified</div>
+            <div class="brand-stat-lbl">Cyber &amp; transaction signals</div>
           </div>
           <div>
-            <div class="brand-stat-val">&lt; 2s</div>
-            <div class="brand-stat-lbl">Alert Latency</div>
+            <div class="brand-stat-val">Explainable</div>
+            <div class="brand-stat-lbl">Every score is traceable</div>
           </div>
           <div>
-            <div class="brand-stat-val">340M+</div>
-            <div class="brand-stat-lbl">Events / Day</div>
+            <div class="brand-stat-val">MITRE</div>
+            <div class="brand-stat-lbl">ATT&amp;CK mapped</div>
           </div>
         </div>
       </div>
 
-      <!-- Mini dashboard cards in brand panel -->
+      <!-- Capability cards -->
       <div class="brand-visual">
         <div class="brand-card-stack">
           <div class="brand-mini-card">
             <div class="bmc-top">
-              <span class="bmc-label">Critical Threats</span>
-              <span class="bmc-badge">LIVE</span>
+              <span class="bmc-label">Correlated incident timeline</span>
+              <span class="bmc-icon">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                  stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="3" cy="8" r="1.5" />
+                  <circle cx="8" cy="5" r="1.5" />
+                  <circle cx="13" cy="10" r="1.5" />
+                  <path d="M4.5 8h2L8 6.5" />
+                  <path d="M9.5 5.5l2 3.5" />
+                </svg>
+              </span>
             </div>
-            <div class="bmc-val">12</div>
-            <div class="bmc-sub">Active incidents requiring attention</div>
-            <div class="bmc-bar-wrap">
-              <div class="bmc-bar">
-                <div class="bmc-bar-fill" style="width:78%;background:rgba(239,68,68,0.8);"></div>
-              </div>
-            </div>
+            <div class="bmc-sub">Authentication, device, network and payment events assembled into one ordered
+              narrative per incident.</div>
           </div>
           <div class="brand-mini-card">
             <div class="bmc-top">
-              <span class="bmc-label">AI Confidence</span>
-              <span class="bmc-badge warn">HIGH</span>
+              <span class="bmc-label">Explainable risk scoring</span>
+              <span class="bmc-icon">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                  stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="1 12 5 7 8 9 12 4 15 6" />
+                  <path d="M1 14.5h14" />
+                </svg>
+              </span>
             </div>
-            <div class="bmc-val">94.2%</div>
-            <div class="bmc-sub">Model prediction confidence</div>
-            <div class="bmc-bar-wrap">
-              <div class="bmc-bar">
-                <div class="bmc-bar-fill"
-                  style="width:94%;background:linear-gradient(90deg,rgba(99,102,241,0.8),rgba(6,182,212,0.8));"></div>
-              </div>
-            </div>
+            <div class="bmc-sub">A weighted signal engine shows which factors moved the score and by how much — no
+              black-box verdicts.</div>
           </div>
           <div class="brand-mini-card">
             <div class="bmc-top">
-              <span class="bmc-label">Avg Risk Score</span>
-              <span class="bmc-badge">ELEVATED</span>
+              <span class="bmc-label">Guided response actions</span>
+              <span class="bmc-icon">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                  stroke-linejoin="round" aria-hidden="true">
+                  <path d="M8 1.5L2 4v4c0 3.3 2.6 6 6 6s6-2.7 6-6V4L8 1.5z" />
+                  <path d="M5.5 8l1.8 1.8L10.5 6.5" />
+                </svg>
+              </span>
             </div>
-            <div class="bmc-val">72.4</div>
-            <div class="bmc-sub">Portfolio-wide threat exposure</div>
-            <div class="bmc-bar-wrap">
-              <div class="bmc-bar">
-                <div class="bmc-bar-fill"
-                  style="width:72%;background:linear-gradient(90deg,rgba(245,158,11,0.8),rgba(239,68,68,0.8));"></div>
-              </div>
-            </div>
+            <div class="bmc-sub">Recommended containment steps are ranked by impact and recorded against the incident
+              record.</div>
           </div>
         </div>
       </div>
 
-      <!-- Bottom bar -->
       <div class="login-brand-bottom">
-        <div class="hackathon-badge">
-          <span class="trophy">🏆</span>
-          Built for FinSpark 2026 Hackathon
-        </div>
-        <div style="color:rgba(255,255,255,0.4);font-size:0.6875rem;margin-left:auto;">
-          Prototype v1.0 · Not for production use
-        </div>
+        © 2026 RiskFusion AI · Authorised access only
       </div>
     </section>
 
@@ -393,7 +419,7 @@
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
             <div class="logo-mark" style="width:28px;height:28px;border-radius:7px;">
               <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"
-                stroke-linejoin="round" style="width:13px;height:13px;">
+                stroke-linejoin="round" style="width:13px;height:13px;" aria-hidden="true">
                 <path d="M12 2L2 7l10 5 10-5-10-5z" />
                 <path d="M2 17l10 5 10-5" />
                 <path d="M2 12l10 5 10-5" />
@@ -402,74 +428,88 @@
             <span style="font-size:0.9375rem;font-weight:700;color:var(--text-primary);">Risk<span
                 style="color:var(--brand-blue-mid);">Fusion</span> AI</span>
           </div>
-          <h2 class="login-form-title">Welcome back</h2>
-          <p class="login-form-sub">Internal demonstration workspace — authorised judges and team members only.</p>
+          <h2 class="login-form-title" id="form-title">Sign in</h2>
+          <p class="login-form-sub" id="form-sub">Use your RiskFusion AI workspace account to continue.</p>
         </div>
 
-        <!-- Form -->
-        <form id="login-form" action="/auth/login" method="post">
+        <!-- Google OAuth: rendered only once the provider is confirmed available -->
+        <div id="oauth-section" hidden>
+          <button type="button" class="oauth-btn" id="google-btn">
+            <svg viewBox="0 0 18 18" aria-hidden="true">
+              <path fill="#4285F4"
+                d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91c1.7-1.57 2.69-3.88 2.69-6.62z" />
+              <path fill="#34A853"
+                d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.91-2.26c-.81.54-1.84.86-3.05.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.34A9 9 0 0 0 9 18z" />
+              <path fill="#FBBC05"
+                d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.94H.96a9 9 0 0 0 0 8.12l3.01-2.34z" />
+              <path fill="#EA4335"
+                d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A9 9 0 0 0 .96 4.94l3.01 2.34C4.68 5.16 6.66 3.58 9 3.58z" />
+            </svg>
+            <span id="google-btn-label">Continue with Google</span>
+          </button>
+          <div class="oauth-divider">or</div>
+        </div>
+
+        <form id="auth-form" novalidate>
           <div class="input-group" style="margin-bottom:16px;">
-            <label class="input-label" for="email">Username</label>
+            <label class="input-label" for="email">Work email</label>
             <div class="input-with-icon">
               <span class="input-icon">
                 <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                  stroke-linejoin="round">
+                  stroke-linejoin="round" aria-hidden="true">
                   <rect x="1" y="3" width="14" height="10" rx="2" />
                   <polyline points="1 5 8 9 15 5" />
                 </svg>
               </span>
-              <input id="email" type="text" class="input" style="width:100%;" placeholder="demo.admin" autocomplete="username" required />
+              <input id="email" name="email" type="email" class="input" style="width:100%;" placeholder="you@company.com"
+                autocomplete="username" autocapitalize="none" spellcheck="false" required />
             </div>
           </div>
 
           <div class="input-group" style="margin-bottom:20px;">
             <div style="display:flex;align-items:center;justify-content:space-between;">
               <label class="input-label" for="password">Password</label>
-              <span style="font-size:0.75rem;color:var(--text-muted);font-weight:600;">Demo access only</span>
+              <button type="button" class="link-btn" id="forgot-btn"
+                style="font-size:0.75rem;">Forgot password?</button>
             </div>
             <div class="input-pw-wrap">
-              <input id="password" type="password" class="input" style="width:100%;" placeholder="••••••••••••"
-                autocomplete="current-password" required />
-              <button type="button" class="pw-toggle" onclick="togglePw()">
-                <svg id="pw-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+              <input id="password" name="password" type="password" class="input" style="width:100%;"
+                placeholder="Enter your password" autocomplete="current-password" required minlength="8" />
+              <button type="button" class="pw-toggle" id="pw-toggle" aria-label="Show password">
+                <svg id="pw-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
+                  aria-hidden="true">
                   <path d="M1 8s3-6 7-6 7 6 7 6-3 6-7 6-7-6-7-6z" />
                   <circle cx="8" cy="8" r="2" />
                 </svg>
               </button>
             </div>
-          </div>
-
-          <div style="margin:-6px 0 20px;padding:10px 12px;background:var(--bg-subtle);border:1px solid var(--border-default);border-radius:var(--r-md);font-size:0.75rem;color:var(--text-secondary);line-height:1.55;">
-            <strong style="color:var(--text-primary);">Internal demo environment</strong><br>
-            This prototype uses a dedicated demo account. Credentials are provided in the demonstration handoff only.
+            <p id="password-hint" hidden
+              style="margin:8px 0 0;font-size:0.75rem;color:var(--text-muted);line-height:1.5;">
+              Use at least 8 characters. Choose a password you do not use anywhere else.
+            </p>
           </div>
 
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:24px;">
-            <input type="checkbox" id="mfa" checked
-              style="width:15px;height:15px;accent-color:var(--brand-blue-mid);" />
-            <label for="mfa" style="font-size:0.875rem;color:var(--text-tertiary);cursor:pointer;">
-              Verify via TOTP authenticator
+            <input type="checkbox" id="remember" style="width:15px;height:15px;accent-color:var(--brand-blue-mid);" />
+            <label for="remember" style="font-size:0.875rem;color:var(--text-tertiary);cursor:pointer;">
+              Keep me signed in on this device
             </label>
           </div>
 
-          <button type="submit" class="btn btn-primary btn-full btn-lg">
+          <button type="submit" class="btn btn-primary btn-full btn-lg" id="submit-btn">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round" style="width:16px;height:16px;">
+              stroke-linejoin="round" style="width:16px;height:16px;" aria-hidden="true">
               <path d="M14 8H2m9-4l4 4-4 4" />
             </svg>
-            Sign in to Platform
+            <span id="submit-label">Sign in</span>
           </button>
-          <p id="login-error" role="alert" style="display:none;margin:12px 0 0;color:var(--critical);font-size:0.8125rem;"></p>
+
+          <p id="form-message" class="form-message" role="status" aria-live="polite" hidden></p>
         </form>
 
-        <div
-          style="margin-top:24px;padding:12px 16px;background:var(--info-bg);border:1px solid var(--info-border);border-radius:var(--r-md);display:flex;align-items:center;gap:10px;">
-          <svg viewBox="0 0 16 16" fill="none" stroke="var(--brand-blue-mid)" stroke-width="1.5"
-            style="width:15px;height:15px;flex-shrink:0;">
-            <rect x="3" y="6" width="10" height="8" rx="1.5" />
-            <path d="M5 6V4a3 3 0 0 1 6 0v2" />
-          </svg>
-          <span style="font-size:0.75rem;color:var(--brand-blue-mid);font-weight:500;">RiskFusion AI is an internal hackathon demonstration. Credentials are sent only to this application's backend.</span>
+        <div class="form-footer">
+          <span id="mode-prompt">Need a workspace account?</span>
+          <button type="button" class="link-btn" id="mode-toggle">Create one</button>
         </div>
 
       </div>
@@ -477,39 +517,162 @@
 
   </main>
 
+  <script src="scripts/config.js"></script>
+  <script src="scripts/auth.js"></script>
   <script>
-    function togglePw() {
-      const input = document.getElementById('password');
-      const icon = document.getElementById('pw-icon');
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.innerHTML = '<path d="M13.5 8A5.5 5.5 0 0 1 3 8"/><line x1="2" y1="2" x2="14" y2="14"/>';
-      } else {
-        input.type = 'password';
-        icon.innerHTML = '<path d="M1 8s3-6 7-6 7 6 7 6-3 6-7 6-7-6-7-6z"/><circle cx="8" cy="8" r="2"/>';
-      }
-    }
+    (function () {
+      const auth = window.RiskFusionAuth;
+      const config = window.RISKFUSION_CONFIG;
 
-    document.getElementById('login-form').addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const error = document.getElementById('login-error');
-      error.style.display = 'none';
-      try {
-        const apiBase = globalThis.RISKFUSION_API_BASE ||
-          (((location.hostname === '127.0.0.1' || location.hostname === 'localhost') && location.port === '3000') ? 'http://127.0.0.1:8000' : location.origin);
-        const response = await fetch(apiBase + '/auth/login', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: document.getElementById('email').value.trim(), password: document.getElementById('password').value })
-        });
-        if (!response.ok) throw new Error('Invalid username or password');
-        const user = await response.json();
-        localStorage.setItem('riskfusion-user', user.username || 'demo.admin');
-        window.location.href = 'dashboard.html';
-      } catch (err) {
-        error.textContent = err.message;
-        error.style.display = 'block';
+      const form = document.getElementById('auth-form');
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const rememberInput = document.getElementById('remember');
+      const message = document.getElementById('form-message');
+      const submitBtn = document.getElementById('submit-btn');
+      const submitLabel = document.getElementById('submit-label');
+      const modeToggle = document.getElementById('mode-toggle');
+      const modePrompt = document.getElementById('mode-prompt');
+      const formTitle = document.getElementById('form-title');
+      const formSub = document.getElementById('form-sub');
+      const passwordHint = document.getElementById('password-hint');
+      const googleBtn = document.getElementById('google-btn');
+
+      let mode = 'signin';
+
+      /** Only ever navigate to a page inside this app. */
+      function safeNext() {
+        const next = new URLSearchParams(location.search).get('next');
+        if (!next || /^[a-z]+:|^\/\//i.test(next)) return config.homePage;
+        const page = next.split('/').pop();
+        return /^[\w.-]+\.html(\?[^#]*)?$/.test(page) ? page : config.homePage;
       }
-    });
+
+      function show(text, tone) {
+        message.textContent = text;
+        message.className = `form-message ${tone}`;
+        message.hidden = false;
+      }
+
+      function hide() {
+        message.hidden = true;
+      }
+
+      function busy(state, label) {
+        submitBtn.disabled = state;
+        googleBtn.disabled = state;
+        submitLabel.textContent = label;
+      }
+
+      function setMode(next) {
+        mode = next;
+        hide();
+        const signup = mode === 'signup';
+        formTitle.textContent = signup ? 'Create your account' : 'Sign in';
+        formSub.textContent = signup
+          ? 'Register a RiskFusion AI workspace account with your work email.'
+          : 'Use your RiskFusion AI workspace account to continue.';
+        submitLabel.textContent = signup ? 'Create account' : 'Sign in';
+        modePrompt.textContent = signup ? 'Already have an account?' : 'Need a workspace account?';
+        modeToggle.textContent = signup ? 'Sign in' : 'Create one';
+        passwordInput.autocomplete = signup ? 'new-password' : 'current-password';
+        passwordHint.hidden = !signup;
+        document.getElementById('google-btn-label').textContent = signup ? 'Sign up with Google' : 'Continue with Google';
+      }
+
+      modeToggle.addEventListener('click', () => setMode(mode === 'signup' ? 'signin' : 'signup'));
+
+      document.getElementById('pw-toggle').addEventListener('click', (event) => {
+        const button = event.currentTarget;
+        const icon = document.getElementById('pw-icon');
+        const hidden = passwordInput.type === 'password';
+        passwordInput.type = hidden ? 'text' : 'password';
+        button.setAttribute('aria-label', hidden ? 'Hide password' : 'Show password');
+        icon.innerHTML = hidden
+          ? '<path d="M13.5 8A5.5 5.5 0 0 1 3 8"/><line x1="2" y1="2" x2="14" y2="14"/>'
+          : '<path d="M1 8s3-6 7-6 7 6 7 6-3 6-7 6-7-6-7-6z"/><circle cx="8" cy="8" r="2"/>';
+      });
+
+      document.getElementById('forgot-btn').addEventListener('click', async () => {
+        const email = emailInput.value.trim();
+        if (!email || !emailInput.checkValidity()) {
+          show('Enter your work email address first, then select Forgot password.', 'error');
+          emailInput.focus();
+          return;
+        }
+        try {
+          await auth.sendPasswordReset(email);
+          show(`If an account exists for ${email}, a password reset link is on its way.`, 'success');
+        } catch (error) {
+          show(error.message, 'error');
+        }
+      });
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        hide();
+        if (!form.checkValidity()) {
+          show(
+            emailInput.validity.valid
+              ? 'Your password must be at least 8 characters.'
+              : 'Enter a valid email address.',
+            'error'
+          );
+          return;
+        }
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        const remember = rememberInput.checked;
+
+        busy(true, mode === 'signup' ? 'Creating account…' : 'Signing in…');
+        try {
+          if (mode === 'signup') {
+            const result = await auth.signUpWithPassword(email, password, remember);
+            if (result.confirmationRequired) {
+              // setMode() clears any message, so switch views before reporting.
+              setMode('signin');
+              busy(false, 'Sign in');
+              show(`Account created. Confirm your address from the email sent to ${email}, then sign in.`, 'success');
+              return;
+            }
+          } else {
+            await auth.signInWithPassword(email, password, remember);
+          }
+          location.replace(safeNext());
+        } catch (error) {
+          busy(false, mode === 'signup' ? 'Create account' : 'Sign in');
+          show(error.message, 'error');
+          passwordInput.select();
+        }
+      });
+
+      googleBtn.addEventListener('click', async () => {
+        hide();
+        googleBtn.disabled = true;
+        try {
+          sessionStorage.setItem('riskfusion.oauth_next', safeNext());
+          await auth.signInWithGoogle(rememberInput.checked);
+        } catch (error) {
+          googleBtn.disabled = false;
+          show(error.message, 'error');
+        }
+      });
+
+      // Never present a third-party sign-in button that cannot complete a real
+      // sign-in: reveal it only after the provider is confirmed configured.
+      auth.providerEnabled('google').then((enabled) => {
+        if (enabled) document.getElementById('oauth-section').hidden = false;
+      });
+
+      // An already-signed-in visitor should not see the sign-in form at all.
+      auth.getSession().then((session) => {
+        if (session) location.replace(safeNext());
+      });
+
+      setMode('signin');
+      emailInput.focus();
+    })();
   </script>
 </body>
 

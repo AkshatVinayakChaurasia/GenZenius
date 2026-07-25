@@ -171,6 +171,19 @@
     .sla-pill.ok      { background: var(--low-bg); color: var(--low); border: 1px solid var(--low-border); }
     .sla-pill.closed  { background: var(--bg-subtle); color: var(--text-muted); border: 1px solid var(--border-default); }
 
+    /* Board view */
+    #board-view { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; padding: 18px 20px; }
+    .board-column { background: var(--bg-subtle); border: 1px solid var(--border-default); border-radius: var(--r-lg, 12px); padding: 12px; min-height: 120px; }
+    .board-column-head { display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-tertiary); margin-bottom: 10px; }
+    .board-count { background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: var(--r-full); padding: 1px 7px; font-size: 0.6875rem; color: var(--text-muted); }
+    .board-card { display: block; background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: 10px; padding: 11px 12px; margin-bottom: 8px; text-decoration: none; transition: border-color var(--t-fast), box-shadow var(--t-fast); }
+    .board-card:hover { border-color: var(--brand-blue-mid); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06); }
+    .board-card-id { font-family: monospace; font-size: 0.6875rem; font-weight: 700; color: var(--brand-blue-mid); margin-bottom: 4px; }
+    .board-card-title { font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); line-height: 1.4; margin-bottom: 8px; }
+    .board-empty { font-size: 0.75rem; color: var(--text-muted); padding: 10px 2px; }
+    @media (max-width: 1100px) { #board-view { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 620px) { #board-view { grid-template-columns: 1fr; } }
+
     /* Analyst avatar cluster */
     .av-cluster { display: flex; }
     .av-cluster .av-mini {
@@ -248,11 +261,11 @@
             <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4h10M4 7h6M6 10h2"/></svg>
             Filters
           </button>
-          <button class="btn btn-secondary btn-sm">
+          <button class="btn btn-secondary btn-sm" type="button" data-action="export-csv">
             <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 7h10M7 2l5 5-5 5"/></svg>
             Export
           </button>
-          <button class="btn btn-primary btn-sm">
+          <button class="btn btn-primary btn-sm" type="button" data-action="new-incident">
             <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/></svg>
             Create Incident
           </button>
@@ -263,28 +276,28 @@
       <div class="stat-strip">
         <div class="stat-cell">
           <div class="stat-cell-label">Total Active</div>
-          <div class="stat-cell-val">47</div>
-          <div class="stat-cell-sub"><span class="delta up">↑ 6</span> vs yesterday</div>
+          <div class="stat-cell-val" id="stat-active">—</div>
+          <div class="stat-cell-sub">Open and in progress</div>
         </div>
         <div class="stat-cell">
           <div class="stat-cell-label">Critical</div>
-          <div class="stat-cell-val" style="color:var(--critical);">12</div>
-          <div class="stat-cell-sub"><span class="delta up">↑ 3</span> last 6h</div>
+          <div class="stat-cell-val" style="color:var(--critical);" id="stat-critical">—</div>
+          <div class="stat-cell-sub">Active critical severity</div>
         </div>
         <div class="stat-cell">
-          <div class="stat-cell-label">SLA Breaching</div>
-          <div class="stat-cell-val" style="color:var(--high);">4</div>
-          <div class="stat-cell-sub">Require immediate action</div>
+          <div class="stat-cell-label">Needs Immediate Review</div>
+          <div class="stat-cell-val" style="color:var(--high);" id="stat-urgent">—</div>
+          <div class="stat-cell-sub">Risk score 85 or above</div>
         </div>
         <div class="stat-cell">
           <div class="stat-cell-label">Resolved Today</div>
-          <div class="stat-cell-val" style="color:var(--low);">23</div>
-          <div class="stat-cell-sub"><span class="delta down">↑ 38%</span> resolution rate</div>
+          <div class="stat-cell-val" style="color:var(--low);" id="stat-resolved-today">—</div>
+          <div class="stat-cell-sub">Closed in the last 24 hours</div>
         </div>
         <div class="stat-cell">
-          <div class="stat-cell-label">MTTR</div>
-          <div class="stat-cell-val">1h 42m</div>
-          <div class="stat-cell-sub"><span class="delta down">↓ 14min</span> vs last week</div>
+          <div class="stat-cell-label">Mean Time to Resolve</div>
+          <div class="stat-cell-val" id="stat-mttr">—</div>
+          <div class="stat-cell-sub">Across resolved incidents</div>
         </div>
       </div>
 
@@ -313,20 +326,20 @@
 
         <!-- Tabs -->
         <div class="tabs" style="padding:0 20px;">
-          <div class="tab active">All Incidents <span id="tab-count-all" style="background:var(--bg-subtle);color:var(--text-muted);font-size:0.6875rem;font-weight:700;padding:1px 7px;border-radius:var(--r-full);margin-left:6px;">47</span></div>
-          <div class="tab">Open <span id="tab-count-open" style="background:var(--info-bg);color:var(--brand-blue-mid);font-size:0.6875rem;font-weight:700;padding:1px 7px;border-radius:var(--r-full);margin-left:6px;">24</span></div>
-          <div class="tab">Investigating <span id="tab-count-investigating" style="background:var(--medium-bg);color:var(--medium);font-size:0.6875rem;font-weight:700;padding:1px 7px;border-radius:var(--r-full);margin-left:6px;">15</span></div>
-          <div class="tab">Resolved <span id="tab-count-resolved" style="background:var(--low-bg);color:var(--low);font-size:0.6875rem;font-weight:700;padding:1px 7px;border-radius:var(--r-full);margin-left:6px;">8</span></div>
+          <div class="tab active">All Incidents <span id="tab-count-all" style="background:var(--bg-subtle);color:var(--text-muted);font-size:0.6875rem;font-weight:700;padding:1px 7px;border-radius:var(--r-full);margin-left:6px;">—</span></div>
+          <div class="tab">Open <span id="tab-count-open" style="background:var(--info-bg);color:var(--brand-blue-mid);font-size:0.6875rem;font-weight:700;padding:1px 7px;border-radius:var(--r-full);margin-left:6px;">—</span></div>
+          <div class="tab">Investigating <span id="tab-count-investigating" style="background:var(--medium-bg);color:var(--medium);font-size:0.6875rem;font-weight:700;padding:1px 7px;border-radius:var(--r-full);margin-left:6px;">—</span></div>
+          <div class="tab">Resolved <span id="tab-count-resolved" style="background:var(--low-bg);color:var(--low);font-size:0.6875rem;font-weight:700;padding:1px 7px;border-radius:var(--r-full);margin-left:6px;">—</span></div>
           <div class="tab">Closed</div>
         </div>
 
         <!-- Bulk Actions Bar -->
         <div class="bulk-bar" id="bulk-bar">
           <span class="bb-count" id="bulk-count">0 selected</span>
-          <button class="bulk-btn">Assign To</button>
-          <button class="bulk-btn">Change Status</button>
-          <button class="bulk-btn">Export Selected</button>
-          <button class="bulk-btn danger">Close Selected</button>
+          <button class="bulk-btn" type="button" id="bulk-assign">Assign To</button>
+          <button class="bulk-btn" type="button" id="bulk-status">Change Status</button>
+          <button class="bulk-btn" type="button" id="bulk-export">Export Selected</button>
+          <button class="bulk-btn danger" type="button" id="bulk-close">Close Selected</button>
           <button class="bulk-btn" style="margin-left:auto;" onclick="clearSelection()">✕ Clear</button>
         </div>
 
@@ -334,35 +347,32 @@
         <div class="tbl-controls">
           <div class="tbl-search">
             <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px;"><circle cx="6" cy="6" r="4"/><path d="M14 14l-3-3"/></svg>
-            <input type="text" placeholder="Search by ID, customer, analyst…" id="search-input" oninput="filterTable(this.value)" />
+            <input type="search" placeholder="Search by ID, title, customer or assignee…" id="search-input" oninput="filterTable()" />
           </div>
-          <select class="select-control" id="severity-filter" onchange="filterSeverity(this.value)">
+          <select class="select-control" id="severity-filter" onchange="filterTable()">
             <option value="">All Severities</option>
             <option value="Critical">Critical</option>
             <option value="High">High</option>
             <option value="Medium">Medium</option>
             <option value="Low">Low</option>
           </select>
-          <select class="select-control" id="status-filter" onchange="filterStatus(this.value)">
+          <select class="select-control" id="status-filter" onchange="filterTable()">
             <option value="">All Statuses</option>
             <option value="Open">Open</option>
             <option value="Investigating">Investigating</option>
             <option value="Resolved">Resolved</option>
+            <option value="Closed">Closed</option>
           </select>
-          <select class="select-control" id="analyst-filter" onchange="filterAnalyst(this.value)">
-            <option>Assigned to Anyone</option>
-            <option>Priya Sharma</option>
-            <option>Rohan Mehta</option>
-            <option>Ananya Iyer</option>
-            <option>Vikram Nair</option>
+          <select class="select-control" id="analyst-filter" onchange="filterTable()">
+            <option value="__any">Assigned to anyone</option>
           </select>
           <div style="margin-left:auto;font-size:0.8125rem;color:var(--text-muted);">
-            Showing <strong id="row-count" style="color:var(--text-primary);">10</strong> of 47 incidents
+            Showing <strong id="row-count" style="color:var(--text-primary);">0</strong> of <span id="total-count">0</span> incidents
           </div>
         </div>
 
         <!-- Table -->
-        <div class="tbl-wrap">
+        <div class="tbl-wrap" id="table-view">
           <table class="tbl" id="incidents-table">
             <thead>
               <tr>
@@ -385,21 +395,16 @@
           </table>
         </div>
 
+        <!-- Board view: the same live incidents grouped by status -->
+        <div id="board-view" hidden></div>
+
         <!-- Pagination -->
-        <div class="card-footer" style="display:flex;justify-content:space-between;align-items:center;">
-          <span>Page 1 of 5 · 47 total incidents</span>
-          <div style="display:flex;gap:4px;align-items:center;">
-            <button class="btn btn-ghost btn-sm">←</button>
-            <button class="btn btn-ghost btn-sm" style="background:var(--info-bg);color:var(--brand-blue-mid);font-weight:700;">1</button>
-            <button class="btn btn-ghost btn-sm">2</button>
-            <button class="btn btn-ghost btn-sm">3</button>
-            <span style="color:var(--text-muted);padding:0 4px;">…</span>
-            <button class="btn btn-ghost btn-sm">5</button>
-            <button class="btn btn-ghost btn-sm">→</button>
-          </div>
+        <div class="card-footer" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+          <span id="page-summary">No incidents to display</span>
+          <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;" id="pagination-controls"></div>
           <div style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--text-muted);">
             Rows per page:
-            <select class="select-control" style="padding:4px 8px;font-size:0.8125rem;">
+            <select class="select-control" id="rows-per-page" style="padding:4px 8px;font-size:0.8125rem;">
               <option>10</option><option>25</option><option>50</option>
             </select>
           </div>
@@ -410,265 +415,442 @@
   </div>
 </div>
 
+<script src="scripts/config.js"></script>
+<script src="scripts/auth.js"></script>
 <script src="scripts/shell.js"></script>
 <script src="scripts/app.js"></script>
 <script src="scripts/api.js"></script>
+<script src="scripts/live-state.js?v=4"></script>
 <script>
   renderShell('incidents');
 
-  /* ── Incident Data ── */
-  let incidents = [
-    { id:'INC-2026-0847', desc:'Account Takeover — Impossible Travel', detail:'CUS-84721 · Mumbai → Moscow in 47 min', risk:94, sev:'Critical', status:'Open',         cat:'ATO',         analyst:'PS', analystFull:'Priya Sharma',  sla:'breach',  slaLabel:'SLA Breach',    time:'14m ago' },
-    { id:'INC-2026-0846', desc:'Suspicious Wire Transfer',             detail:'AC-20918 · ₹14.7L to unknown entity',  risk:81, sev:'High',     status:'Investigating', cat:'Fraud Txn',   analyst:'RM', analystFull:'Rohan Mehta',   sla:'warning', slaLabel:'58 min left',   time:'42m ago' },
-    { id:'INC-2026-0845', desc:'Multiple Failed OTP Attempts',         detail:'CUS-12047 · 23 attempts in 5 min',     risk:67, sev:'Medium',   status:'Investigating', cat:'Auth Abuse',  analyst:'AI', analystFull:'Ananya Iyer',   sla:'ok',      slaLabel:'3h 12m left',   time:'1h 08m'  },
-    { id:'INC-2026-0844', desc:'Privilege Escalation — Admin Access',  detail:'User UAT-449 · outside office hours',  risk:89, sev:'Critical', status:'Open',          cat:'Priv Esc',    analyst:'VN', analystFull:'Vikram Nair',   sla:'breach',  slaLabel:'SLA Breach',    time:'2h 31m'  },
-    { id:'INC-2026-0843', desc:'ATM Skimming — Bengaluru South',       detail:'ATM cluster · 47 cards affected',      risk:76, sev:'High',     status:'Resolved',      cat:'Card Fraud',  analyst:'PS', analystFull:'Priya Sharma',  sla:'closed',  slaLabel:'Resolved',      time:'5h 14m'  },
-    { id:'INC-2026-0842', desc:'SIM Swap Fraud Attempt',               detail:'CUS-77312 · BSNL Mumbai circle',       risk:83, sev:'Critical', status:'Investigating', cat:'SIM Swap',    analyst:'RM', analystFull:'Rohan Mehta',   sla:'warning', slaLabel:'1h 20m left',   time:'3h 02m'  },
-    { id:'INC-2026-0841', desc:'Credential Stuffing — 1,200 Accounts', detail:'CIDR 185.220.101.0/24 · Tor exit node',risk:71, sev:'High',     status:'Open',          cat:'Auth Abuse',  analyst:'AI', analystFull:'Ananya Iyer',   sla:'ok',      slaLabel:'4h 08m left',   time:'4h 45m'  },
-    { id:'INC-2026-0840', desc:'Insider Threat — Bulk Data Export',    detail:'Staff ID EMP-3312 · 84K records',      risk:91, sev:'Critical', status:'Open',          cat:'Insider',     analyst:'VN', analystFull:'Vikram Nair',   sla:'breach',  slaLabel:'SLA Breach',    time:'6h 22m'  },
-    { id:'INC-2026-0839', desc:'Phishing Campaign — HDFC Lookalike',   detail:'Domain: hdfcbank-secure.ml · 142 clicks',risk:58,sev:'Medium',  status:'Investigating', cat:'Phishing',    analyst:'PS', analystFull:'Priya Sharma',  sla:'ok',      slaLabel:'5h 40m left',   time:'7h 11m'  },
-    { id:'INC-2026-0838', desc:'Rooted Device — High-Value Account',   detail:'CUS-44821 · Samsung S21 rooted OS',    risk:64, sev:'Medium',   status:'Resolved',      cat:'Device Risk', analyst:'RM', analystFull:'Rohan Mehta',   sla:'closed',  slaLabel:'Resolved',      time:'8h 55m'  },
-  ];
+  /* ── Live incident queue ───────────────────────────────────────────────
+     All rows, counts and charts come from the API. There is no local
+     fixture: if the request fails the table says so rather than showing
+     numbers that were never real. */
 
-  const sevColors = { Critical:'var(--critical)', High:'var(--high)', Medium:'var(--medium)', Low:'var(--low)' };
-  const avColors  = { PS:'#2563EB', RM:'#0891B2', AI:'#7C3AED', VN:'#059669' };
+  let incidents = [];
+  let loadState = 'loading';
+  let page = 1;
 
-  function renderRow(inc) {
-    const riskClass = inc.risk >= 80 ? 'critical' : inc.risk >= 60 ? 'high' : inc.risk >= 40 ? 'medium' : 'low';
+  const COLUMN_COUNT = 11;
+  const AVATAR_COLOURS = ['#2563EB', '#0891B2', '#7C3AED', '#059669', '#D97706', '#DB2777'];
+
+  const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
+
+  function initialsFor(name) {
+    const parts = String(name || '').trim().split(/[\s@._-]+/).filter(Boolean);
+    if (!parts.length) return '—';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  function colourFor(name) {
+    const hash = [...String(name || '')].reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    return AVATAR_COLOURS[hash % AVATAR_COLOURS.length];
+  }
+
+  function relativeTime(iso) {
+    const stamp = new Date(iso).getTime();
+    if (Number.isNaN(stamp)) return '—';
+    const mins = Math.max(1, Math.round((Date.now() - stamp) / 60000));
+    if (mins < 60) return mins + 'm ago';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + 'h ' + (mins % 60) + 'm ago';
+    return Math.floor(hrs / 24) + 'd ago';
+  }
+
+  /** Review urgency derived from the incident's own risk score and status. */
+  function slaFor(incident) {
+    if (['Resolved', 'Closed'].includes(incident.status)) return { cls: 'closed', label: incident.status };
+    if (incident.status === 'Contained') return { cls: 'closed', label: 'Contained' };
+    if (incident.risk_score >= 85) return { cls: 'breach', label: 'Immediate' };
+    if (incident.risk_score >= 65) return { cls: 'warning', label: 'Review due' };
+    return { cls: 'ok', label: 'On track' };
+  }
+
+  const STATUS_CLASSES = {
+    Open: 'open', Investigating: 'investigating', Resolved: 'resolved',
+    Contained: 'low', Escalated: 'critical', Monitoring: 'info', Closed: 'resolved',
+  };
+
+  function renderRow(incident) {
+    const risk = Number(incident.risk_score) || 0;
+    const riskClass = risk >= 80 ? 'critical' : risk >= 60 ? 'high' : risk >= 40 ? 'medium' : 'low';
+    const sla = slaFor(incident);
+    const assignee = incident.assigned_to || '';
+    const id = escapeHtml(incident.id);
+    const detail = [incident.customer_name, incident.customer_id, incident.bank]
+      .filter(value => value && !['Unknown', 'Unassigned'].includes(value)).join(' · ');
+
     return `
-      <tr data-id="${inc.id}" data-sev="${inc.sev}" data-status="${inc.status}" onclick="rowClick(event,'${inc.id}')">
+      <tr data-id="${id}" onclick="rowClick(event,'${id}')">
         <td onclick="event.stopPropagation()">
-          <input type="checkbox" class="row-check" data-id="${inc.id}" onchange="updateBulk()" style="width:15px;height:15px;accent-color:var(--brand-blue-mid);" />
+          <input type="checkbox" class="row-check" data-id="${id}" onchange="updateBulk()" style="width:15px;height:15px;accent-color:var(--brand-blue-mid);" />
         </td>
-        <td><a href="incident.html?id=${encodeURIComponent(inc.id)}" style="color:var(--brand-blue-mid);font-weight:700;font-family:monospace;font-size:0.8125rem;">${inc.id}</a></td>
+        <td><a href="incident.html?id=${encodeURIComponent(incident.id)}" style="color:var(--brand-blue-mid);font-weight:700;font-family:monospace;font-size:0.8125rem;">${id}</a></td>
         <td>
-          <div style="font-weight:600;color:var(--text-primary);margin-bottom:2px;">${inc.desc}</div>
-          <div style="font-size:0.75rem;color:var(--text-muted);">${inc.detail}</div>
+          <div style="font-weight:600;color:var(--text-primary);margin-bottom:2px;">${escapeHtml(incident.title)}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);">${escapeHtml(detail || 'No customer context recorded')}</div>
         </td>
         <td>
           <div class="risk-bar-wrap">
-            <div class="risk-bar" style="min-width:50px;"><div class="risk-fill ${riskClass}" style="width:${inc.risk}%;"></div></div>
-            <span class="risk-num ${riskClass}">${inc.risk}</span>
+            <div class="risk-bar" style="min-width:50px;"><div class="risk-fill ${riskClass}" style="width:${Math.min(100, risk)}%;"></div></div>
+            <span class="risk-num ${riskClass}">${risk}</span>
           </div>
         </td>
-        <td><span class="badge ${inc.sev.toLowerCase()}"><span class="dot"></span>${inc.sev}</span></td>
-        <td><span class="badge ${inc.statusClassOverride || inc.status.toLowerCase().replace(' ','')}">${inc.status}</span></td>
-        <td><span class="tag-pill">${inc.cat}</span></td>
+        <td><span class="badge ${escapeHtml(String(incident.severity).toLowerCase())}"><span class="dot"></span>${escapeHtml(incident.severity)}</span></td>
+        <td><span class="badge ${STATUS_CLASSES[incident.status] || 'info'}">${escapeHtml(incident.status)}</span></td>
+        <td><span class="tag-pill">${escapeHtml(incident.incident_type)}</span></td>
         <td>
-          <div style="display:flex;align-items:center;gap:7px;">
-            <div style="width:26px;height:26px;border-radius:50%;background:${avColors[inc.analyst]};display:flex;align-items:center;justify-content:center;font-size:0.5625rem;font-weight:800;color:white;">${inc.analyst}</div>
-            <span style="font-size:0.875rem;color:var(--text-secondary);">${inc.analystFull}</span>
-          </div>
+          ${assignee ? `<div style="display:flex;align-items:center;gap:7px;">
+            <div style="width:26px;height:26px;border-radius:50%;background:${colourFor(assignee)};display:flex;align-items:center;justify-content:center;font-size:0.5625rem;font-weight:800;color:white;">${escapeHtml(initialsFor(assignee))}</div>
+            <span style="font-size:0.875rem;color:var(--text-secondary);">${escapeHtml(assignee)}</span>
+          </div>` : '<span style="font-size:0.8125rem;color:var(--text-muted);">Unassigned</span>'}
         </td>
-        <td><span class="sla-pill ${inc.sla}">${inc.slaLabel}</span></td>
-        <td><span style="font-size:0.8125rem;color:var(--text-muted);">${inc.time}</span></td>
+        <td><span class="sla-pill ${sla.cls}">${sla.label}</span></td>
+        <td><span style="font-size:0.8125rem;color:var(--text-muted);">${relativeTime(incident.detected_at)}</span></td>
         <td onclick="event.stopPropagation()">
           <div style="display:flex;gap:4px;">
-            <a href="incident.html?id=${encodeURIComponent(inc.id)}" class="btn btn-primary btn-sm">Investigate</a>
-            ${inc.status === 'Resolved' ? '<span class="badge resolved">Resolved</span>' : `<button type="button" class="btn btn-secondary btn-sm" onclick="resolveIncident('${inc.id}')">Resolve</button>`}
+            <a href="incident.html?id=${encodeURIComponent(incident.id)}" class="btn btn-primary btn-sm">Investigate</a>
+            ${['Resolved', 'Closed'].includes(incident.status)
+              ? `<span class="badge resolved">${escapeHtml(incident.status)}</span>`
+              : `<button type="button" class="btn btn-secondary btn-sm" onclick="resolveIncident('${id}')">Resolve</button>`}
           </div>
         </td>
-      </tr>
-    `;
+      </tr>`;
   }
 
-  function renderTable(data) {
-    document.getElementById('incidents-tbody').innerHTML = data.map(renderRow).join('');
-    document.getElementById('row-count').textContent = data.length;
+  function messageRow(text, tone) {
+    const colour = tone === 'error' ? 'var(--critical)' : 'var(--text-muted)';
+    return `<tr><td colspan="${COLUMN_COUNT}" style="padding:38px 20px;text-align:center;color:${colour};font-size:0.875rem;">${escapeHtml(text)}</td></tr>`;
   }
 
-  renderTable(incidents);
+  function rowsPerPage() {
+    return Number(document.getElementById('rows-per-page').value) || 10;
+  }
+
+  function renderTable() {
+    const body = document.getElementById('incidents-tbody');
+    const filtered = currentFilteredIncidents();
+
+    if (loadState === 'loading') {
+      body.innerHTML = messageRow('Loading the incident queue…');
+    } else if (loadState === 'error') {
+      body.innerHTML = messageRow('The incident queue could not be loaded. Check your connection and refresh.', 'error');
+    } else if (!incidents.length) {
+      body.innerHTML = messageRow('No incidents have been recorded yet. Use Create Incident to raise the first one.');
+    } else if (!filtered.length) {
+      body.innerHTML = messageRow('No incidents match the current filters.');
+    } else {
+      const size = rowsPerPage();
+      const pageCount = Math.max(1, Math.ceil(filtered.length / size));
+      page = Math.min(page, pageCount);
+      body.innerHTML = filtered.slice((page - 1) * size, page * size).map(renderRow).join('');
+    }
+
+    document.getElementById('row-count').textContent = filtered.length;
+    document.getElementById('total-count').textContent = incidents.length;
+    renderPagination(filtered.length);
+    clearSelection();
+  }
+
+  function renderPagination(total) {
+    const size = rowsPerPage();
+    const pageCount = Math.max(1, Math.ceil(total / size));
+    const first = total ? (page - 1) * size + 1 : 0;
+    const last = Math.min(page * size, total);
+    document.getElementById('page-summary').textContent =
+      total ? `Showing ${first}–${last} of ${total} incidents` : 'No incidents to display';
+
+    const buttons = [`<button class="btn btn-ghost btn-sm" ${page === 1 ? 'disabled' : ''} onclick="goToPage(${page - 1})">←</button>`];
+    for (let index = 1; index <= pageCount; index += 1) {
+      const active = index === page
+        ? 'style="background:var(--info-bg);color:var(--brand-blue-mid);font-weight:700;"' : '';
+      buttons.push(`<button class="btn btn-ghost btn-sm" ${active} onclick="goToPage(${index})">${index}</button>`);
+    }
+    buttons.push(`<button class="btn btn-ghost btn-sm" ${page === pageCount ? 'disabled' : ''} onclick="goToPage(${page + 1})">→</button>`);
+    document.getElementById('pagination-controls').innerHTML = buttons.join('');
+  }
+
+  function goToPage(next) {
+    page = Math.max(1, next);
+    renderTable();
+  }
 
   function currentFilteredIncidents() {
-    const q = document.getElementById('search-input').value.trim().toLowerCase();
+    const query = document.getElementById('search-input').value.trim().toLowerCase();
     const severity = document.getElementById('severity-filter').value;
     const status = document.getElementById('status-filter').value;
-    const analyst = document.getElementById('analyst-filter').value;
-    return incidents.filter(i =>
-      i.id.toLowerCase().includes(q.toLowerCase()) ||
-      i.desc.toLowerCase().includes(q.toLowerCase()) ||
-      i.analystFull.toLowerCase().includes(q.toLowerCase())
-    ).filter(i => !severity || i.sev === severity)
-     .filter(i => !status || i.status === status)
-     .filter(i => analyst === 'Assigned to Anyone' || i.analystFull === analyst);
+    const assignee = document.getElementById('analyst-filter').value;
+
+    return incidents.filter(incident => {
+      const haystack = [incident.id, incident.title, incident.customer_name, incident.customer_id,
+        incident.incident_type, incident.assigned_to].join(' ').toLowerCase();
+      if (query && !haystack.includes(query)) return false;
+      if (severity && incident.severity !== severity) return false;
+      if (status && incident.status !== status) return false;
+      if (assignee === '__unassigned') return !incident.assigned_to;
+      if (assignee && assignee !== '__any' && incident.assigned_to !== assignee) return false;
+      return true;
+    });
   }
 
-  function filterTable() { renderTable(currentFilteredIncidents()); }
+  function filterTable() { page = 1; renderTable(); }
 
-  function filterSeverity() { filterTable(); }
-  function filterStatus() { filterTable(); }
-  function filterAnalyst() { filterTable(); }
-
-  function rowClick(e, id) {
-    if (e.target.type === 'checkbox') return;
-    window.location.href = 'incident.html?id=' + encodeURIComponent(id);
+  function rowClick(event, id) {
+    if (event.target.type === 'checkbox') return;
+    location.href = 'incident.html?id=' + encodeURIComponent(id);
   }
+
+  /* ── Row and bulk actions ── */
 
   async function resolveIncident(id) {
     const incident = incidents.find(item => item.id === id);
-    if (!incident || incident.status === 'Resolved') return;
-    if (!confirm(`Resolve ${id}? This keeps the incident history for the demo.`)) return;
+    if (!incident || ['Resolved', 'Closed'].includes(incident.status)) return;
+    if (!confirm(`Resolve ${id}? The incident stays in the queue with its full history.`)) return;
     try {
-      await patchJSON('/incident/' + encodeURIComponent(id), { status: 'Resolved' });
-      incident.status = 'Resolved';
-      incident.statusClassOverride = 'resolved';
-      incident.sla = 'closed';
-      incident.slaLabel = 'Resolved';
-      renderTable(currentFilteredIncidents());
-      notify(`${id} marked as resolved.`);
+      const updated = await patchJSON('/incident/' + encodeURIComponent(id), { status: 'Resolved' });
+      Object.assign(incident, updated);
+      renderTable();
+      notify(`${id} marked as resolved.`, 'success');
     } catch (error) {
       reportApiError(`Could not resolve ${id}`, error);
     }
   }
 
+  function selectedIds() {
+    return [...document.querySelectorAll('.row-check:checked')].map(box => box.dataset.id);
+  }
+
+  /** Applies a change to each selected incident, reporting partial failures. */
+  async function applyToSelection(ids, changes, verb) {
+    const failures = [];
+    for (const id of ids) {
+      try {
+        const updated = await patchJSON('/incident/' + encodeURIComponent(id), changes);
+        Object.assign(incidents.find(item => item.id === id) || {}, updated);
+      } catch (error) {
+        failures.push(`${id} (${error.message})`);
+      }
+    }
+    renderTable();
+    if (failures.length) notify(`${verb} failed for ${failures.join(', ')}`, 'error');
+    else notify(`${verb} applied to ${ids.length} incident${ids.length === 1 ? '' : 's'}.`, 'success');
+  }
+
   function updateBulk() {
     const checked = document.querySelectorAll('.row-check:checked').length;
-    const bar = document.getElementById('bulk-bar');
-    bar.classList.toggle('show', checked > 0);
+    document.getElementById('bulk-bar').classList.toggle('show', checked > 0);
     document.getElementById('bulk-count').textContent = checked + ' selected';
   }
 
   function toggleSelectAll(checked) {
-    document.querySelectorAll('.row-check').forEach(c => c.checked = checked);
+    document.querySelectorAll('.row-check').forEach(box => { box.checked = checked; });
     updateBulk();
   }
 
   function clearSelection() {
-    document.querySelectorAll('.row-check, #select-all').forEach(c => c.checked = false);
+    document.querySelectorAll('.row-check, #select-all').forEach(box => { box.checked = false; });
     updateBulk();
   }
 
-  // Tabs
+  document.getElementById('bulk-assign').addEventListener('click', async () => {
+    const ids = selectedIds();
+    if (!ids.length) return;
+    const assignee = prompt('Assign the selected incidents to (name or email):', '');
+    if (assignee === null) return;
+    await applyToSelection(ids, { assigned_to: assignee.trim() || null }, 'Assignment');
+    refreshFilters();
+  });
+
+  document.getElementById('bulk-status').addEventListener('click', async () => {
+    const ids = selectedIds();
+    if (!ids.length) return;
+    const status = prompt('New status (Open, Investigating, Contained, Resolved):', 'Investigating');
+    if (status === null) return;
+    const allowed = ['Open', 'Investigating', 'Contained', 'Resolved', 'Closed'];
+    const normalised = allowed.find(item => item.toLowerCase() === status.trim().toLowerCase());
+    if (!normalised) return notify(`Status must be one of: ${allowed.join(', ')}.`, 'error');
+    await applyToSelection(ids, { status: normalised }, 'Status change');
+  });
+
+  document.getElementById('bulk-export').addEventListener('click', () => {
+    const ids = new Set(selectedIds());
+    downloadCsv('riskfusion-selected-incidents.csv', incidents.filter(item => ids.has(item.id)));
+  });
+
+  document.getElementById('bulk-close').addEventListener('click', async () => {
+    const ids = selectedIds();
+    if (!ids.length) return;
+    if (!confirm(`Close ${ids.length} incident${ids.length === 1 ? '' : 's'}? History is preserved.`)) return;
+    await applyToSelection(ids, { status: 'Closed' }, 'Closure');
+  });
+
+  /* ── Filters, tabs and view controls ── */
+
   document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', function() {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('.tab').forEach(item => item.classList.remove('active'));
       this.classList.add('active');
-      const status = this.textContent.trim().split(' ')[0];
-      document.getElementById('status-filter').value = ['Open', 'Investigating', 'Resolved'].includes(status) ? status : '';
+      const label = this.textContent.trim().split(' ')[0];
+      document.getElementById('status-filter').value =
+        ['Open', 'Investigating', 'Resolved', 'Closed'].includes(label) ? label : '';
       filterTable();
     });
   });
 
-  // View toggle
-  document.querySelectorAll('.view-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.view-btn').forEach(button => {
+    button.addEventListener('click', function () {
+      document.querySelectorAll('.view-btn').forEach(item => item.classList.remove('active'));
       this.classList.add('active');
-      notify(this.textContent.trim() === 'Board' ? 'Board view is coming next; table view remains active for live data.' : 'Table view active.');
+      const board = this.textContent.trim() === 'Board';
+      document.getElementById('table-view').hidden = board;
+      document.getElementById('board-view').hidden = !board;
+      if (board) renderBoard();
     });
   });
 
-  /* ── Charts ── */
+  /** Board view groups the same live incidents by status. */
+  function renderBoard() {
+    const columns = ['Open', 'Investigating', 'Contained', 'Resolved'];
+    const filtered = currentFilteredIncidents();
+    document.getElementById('board-view').innerHTML = columns.map(column => {
+      const cards = filtered.filter(incident =>
+        column === 'Resolved' ? ['Resolved', 'Closed'].includes(incident.status) : incident.status === column);
+      return `
+        <div class="board-column">
+          <div class="board-column-head">${column}<span class="board-count">${cards.length}</span></div>
+          ${cards.length ? cards.map(incident => `
+            <a class="board-card" href="incident.html?id=${encodeURIComponent(incident.id)}">
+              <div class="board-card-id">${escapeHtml(incident.id)}</div>
+              <div class="board-card-title">${escapeHtml(incident.title)}</div>
+              <span class="badge ${escapeHtml(String(incident.severity).toLowerCase())}"><span class="dot"></span>${escapeHtml(incident.severity)}</span>
+            </a>`).join('')
+            : '<div class="board-empty">Nothing here</div>'}
+        </div>`;
+    }).join('');
+  }
+
+  document.getElementById('rows-per-page').addEventListener('change', () => { page = 1; renderTable(); });
+
+  /** Rebuilds the assignee filter from whoever actually owns incidents. */
+  function refreshFilters() {
+    const select = document.getElementById('analyst-filter');
+    const current = select.value;
+    const assignees = [...new Set(incidents.map(item => item.assigned_to).filter(Boolean))].sort();
+    select.innerHTML = ['<option value="__any">Assigned to anyone</option>',
+      '<option value="__unassigned">Unassigned</option>',
+      ...assignees.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`)].join('');
+    select.value = [...select.options].some(option => option.value === current) ? current : '__any';
+  }
+
+  /* ── Charts, fed from the same live data ── */
+
   const sevChartObj = new Chart(document.getElementById('sevChart').getContext('2d'), {
     type: 'bar',
     data: {
-      labels: ['Critical','High','Medium','Low'],
+      labels: ['Critical', 'High', 'Medium', 'Low'],
       datasets: [{
-        data: [12, 18, 14, 3],
-        backgroundColor: ['#DC2626','#EA580C','#D97706','#059669'],
+        data: [0, 0, 0, 0],
+        backgroundColor: ['#DC2626', '#EA580C', '#D97706', '#059669'],
         borderRadius: 6, borderSkipped: false,
-      }]
+      }],
     },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { display: false } },
-        y: { beginAtZero: true, grid: { color: '#F1F5F9' } }
-      }
-    }
+      scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#F1F5F9' } } },
+    },
   });
 
-  const days7 = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  new Chart(document.getElementById('volChart').getContext('2d'), {
+  const volChartObj = new Chart(document.getElementById('volChart').getContext('2d'), {
     type: 'line',
     data: {
-      labels: days7,
+      labels: [],
       datasets: [{
-        label: 'Incidents',
-        data: [28, 35, 22, 41, 38, 19, 47],
-        borderColor: '#2563EB',
-        backgroundColor: 'rgba(37,99,235,0.07)',
-        fill: true, tension: 0.4, borderWidth: 2,
-        pointRadius: 3, pointBackgroundColor: '#2563EB',
-      }]
+        label: 'Incidents', data: [],
+        borderColor: '#2563EB', backgroundColor: 'rgba(37,99,235,0.07)',
+        fill: true, tension: 0.4, borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#2563EB',
+      }],
     },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { display: false } },
-        y: { beginAtZero: true, grid: { color: '#F1F5F9' } }
-      }
-    }
+      scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#F1F5F9' } } },
+    },
   });
 
-  // ── Live backend data (falls back to the mock rows above if unreachable) ──
-  const analystPool = [
-    { code: 'PS', full: 'Priya Sharma' },
-    { code: 'RM', full: 'Rohan Mehta' },
-    { code: 'AI', full: 'Ananya Iyer' },
-    { code: 'VN', full: 'Vikram Nair' },
-  ];
-
-  function relativeTime(iso) {
-    const mins = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
-    if (mins < 60) return mins + 'm ago';
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return hrs + 'h ' + (mins % 60) + 'm';
-    return Math.floor(hrs / 24) + 'd ago';
-  }
-
-  function mapLiveIncident(inc) {
-    const statusClassMap = { Open: 'open', Investigating: 'investigating', Resolved: 'resolved', Contained: 'low', Monitoring: 'info' };
-    const hash = [...inc.customer_id].reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
-    const analyst = analystPool[hash % analystPool.length];
-
-    let sla = 'ok', slaLabel = 'On Track';
-    if (inc.status === 'Resolved' || inc.status === 'Contained') { sla = 'closed'; slaLabel = inc.status; }
-    else if (inc.risk_score >= 85) { sla = 'breach'; slaLabel = 'SLA Breach'; }
-    else if (inc.risk_score >= 65) { sla = 'warning'; slaLabel = 'Review Due'; }
-
-    return {
-      id: inc.id,
-      desc: inc.title,
-      detail: `${inc.customer_name} (${inc.customer_id}) · ${inc.bank}`,
-      risk: inc.risk_score,
-      sev: inc.severity,
-      status: inc.status,
-      statusClassOverride: statusClassMap[inc.status] || 'closed',
-      cat: inc.incident_type,
-      analyst: analyst.code,
-      analystFull: analyst.full,
-      sla, slaLabel,
-      time: relativeTime(inc.detected_at),
-    };
-  }
-
-  (async function loadLiveIncidents() {
-    try {
-      const data = await fetchJSON('/incidents');
-      incidents = data.map(mapLiveIncident);
-      const searchQuery = new URLSearchParams(location.search).get('q');
-      if (searchQuery) document.getElementById('search-input').value = searchQuery;
-      renderTable(currentFilteredIncidents());
-
-      const sevOrder = ['Critical', 'High', 'Medium', 'Low'];
-      const sevCounts = sevOrder.map(sev => incidents.filter(i => i.sev === sev).length);
-      sevChartObj.data.datasets[0].data = sevCounts;
-      sevChartObj.update();
-
-      const setTabCount = (id, count) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = count;
-      };
-      setTabCount('tab-count-all', incidents.length);
-      setTabCount('tab-count-open', incidents.filter(i => i.status === 'Open').length);
-      setTabCount('tab-count-investigating', incidents.filter(i => i.status === 'Investigating').length);
-      setTabCount('tab-count-resolved', incidents.filter(i => i.status === 'Resolved').length);
-    } catch (err) {
-      reportApiError('Incident queue could not be refreshed', err);
+  /** Counts incidents detected on each of the last seven days. */
+  function volumeSeries() {
+    const labels = [];
+    const values = [];
+    for (let offset = 6; offset >= 0; offset -= 1) {
+      const day = new Date();
+      day.setDate(day.getDate() - offset);
+      const key = day.toISOString().slice(0, 10);
+      labels.push(day.toLocaleDateString('en-IN', { weekday: 'short' }));
+      values.push(incidents.filter(item => String(item.detected_at).slice(0, 10) === key).length);
     }
+    return { labels, values };
+  }
+
+  function updateSummary() {
+    const active = incidents.filter(item => !['Resolved', 'Closed'].includes(item.status));
+    const critical = active.filter(item => item.severity === 'Critical');
+    const urgent = active.filter(item => item.risk_score >= 85);
+    const today = new Date().toISOString().slice(0, 10);
+    const resolvedToday = incidents.filter(item =>
+      ['Resolved', 'Closed'].includes(item.status) && String(item.updated_at).slice(0, 10) === today);
+
+    const resolved = incidents.filter(item => ['Resolved', 'Closed'].includes(item.status));
+    const durations = resolved
+      .map(item => new Date(item.updated_at).getTime() - new Date(item.detected_at).getTime())
+      .filter(value => Number.isFinite(value) && value > 0);
+    const meanMinutes = durations.length
+      ? Math.round(durations.reduce((sum, value) => sum + value, 0) / durations.length / 60000) : null;
+
+    const set = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+    set('stat-active', active.length);
+    set('stat-critical', critical.length);
+    set('stat-urgent', urgent.length);
+    set('stat-resolved-today', resolvedToday.length);
+    set('stat-mttr', meanMinutes === null ? '—'
+      : meanMinutes < 60 ? `${meanMinutes}m` : `${Math.floor(meanMinutes / 60)}h ${meanMinutes % 60}m`);
+
+    const setTab = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+    setTab('tab-count-all', incidents.length);
+    setTab('tab-count-open', incidents.filter(item => item.status === 'Open').length);
+    setTab('tab-count-investigating', incidents.filter(item => item.status === 'Investigating').length);
+    setTab('tab-count-resolved', incidents.filter(item => ['Resolved', 'Closed'].includes(item.status)).length);
+
+    sevChartObj.data.datasets[0].data = ['Critical', 'High', 'Medium', 'Low']
+      .map(severity => incidents.filter(item => item.severity === severity).length);
+    sevChartObj.update();
+
+    const series = volumeSeries();
+    volChartObj.data.labels = series.labels;
+    volChartObj.data.datasets[0].data = series.values;
+    volChartObj.update();
+  }
+
+  /* ── Load ── */
+
+  (async function loadIncidents() {
+    const query = new URLSearchParams(location.search).get('q');
+    if (query) document.getElementById('search-input').value = query;
+    renderTable();
+    try {
+      incidents = await fetchJSON('/incidents');
+      loadState = 'ready';
+      refreshFilters();
+      updateSummary();
+    } catch (error) {
+      loadState = 'error';
+      reportApiError('Incident queue could not be loaded', error);
+    }
+    renderTable();
   })();
 </script>
 </body>

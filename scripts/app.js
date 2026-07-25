@@ -23,7 +23,7 @@ document.addEventListener('keydown', e => {
   }
 });
 
-/* ─── Demo navigation and analyst utilities ─── */
+/* ─── Workspace navigation and analyst utilities ─── */
 function appToast(message, tone = 'default') {
   if (typeof notify === 'function') return notify(message);
   const toast = document.createElement('div');
@@ -40,14 +40,52 @@ document.addEventListener('DOMContentLoaded', () => {
     if (event.key !== 'Enter' || !search.value.trim()) return;
     location.href = `incidents.html?q=${encodeURIComponent(search.value.trim())}`;
   });
-  document.getElementById('notifications-button')?.addEventListener('click', () => appToast('Notifications are up to date: no new critical alerts.'));
   document.getElementById('settings-button')?.addEventListener('click', () => { location.href = 'config.html'; });
-  document.getElementById('profile-button')?.addEventListener('click', () => {
-    if (!confirm('Sign out of the RiskFusion demo?')) return;
-    localStorage.removeItem('riskfusion-user');
-    location.href = 'index.html';
+
+  // Notifications summarise the real open critical workload.
+  document.getElementById('notifications-button')?.addEventListener('click', async () => {
+    if (typeof fetchJSON !== 'function') return;
+    try {
+      const incidents = await fetchJSON('/incidents');
+      const open = incidents.filter(item => !['Resolved', 'Closed'].includes(item.status));
+      const critical = open.filter(item => item.severity === 'Critical');
+      appToast(critical.length
+        ? `${critical.length} critical incident${critical.length === 1 ? '' : 's'} open of ${open.length} active.`
+        : open.length ? `No critical incidents. ${open.length} active incident${open.length === 1 ? '' : 's'} in progress.`
+          : 'No active incidents. The workspace is clear.');
+    } catch (error) {
+      appToast('Notifications are unavailable: ' + error.message);
+    }
   });
+
+  document.getElementById('profile-button')?.addEventListener('click', signOutOfWorkspace);
+  document.getElementById('service-status-chip') && refreshServiceStatus();
 });
+
+/** Ends the Supabase session (revoking it server-side) and returns to sign-in. */
+async function signOutOfWorkspace() {
+  if (!confirm('Sign out of RiskFusion AI?')) return;
+  try {
+    await window.RiskFusionAuth.signOut();
+  } finally {
+    location.replace('index.html');
+  }
+}
+
+/** Reflects real API reachability in the topbar rather than asserting health. */
+async function refreshServiceStatus() {
+  const chip = document.getElementById('service-status-chip');
+  const text = document.getElementById('service-status-text');
+  if (!chip || !text || typeof fetchJSON !== 'function') return;
+  try {
+    await fetchJSON('/health');
+    text.textContent = 'All systems operational';
+    chip.classList.remove('degraded');
+  } catch {
+    text.textContent = 'Service degraded';
+    chip.classList.add('degraded');
+  }
+}
 
 /* ─── Time Update ─── */
 function updateTime() {

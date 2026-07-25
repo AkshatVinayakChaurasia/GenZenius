@@ -205,13 +205,13 @@
               </svg>
               Filters
             </button>
-            <button class="btn btn-secondary btn-sm">
+            <button class="btn btn-secondary btn-sm" type="button" data-action="export-csv">
               <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
                 <path d="M2 7h10M7 2l5 5-5 5" />
               </svg>
               Export
             </button>
-            <button class="btn btn-primary btn-sm">
+            <button class="btn btn-primary btn-sm" type="button" data-action="new-incident">
               <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                 <line x1="7" y1="1" x2="7" y2="13" />
                 <line x1="1" y1="7" x2="13" y2="7" />
@@ -476,8 +476,15 @@
                   <text x="110" y="380" font-size="12" fill="#CBD5E1" font-family="Inter" text-anchor="middle"
                     font-weight="500">SOUTH PACIFIC</text>
                 </svg>
-                <!-- Attack pins overlaid -->
+                <!-- Threat origin pins, placed from live incident locations -->
                 <div id="map-pins"></div>
+                <div id="map-empty" hidden
+                  style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;">
+                  <span
+                    style="background:rgba(255,255,255,0.92);border:1px solid var(--border-default);border-radius:var(--r-md);padding:8px 14px;font-size:0.75rem;color:var(--text-muted);font-weight:600;">
+                    No mapped threat origins in the current incident set
+                  </span>
+                </div>
                 <!-- Legend -->
                 <div
                   style="position:absolute;bottom:12px;right:12px;background:rgba(255,255,255,0.9);backdrop-filter:blur(8px);border:1px solid var(--border-default);border-radius:var(--r-md);padding:10px 14px;font-size:0.6875rem;">
@@ -736,7 +743,9 @@
     </div><!-- end main-area -->
   </div><!-- end app-shell -->
 
-  <script src="scripts/shell.js"></script>
+  <script src="scripts/config.js"></script>
+<script src="scripts/auth.js"></script>
+<script src="scripts/shell.js"></script>
   <script src="scripts/app.js"></script>
   <script src="scripts/api.js"></script>
   <script>
@@ -852,59 +861,119 @@
       heatmap.appendChild(row);
     });
 
-    // ── Map Pins ──
-    const pins = [
-      { top: '38%', left: '72%', type: 'critical', label: 'Moscow, RU', tip: 'Account Takeover — INC-2026-0847' },
-      { top: '55%', left: '14%', type: 'medium', label: 'São Paulo, BR', tip: 'Suspicious Login' },
-      { top: '32%', left: '48%', type: 'medium', label: 'Paris, FR', tip: 'Multiple Failed OTPs' },
-      { top: '44%', left: '62%', type: 'critical', label: 'Dubai, AE', tip: 'VPN Detected + High Tx' },
-      { top: '50%', left: '70%', type: 'cyan', label: 'Mumbai, IN', tip: 'Monitored — Home Location' },
-      { top: '28%', left: '79%', type: 'medium', label: 'Beijing, CN', tip: 'Port Scan Activity' },
-      { top: '22%', left: '18%', type: 'medium', label: 'New York, US', tip: 'Credential Stuffing' },
-    ];
-    const mapPins = document.getElementById('map-pins');
-    const mapContainer = document.getElementById('map-container');
-    pins.forEach(p => {
-      const pin = document.createElement('div');
-      pin.className = 'map-pin';
-      pin.style.top = p.top; pin.style.left = p.left;
-      pin.setAttribute('data-tip', p.tip);
-      const color = p.type === 'critical' ? '#DC2626' : p.type === 'cyan' ? '#06B6D4' : '#D97706';
-      pin.innerHTML = `
-      <div class="map-pin-dot" style="background:${color};"></div>
-      <div class="map-pin-ring" style="background:${color};opacity:0.3;"></div>
-    `;
-      mapPins.appendChild(pin);
-    });
+    /* ── Threat origin map ──
+       Pins are placed from the source_location recorded on live incidents.
+       Only locations the platform knows coordinates for are plotted; nothing
+       is invented to fill the map. */
+    const LOCATION_COORDS = {
+      'mumbai': { top: '50%', left: '70%' }, 'delhi': { top: '44%', left: '69%' },
+      'bengaluru': { top: '57%', left: '70%' }, 'bangalore': { top: '57%', left: '70%' },
+      'chennai': { top: '57%', left: '71%' }, 'hyderabad': { top: '54%', left: '70%' },
+      'kolkata': { top: '48%', left: '73%' }, 'pune': { top: '52%', left: '70%' },
+      'moscow': { top: '30%', left: '58%' }, 'london': { top: '30%', left: '47%' },
+      'paris': { top: '32%', left: '48%' }, 'amsterdam': { top: '30%', left: '49%' },
+      'dubai': { top: '46%', left: '61%' }, 'singapore': { top: '60%', left: '77%' },
+      'hong kong': { top: '48%', left: '80%' }, 'beijing': { top: '38%', left: '79%' },
+      'tokyo': { top: '40%', left: '85%' }, 'sydney': { top: '75%', left: '87%' },
+      'new york': { top: '38%', left: '26%' }, 'san francisco': { top: '39%', left: '15%' },
+      'sao paulo': { top: '68%', left: '32%' }, 's\u00e3o paulo': { top: '68%', left: '32%' },
+      'lagos': { top: '58%', left: '47%' }, 'johannesburg': { top: '72%', left: '53%' },
+    };
 
-    // ── Event Stream ──
-    const events = [
-      { type: '#DC2626', time: 'Just now', desc: '<strong>INC-0847:</strong> New device fingerprint detected — Galaxy S24', src: 'device-mgr' },
-      { type: '#EA580C', time: '1m ago', desc: '<strong>AUTH:</strong> Login from Moscow, RU — impossible travel flag', src: 'geo-engine' },
-      { type: '#D97706', time: '2m ago', desc: '<strong>TX-9841:</strong> Wire transfer ₹14.7L to new beneficiary', src: 'tx-monitor' },
-      { type: '#2563EB', time: '4m ago', desc: '<strong>AI MODEL:</strong> Risk score escalated 62 → 94 for CUS-84721', src: 'risk-ai' },
-      { type: '#DC2626', time: '6m ago', desc: '<strong>VPN:</strong> NordVPN exit node detected (Amsterdam)', src: 'net-sensor' },
-      { type: '#059669', time: '9m ago', desc: '<strong>INC-0843:</strong> ATM skimming incident resolved by Akshat', src: 'incident-mgr' },
-      { type: '#D97706', time: '12m ago', desc: '<strong>OTP:</strong> 23 failed OTP attempts — CUS-12047 throttled', src: 'auth-svc' },
-      { type: '#7C3AED', time: '15m ago', desc: '<strong>AI:</strong> Anomaly cluster detected — 3 accounts correlated', src: 'ml-engine' },
-    ];
-    const stream = document.getElementById('event-stream');
-    events.forEach(ev => {
-      const row = document.createElement('div');
-      row.className = 'event-row';
-      row.innerHTML = `
-      <div class="event-type-dot" style="background:${ev.type};"></div>
-      <div class="event-time">${ev.time}</div>
-      <div class="event-desc">${ev.desc}</div>
-      <div class="event-source">${ev.src}</div>
-    `;
-      stream.appendChild(row);
-    });
+    function renderMapPins(incidents) {
+      const container = document.getElementById('map-pins');
+      if (!container) return;
+      container.innerHTML = '';
 
-    // ── Live backend data (falls back to the mock values above if unreachable) ──
-    (async function loadLiveDashboard() {
+      const plotted = new Map();
+      incidents.forEach(incident => {
+        const key = String(incident.source_location || '').split(',')[0].trim().toLowerCase();
+        const coords = LOCATION_COORDS[key];
+        if (!coords) return;
+        const existing = plotted.get(key);
+        if (!existing || incident.risk_score > existing.risk_score) plotted.set(key, incident);
+      });
+
+      plotted.forEach((incident, key) => {
+        const coords = LOCATION_COORDS[key];
+        const pin = document.createElement('div');
+        pin.className = 'map-pin';
+        pin.style.top = coords.top;
+        pin.style.left = coords.left;
+        pin.setAttribute('data-tip', `${incident.source_location} \u2014 ${incident.title} (${incident.id})`);
+        const colour = incident.risk_score >= 80 ? '#DC2626' : incident.risk_score >= 60 ? '#D97706' : '#06B6D4';
+        pin.innerHTML = `
+          <div class="map-pin-dot" style="background:${colour};"></div>
+          <div class="map-pin-ring" style="background:${colour};opacity:0.3;"></div>`;
+        container.appendChild(pin);
+      });
+
+      const empty = document.getElementById('map-empty');
+      if (empty) empty.hidden = plotted.size > 0;
+    }
+
+    /* ── Activity stream ──
+       Built from the audit timelines of live incidents, most recent first. */
+    const STREAM_COLOURS = {
+      Critical: '#DC2626', High: '#EA580C', Medium: '#D97706', Low: '#059669',
+    };
+
+    function renderEventStream(incidents) {
+      const stream = document.getElementById('event-stream');
+      if (!stream) return;
+
+      const entries = [];
+      incidents.forEach(incident => {
+        (incident.timeline || []).forEach(event => {
+          entries.push({
+            at: new Date(event.timestamp).getTime(),
+            colour: STREAM_COLOURS[incident.severity] || '#2563EB',
+            id: incident.id,
+            text: event.event,
+            detail: event.detail || '',
+            source: event.source || 'platform',
+          });
+        });
+      });
+
+      if (!entries.length) {
+        stream.innerHTML = '<div class="empty-state">No recorded activity yet. Events appear here as incidents are raised and actioned.</div>';
+        return;
+      }
+
+      stream.innerHTML = entries
+        .filter(entry => Number.isFinite(entry.at))
+        .sort((a, b) => b.at - a.at)
+        .slice(0, 12)
+        .map(entry => `
+          <div class="event-row">
+            <div class="event-type-dot" style="background:${entry.colour};"></div>
+            <div class="event-time">${escapeDash(relativeTime(entry.at))}</div>
+            <div class="event-desc"><strong>${escapeDash(entry.id)}:</strong> ${escapeDash(entry.text)}${entry.detail ? ' \u2014 ' + escapeDash(entry.detail) : ''}</div>
+            <div class="event-source">${escapeDash(entry.source)}</div>
+          </div>`)
+        .join('');
+    }
+
+    function escapeDash(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, char =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
+    }
+
+    function relativeTime(stamp) {
+      const mins = Math.max(0, Math.round((Date.now() - stamp) / 60000));
+      if (mins < 1) return 'Just now';
+      if (mins < 60) return mins + 'm ago';
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return hrs + 'h ago';
+      return Math.floor(hrs / 24) + 'd ago';
+    }
+
+    /* ── Live dashboard ── */
+    window.refreshDashboard = async function loadLiveDashboard() {
       try {
-        const data = await fetchJSON('/dashboard');
+        const [data, incidents] = await Promise.all([fetchJSON('/dashboard'), fetchJSON('/incidents')]);
+
         const kpiValues = document.querySelectorAll('.kpi-value');
         if (kpiValues[0]) kpiValues[0].textContent = data.active_incidents;
         if (kpiValues[1]) kpiValues[1].textContent = data.critical_alerts;
@@ -912,34 +981,31 @@
         if (kpiValues[3]) kpiValues[3].innerHTML = data.ai_confidence + '<span style="font-size:1.2rem;font-weight:600;">%</span>';
 
         const order = ['Critical', 'High', 'Medium', 'Low'];
-        const counts = order.map(sev => {
-          const entry = data.risk_distribution.find(d => d.severity === sev);
+        const counts = order.map(severity => {
+          const entry = data.risk_distribution.find(item => item.severity === severity);
           return entry ? entry.count : 0;
         });
         riskChartObj.data.datasets[0].data = counts;
         riskChartObj.update();
 
-        const total = counts.reduce((a, b) => a + b, 0) || 1;
+        const total = counts.reduce((sum, value) => sum + value, 0) || 1;
         const pctIds = { Critical: 'risk-pct-critical', High: 'risk-pct-high', Medium: 'risk-pct-medium', Low: 'risk-pct-low' };
-        order.forEach((sev, i) => {
-          const el = document.getElementById(pctIds[sev]);
-          if (el) el.textContent = Math.round((counts[i] / total) * 100) + '%';
+        order.forEach((severity, index) => {
+          const element = document.getElementById(pctIds[severity]);
+          if (element) element.textContent = Math.round((counts[index] / total) * 100) + '%';
         });
 
-        // The dashboard starts empty until an analyst creates a real incident.
-        // Do not retain the prototype event stream or map pins as fake activity.
+        renderEventStream(incidents);
+        renderMapPins(incidents);
+      } catch (error) {
         const stream = document.getElementById('event-stream');
-        if (stream) stream.innerHTML = data.incident_trend.length
-          ? data.incident_trend.map(item => `<div class="event-row"><div class="event-type-dot" style="background:#2563EB;"></div><div class="event-time">${item.date}</div><div class="event-desc">${item.count} incident${item.count === 1 ? '' : 's'} recorded</div><div class="event-source">live database</div></div>`).join('')
-          : '<div class="empty-state">No live incidents yet. Use New Incident to create the first record.</div>';
-        const pins = document.getElementById('map-pins');
-        if (pins) pins.innerHTML = '';
-      } catch (err) {
-        reportApiError('Dashboard data could not be refreshed', err);
+        if (stream) stream.innerHTML = '<div class="empty-state">Live activity could not be loaded. Refresh to try again.</div>';
+        reportApiError('Dashboard data could not be loaded', error);
       }
-    })();
+    };
+    window.refreshDashboard();
   </script>
-  <script src="scripts/live-state.js?v=3"></script>
+  <script src="scripts/live-state.js?v=4"></script>
 </body>
 
 </html>

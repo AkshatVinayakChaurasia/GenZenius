@@ -882,7 +882,7 @@
             <div style="display:flex;gap:8px;">
               <a href="incident.html" class="btn btn-secondary btn-sm" style="flex:1;justify-content:center;">←
                 Incident</a>
-              <button class="btn btn-primary btn-sm" style="flex:1;" onclick="window.print()">Export PDF</button>
+              <button class="btn btn-primary btn-sm" style="flex:1;" type="button" data-action="print">Export PDF</button>
             </div>
 
             <!-- Incident Context -->
@@ -966,7 +966,9 @@
     </div>
   </div>
 
-  <script src="scripts/shell.js"></script>
+  <script src="scripts/config.js"></script>
+<script src="scripts/auth.js"></script>
+<script src="scripts/shell.js"></script>
   <script src="scripts/app.js"></script>
   <script>
     renderShell('ai');
@@ -989,7 +991,7 @@
     }, 300);
   </script>
   <script src="scripts/api.js"></script>
-  <script src="scripts/live-state.js?v=2"></script>
+  <script src="scripts/live-state.js?v=4"></script>
 </body>
 
 </html>

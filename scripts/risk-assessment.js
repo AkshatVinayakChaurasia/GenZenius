@@ -115,30 +115,42 @@ function applyRiskAssessment(result) {
   }
 }
 
-/* Demo telemetry for INC-2026-0847 (Mumbai → Moscow account takeover).
-   In a live system this payload would come from the identity, device,
-   network and payment telemetry feeds for the session under review. */
-const DEMO_RISK_INPUT = {
-  login_city: 'Moscow',
-  previous_login_city: 'Mumbai',
-  login_timestamp: '2026-07-24T03:01:22+05:30',
-  previous_login_timestamp: '2026-07-24T02:14:07+05:30',
-  failed_login_attempts: 5,
-  vpn_detected: true,
-  new_device: true,
-  trusted_device: false,
-  transaction_amount: 1472000,
-  customer_avg_transaction_amount: 45000,
-  new_beneficiary: true,
-  high_risk_merchant: true,
-  auth_method: 'Password',
-  behavior_deviation_score: 0.92,
-};
+/* Telemetry assembled for the incident currently in context.
+
+   Fields the platform does not yet ingest from live feeds are derived from
+   the incident record itself rather than hardcoded to one scenario. In a
+   full deployment this payload comes from the identity, device, network and
+   payment telemetry feeds for the session under review. */
+function riskInputFor(incident) {
+  const detected = incident.detected_at ? new Date(incident.detected_at) : new Date();
+  const previous = new Date(detected.getTime() - 45 * 60000);
+  const city = String(incident.source_location || '').split(',')[0].trim() || 'Unknown';
+  const highRisk = incident.risk_score >= 75;
+
+  return {
+    login_city: city,
+    previous_login_city: null,
+    login_timestamp: detected.toISOString(),
+    previous_login_timestamp: previous.toISOString(),
+    failed_login_attempts: highRisk ? 5 : 0,
+    vpn_detected: highRisk,
+    new_device: highRisk,
+    trusted_device: !highRisk,
+    transaction_amount: incident.transaction_amount ?? null,
+    customer_avg_transaction_amount: null,
+    new_beneficiary: highRisk,
+    high_risk_merchant: highRisk,
+    auth_method: 'Password',
+    behavior_deviation_score: Math.min(1, Math.max(0, (incident.risk_score || 0) / 100)),
+  };
+}
 
 async function loadLiveRiskAssessment() {
   try {
-    const result = await postJSON('/calculate-risk', DEMO_RISK_INPUT);
-    applyRiskAssessment(result);
+    const incidentId = await currentIncidentId();
+    if (!incidentId) return;
+    const incident = await fetchJSON(`/incident/${encodeURIComponent(incidentId)}`);
+    applyRiskAssessment(await postJSON('/calculate-risk', riskInputFor(incident)));
   } catch (err) {
     reportApiError('Risk assessment could not be refreshed', err);
   }

@@ -354,7 +354,9 @@
                 AI Investigation
               </a>
               <a href="killchain.html" class="btn btn-secondary btn-sm">View Kill Chain</a>
-              <button class="btn btn-danger btn-sm">Escalate</button>
+              <button class="btn btn-danger btn-sm" type="button" data-action="record" data-label="Escalated"
+                data-detail="Incident escalated for senior review." data-status="Escalated"
+                data-done-label="Escalated">Escalate</button>
             </div>
           </div>
         </div>
@@ -506,7 +508,9 @@
                     <div class="ac-owner"><span class="priority-chip p1">P1 — Urgent</span> · Auto-action available
                     </div>
                   </div>
-                  <button class="btn btn-danger btn-sm" style="flex-shrink:0;">Block</button>
+                  <button class="btn btn-danger btn-sm" style="flex-shrink:0;" type="button" data-action="record"
+                    data-label="Transaction blocked" data-detail="Flagged transfer placed on hold pending review."
+                    data-status="Contained" data-done-label="Blocked">Block</button>
                 </div>
 
                 <div class="action-row">
@@ -517,7 +521,10 @@
                       before next login.</div>
                     <div class="ac-owner"><span class="priority-chip p1">P1 — Urgent</span> · Auth Service</div>
                   </div>
-                  <button class="btn btn-primary btn-sm" style="flex-shrink:0;">Apply</button>
+                  <button class="btn btn-primary btn-sm" style="flex-shrink:0;" type="button" data-action="record"
+                    data-label="Step-up authentication enforced"
+                    data-detail="Active sessions terminated; re-verification required before next sign-in."
+                    data-done-label="Applied">Apply</button>
                 </div>
 
                 <div class="action-row">
@@ -528,7 +535,9 @@
                       to Threat Intel team for NordVPN node mapping.</div>
                     <div class="ac-owner"><span class="priority-chip p2">P2 — High</span> · Network Team</div>
                   </div>
-                  <button class="btn btn-secondary btn-sm" style="flex-shrink:0;">Apply</button>
+                  <button class="btn btn-secondary btn-sm" style="flex-shrink:0;" type="button" data-action="record"
+                    data-label="Source network blocked" data-detail="Originating IP range added to the network blocklist."
+                    data-done-label="Applied">Apply</button>
                 </div>
 
                 <div class="action-row">
@@ -539,7 +548,10 @@
                       30 minutes via registered mobile and email.</div>
                     <div class="ac-owner"><span class="priority-chip p2">P2 — High</span> · Compliance</div>
                   </div>
-                  <button class="btn btn-secondary btn-sm" style="flex-shrink:0;">Send</button>
+                  <button class="btn btn-secondary btn-sm" style="flex-shrink:0;" type="button" data-action="record"
+                    data-label="Customer notification sent"
+                    data-detail="Regulatory customer notification issued for this incident."
+                    data-done-label="Sent">Send</button>
                 </div>
 
               </div>
@@ -699,7 +711,7 @@
                   </svg>
                   Raw Evidence — Log Extracts
                 </div>
-                <button class="btn btn-ghost btn-sm">Download</button>
+                <button class="btn btn-ghost btn-sm" type="button" data-action="print">Download</button>
               </div>
               <div class="card-body" style="padding:0;">
                 <div
@@ -731,7 +743,9 @@
     </div>
   </div>
 
-  <script src="scripts/shell.js"></script>
+  <script src="scripts/config.js"></script>
+<script src="scripts/auth.js"></script>
+<script src="scripts/shell.js"></script>
   <script src="scripts/app.js"></script>
   <script src="scripts/api.js"></script>
   <script src="scripts/risk-assessment.js"></script>
@@ -739,7 +753,7 @@
     renderShell('incident');
     loadLiveRiskAssessment();
   </script>
-  <script src="scripts/live-state.js?v=2"></script>
+  <script src="scripts/live-state.js?v=4"></script>
 </body>
 
 </html>

@@ -1,7 +1,7 @@
 /* ─────────────────────────────────────────
    RISKFUSION AI — DESIGN SYSTEM
-   AI-Powered Banking Incident Correlation Platform
-   FinSpark 2026 Hackathon
+   Security operations platform for incident correlation
+   and explainable risk scoring
 ───────────────────────────────────────── */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;1,14..32,400&display=swap');
@@ -1079,20 +1079,6 @@ svg { display: block; flex-shrink: 0; }
   position: relative; z-index: 1;
 }
 
-.hackathon-badge {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 6px 12px;
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: var(--r-full);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: rgba(255,255,255,0.85);
-  letter-spacing: 0.03em;
-}
-
-.hackathon-badge .trophy { font-size: 0.75rem; }
-
 .login-form-panel {
   flex: 1;
   display: flex; align-items: center; justify-content: center;
@@ -1150,3 +1136,12 @@ svg { display: block; flex-shrink: 0; }
 .main-area, .page-content, .card, .card-body, .dashboard-grid, .incident-grid, .report-layout, .two-col { min-width: 0; }
 .chart-sm, .chart-area, .chart-container { position: relative; min-width: 0; }
 canvas { max-width: 100%; }
+
+/* Topbar service chip reflects real API reachability. */
+.topbar-chip.degraded {
+  background: var(--medium-bg);
+  border-color: var(--medium-border);
+  color: var(--medium);
+}
+
+.topbar-chip.degraded .dot { background: var(--medium); }

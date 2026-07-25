@@ -386,7 +386,9 @@
               </svg>
               Filter
             </button>
-            <button class="btn btn-primary btn-sm">
+            <button class="btn btn-primary btn-sm" type="button" data-action="record" data-label="Investigation started"
+              data-detail="An analyst opened a formal investigation." data-status="Investigating"
+              data-done-label="Investigation started">
               <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                 <line x1="7" y1="1" x2="7" y2="13" />
                 <line x1="1" y1="7" x2="13" y2="7" />
@@ -882,15 +884,8 @@
                 </div>
               </div>
               <div class="card-body">
-                <div class="note-item">
-                  Confirmed impossible travel via Haversine formula cross-check. VPN IP matches FS-ISAC threat intel.
-                  Waiting on BSNL to confirm if SIM clone involved.
-                  <div class="note-meta">Akshat · 08 min ago</div>
-                </div>
-                <div class="note-item">
-                  Beneficiary acc 50100892714XX — checked with beneficiary bank. Account opened 4 days ago. Same pattern
-                  seen in INC-2026-0802. Likely mule account.
-                  <div class="note-meta">Akshat · 32 min ago</div>
+                <div id="note-list">
+                  <div class="note-item" style="color:var(--text-muted);">Loading investigation notes…</div>
                 </div>
                 <div style="margin-top:10px;">
                   <textarea class="note-input" placeholder="Add investigation note… (Ctrl+Enter to save)"></textarea>
@@ -942,21 +937,70 @@
     </div>
   </div>
 
-  <script src="scripts/shell.js"></script>
+  <script src="scripts/config.js"></script>
+<script src="scripts/auth.js"></script>
+<script src="scripts/shell.js"></script>
   <script src="scripts/app.js"></script>
   <script>renderShell('investigation');</script>
   <script src="scripts/api.js"></script>
-  <script src="scripts/live-state.js?v=2"></script>
+  <script src="scripts/live-state.js?v=4"></script>
   <script>
+    /* Investigation notes are persisted to the incident's audit timeline. */
     document.querySelectorAll('.note-input').forEach(input => {
       const save = input.parentElement.querySelector('button');
       if (!save) return;
-      save.addEventListener('click', () => {
-        if (!input.value.trim()) return notify('Add a note before saving.');
-        input.value = '';
-        notify('Investigation note saved to this demo session.');
+
+      const submitNote = async () => {
+        const text = input.value.trim();
+        if (!text) return notify('Add a note before saving.');
+        save.disabled = true;
+        save.textContent = 'Saving…';
+        try {
+          const incidentId = await currentIncidentId();
+          if (!incidentId) throw new Error('There is no incident in context.');
+          const updated = await postJSON(`/incident/${encodeURIComponent(incidentId)}/actions`, {
+            action: 'Analyst note', detail: text, source: 'note',
+          });
+          input.value = '';
+          renderNotes(updated.timeline || []);
+          notify('Investigation note saved.', 'success');
+        } catch (error) {
+          reportApiError('Could not save the note', error);
+        } finally {
+          save.disabled = false;
+          save.textContent = 'Save Note';
+        }
+      };
+
+      save.addEventListener('click', submitNote);
+      input.addEventListener('keydown', event => {
+        if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) { event.preventDefault(); submitNote(); }
       });
     });
+
+    function renderNotes(timeline) {
+      const list = document.getElementById('note-list');
+      if (!list) return;
+      const notes = timeline.filter(entry => entry.source === 'note').reverse();
+      list.innerHTML = notes.length
+        ? notes.map(entry => `<div class="note-item">${escapeNote(entry.detail)}<div class="note-meta">${escapeNote(new Date(entry.timestamp).toLocaleString('en-IN'))}</div></div>`).join('')
+        : '<div class="note-item" style="color:var(--text-muted);">No investigation notes yet. Add the first one below.</div>';
+    }
+
+    function escapeNote(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
+    }
+
+    (async () => {
+      try {
+        const incidentId = await currentIncidentId();
+        if (!incidentId) return renderNotes([]);
+        const detail = await fetchJSON(`/incident/${encodeURIComponent(incidentId)}`);
+        renderNotes(detail.timeline || []);
+      } catch (error) {
+        reportApiError('Investigation notes could not be loaded', error);
+      }
+    })();
   </script>
 </body>
 

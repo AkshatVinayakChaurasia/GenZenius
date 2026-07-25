@@ -3,18 +3,20 @@
  * Injected by each page via script
  */
 function renderShell(activePage) {
-  if (!localStorage.getItem('riskfusion-user')) {
-    window.location.replace('index.html');
-    return;
-  }
+  // Route protection: every page that renders the shell requires a valid
+  // Supabase session. requireSession() redirects to the sign-in page and
+  // preserves the requested destination when there is none.
+  window.RiskFusionAuth.requireSession().then((session) => {
+    if (session) document.body.classList.add('session-ready');
+  });
 
   const navItems = [
     {
       group: 'Operations',
       items: [
         { icon: iconGrid, label: 'SOC Dashboard', href: 'dashboard.html', id: 'dashboard', count: null },
-        { icon: iconShield, label: 'Incidents', href: 'incidents.html', id: 'incidents', count: '12', countClass: '' },
-        { icon: iconSearch, label: 'Investigations', href: 'investigation.html', id: 'investigation', count: '4', countClass: 'info' },
+        { icon: iconShield, label: 'Incidents', href: 'incidents.html', id: 'incidents', hasCount: true },
+        { icon: iconSearch, label: 'Investigations', href: 'investigation.html', id: 'investigation', hasCount: true, countClass: 'info' },
         { icon: iconChart, label: 'Analytics', href: 'analytics.html', id: 'analytics', count: null },
       ]
     },
@@ -34,6 +36,12 @@ function renderShell(activePage) {
     }
   ];
 
+  // Identity comes from the signed-in Supabase user, never a hardcoded name.
+  const user = window.RiskFusionAuth.currentUser();
+  const name = window.RiskFusionAuth.displayName() || 'Signed-in analyst';
+  const email = (user && user.email) || '';
+  const avatarInitials = window.RiskFusionAuth.initials();
+
   function navHTML() {
     return navItems.map(group => `
       <div class="nav-group">
@@ -42,7 +50,7 @@ function renderShell(activePage) {
           <a href="${item.href}" class="nav-link${activePage === item.id ? ' active' : ''}">
             ${item.icon()}
             <span>${item.label}</span>
-            ${item.count ? `<span class="nav-count ${item.countClass || ''}">${item.count}</span>` : ''}
+            ${item.hasCount ? `<span class="nav-count ${item.countClass || ''}" data-count-for="${item.id}" hidden></span>` : ''}
           </a>
         `).join('')}
       </div>
@@ -61,9 +69,11 @@ function renderShell(activePage) {
     <div class="sidebar-footer">
       <div class="nav-link" style="cursor:default;">
         ${iconUser()}
-        <div>
-          <div style="font-size:0.8125rem;font-weight:600;color:var(--text-primary);">Admin</div>
-          <div style="font-size:0.6875rem;color:var(--text-muted);">SOC Administrator</div>
+        <div style="min-width:0;">
+          <div id="sidebar-user-name"
+            style="font-size:0.8125rem;font-weight:600;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeShellText(name)}</div>
+          <div id="sidebar-user-email"
+            style="font-size:0.6875rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeShellText(email)}</div>
         </div>
       </div>
     </div>
@@ -75,7 +85,7 @@ function renderShell(activePage) {
       <input type="text" placeholder="Search incidents, alerts, entities… (⌘K)" />
     </div>
     <div class="topbar-right">
-      <div class="topbar-chip"><div class="dot"></div>All Systems Operational</div>
+      <div class="topbar-chip" id="service-status-chip"><div class="dot"></div><span id="service-status-text">Checking services…</span></div>
       <div style="width:1px;height:20px;background:var(--border-default);margin:0 4px;"></div>
       <span style="font-size:0.75rem;color:var(--text-muted);font-weight:600;font-family:monospace;" id="live-time">--:--:--</span>
       <button class="icon-btn" type="button" data-tip="Notifications" id="notifications-button" aria-label="Open notifications">
@@ -83,16 +93,23 @@ function renderShell(activePage) {
         <span class="badge-dot"></span>
       </button>
       <button class="icon-btn" type="button" data-tip="Settings" id="settings-button" aria-label="Open configuration">${iconGear()}</button>
-      <button class="avatar-btn" type="button" id="profile-button" aria-label="Sign out of the demo">
-        <div class="avatar">AD</div>
+      <button class="avatar-btn" type="button" id="profile-button" aria-label="Sign out">
+        <div class="avatar">${escapeShellText(avatarInitials)}</div>
         <div class="avatar-info">
-          <div class="av-name">Demo Analyst</div>
-          <div class="av-role">HDFC · SOC L3</div>
+          <div class="av-name">${escapeShellText(name)}</div>
+          <div class="av-role">Security analyst</div>
         </div>
         ${iconChevron()}
       </button>
     </div>
   `;
+}
+
+/** Escapes user-controlled profile values before they reach innerHTML. */
+function escapeShellText(value) {
+  return String(value ?? '').replace(/[&<>'"]/g, (char) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;',
+  }[char]));
 }
 
 /* ─── Icon Library (SVG functions) ─── */

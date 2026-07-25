@@ -1,38 +1,54 @@
-/* Page-safe live data bindings. Never replace a page's own workspace. */
+/**
+ * RiskFusion AI — Live page bindings.
+ *
+ * Binds each page's shared regions to live API data. Page-specific rendering
+ * stays in the page itself; this file only fills in what every page shares
+ * (navigation counts) plus the cross-page incident context.
+ */
 (async function () {
   if (typeof fetchJSON !== 'function') return;
 
   const page = location.pathname.split('/').pop() || 'index.html';
-  const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
-  const inr = (value) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(value || 0));
-  const severityClass = (value) => ['critical', 'high', 'medium', 'low'].includes(String(value).toLowerCase()) ? String(value).toLowerCase() : 'info';
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, char =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
+  const inr = (value) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })
+    .format(Number(value || 0));
+  const severityClass = (value) => ['critical', 'high', 'medium', 'low'].includes(String(value).toLowerCase())
+    ? String(value).toLowerCase() : 'info';
+
+  /** Sidebar badges reflect the real open workload on every page. */
+  function updateNavCounts(incidents) {
+    const counts = {
+      incidents: incidents.filter(item => !['Resolved', 'Closed'].includes(item.status)).length,
+      investigation: incidents.filter(item => item.status === 'Investigating').length,
+    };
+    Object.entries(counts).forEach(([key, value]) => {
+      const badge = document.querySelector(`.nav-count[data-count-for="${key}"]`);
+      if (!badge) return;
+      badge.textContent = value;
+      badge.hidden = value === 0;
+    });
+  }
 
   try {
+    let incidents = null;
+    const loadIncidents = async () => {
+      if (!incidents) incidents = await fetchJSON('/incidents');
+      return incidents;
+    };
+
+    updateNavCounts(await loadIncidents());
+
     if (page === 'dashboard.html') {
-      const refreshDashboard = async () => {
-        const data = await fetchJSON('/dashboard');
-        const kpis = document.querySelectorAll('.kpi-value');
-        if (kpis[0]) kpis[0].textContent = data.active_incidents;
-        if (kpis[1]) kpis[1].textContent = data.critical_alerts;
-        if (kpis[2]) kpis[2].textContent = data.average_risk_score;
-        if (kpis[3]) kpis[3].innerHTML = `${data.ai_confidence}<span style="font-size:1.2rem;font-weight:600;">%</span>`;
-        const distribution = typeof Chart !== 'undefined' && Chart.getChart('riskChart');
-        if (distribution) {
-          const order = ['Critical', 'High', 'Medium', 'Low'];
-          distribution.data.datasets[0].data = order.map(severity => data.risk_distribution.find(item => item.severity === severity)?.count || 0);
-          distribution.update();
-        }
-        const incidents = await fetchJSON('/incidents');
-        const counts = { incidents: incidents.filter(item => !['Resolved', 'Closed'].includes(item.status)).length, investigation: incidents.filter(item => item.status === 'Investigating').length };
-        document.querySelectorAll('.nav-link').forEach(link => {
-          const label = link.querySelector('span:not(.nav-count)')?.textContent;
-          const count = link.querySelector('.nav-count');
-          if (count && label === 'Incidents') count.textContent = counts.incidents;
-          if (count && label === 'Investigations') count.textContent = counts.investigation;
-        });
-      };
-      await refreshDashboard();
-      window.setInterval(() => { if (!document.hidden) refreshDashboard().catch(error => reportApiError('Dashboard refresh failed', error)); }, 30000);
+      // The dashboard owns its own rendering; refresh it on a timer here so
+      // the logic is not duplicated across two files.
+      window.setInterval(() => {
+        if (document.hidden || typeof window.refreshDashboard !== 'function') return;
+        window.refreshDashboard()
+          .then(() => fetchJSON('/incidents'))
+          .then(updateNavCounts)
+          .catch(error => console.warn('[RiskFusion] Dashboard refresh failed:', error.message));
+      }, 30000);
     }
 
     if (page === 'analytics.html') {
@@ -51,22 +67,30 @@
         geoChart.update();
       }
       const geoRows = document.querySelector('.geo-row')?.parentElement;
-      if (geoRows) geoRows.innerHTML = data.top_risk_locations.length ? data.top_risk_locations.map(item => `<div class="geo-row"><div class="geo-country">${escapeHtml(item.location || 'Unknown')}</div><div><span class="badge ${severityClass(item.incidents >= 3 ? 'High' : 'Medium')}">${item.incidents >= 3 ? 'High' : 'Elevated'} risk</span></div><div class="geo-count">${item.incidents} incident${item.incidents === 1 ? '' : 's'}</div></div>`).join('') : '<div class="empty-state">No location data is available yet.</div>';
+      if (geoRows) {
+        geoRows.innerHTML = data.top_risk_locations.length
+          ? data.top_risk_locations.map(item => `<div class="geo-row"><div class="geo-country">${escapeHtml(item.location || 'Unknown')}</div><div><span class="badge ${severityClass(item.incidents >= 3 ? 'High' : 'Medium')}">${item.incidents >= 3 ? 'High' : 'Elevated'} risk</span></div><div class="geo-count">${item.incidents} incident${item.incidents === 1 ? '' : 's'}</div></div>`).join('')
+          : '<div class="empty-state">No location data is available yet.</div>';
+      }
     }
 
     if (['investigation.html', 'killchain.html', 'ai.html', 'incident.html'].includes(page)) {
       const requestedId = new URLSearchParams(location.search).get('id');
-      const incidents = await fetchJSON('/incidents');
-      const selected = requestedId ? incidents.find(item => item.id === requestedId) : incidents[0];
+      const all = await loadIncidents();
+      const selected = requestedId ? all.find(item => item.id === requestedId) : all[0];
       if (!selected) return;
 
       if (page === 'investigation.html' || page === 'killchain.html') {
         const sub = document.querySelector('.pg-sub');
         if (sub) sub.innerHTML = `${escapeHtml(selected.id)} · ${escapeHtml(selected.title)} · <span id="live-time">--:--:--</span>`;
       }
-      document.querySelectorAll('a[href="incident.html"]').forEach(link => link.href = `incident.html?id=${encodeURIComponent(selected.id)}`);
-      document.querySelectorAll('a[href="ai.html"]').forEach(link => link.href = `ai.html?id=${encodeURIComponent(selected.id)}`);
-      document.querySelectorAll('a[href="killchain.html"]').forEach(link => link.href = `killchain.html?id=${encodeURIComponent(selected.id)}`);
+
+      // Carry the incident in context across the intelligence pages.
+      document.querySelectorAll('a[href="incident.html"]').forEach(link => { link.href = `incident.html?id=${encodeURIComponent(selected.id)}`; });
+      document.querySelectorAll('a[href="ai.html"]').forEach(link => { link.href = `ai.html?id=${encodeURIComponent(selected.id)}`; });
+      document.querySelectorAll('a[href="killchain.html"]').forEach(link => { link.href = `killchain.html?id=${encodeURIComponent(selected.id)}`; });
+      document.querySelectorAll('a[href="investigation.html"]').forEach(link => { link.href = `investigation.html?id=${encodeURIComponent(selected.id)}`; });
+      document.querySelectorAll('[data-action="record"]').forEach(button => { button.dataset.incidentId = selected.id; });
 
       if (page === 'ai.html') {
         const context = document.querySelectorAll('.meta-row .meta-value');
@@ -83,16 +107,13 @@
 
       if (page === 'incident.html') {
         const detail = await fetchJSON(`/incident/${encodeURIComponent(selected.id)}`);
-        const title = document.getElementById('incident-title');
-        if (title) title.textContent = detail.title;
-        const breadcrumb = document.getElementById('incident-id-breadcrumb');
-        if (breadcrumb) breadcrumb.textContent = detail.id;
-        const desc = document.getElementById('ai-explanation');
-        if (desc) desc.textContent = detail.description;
-        const score = document.getElementById('risk-score-value');
-        if (score) score.textContent = detail.risk_score;
-        const confidence = document.getElementById('ai-confidence-value');
-        if (confidence) confidence.textContent = `${detail.ai_confidence}%`;
+        const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+        setText('incident-title', detail.title);
+        setText('incident-id-breadcrumb', detail.id);
+        setText('ai-explanation', detail.description);
+        setText('risk-score-value', detail.risk_score);
+        setText('ai-confidence-value', `${detail.ai_confidence}%`);
+
         const badge = document.getElementById('severity-badge');
         if (badge) {
           badge.className = `badge ${severityClass(detail.severity)}`;
@@ -103,18 +124,22 @@
           status.className = `badge ${severityClass(detail.status)}`;
           status.textContent = detail.status;
         }
+
         const resolveButton = document.getElementById('resolve-incident-btn');
         if (resolveButton) {
+          const closed = ['Resolved', 'Closed'].includes(detail.status);
           resolveButton.dataset.incidentId = detail.id;
-          resolveButton.disabled = detail.status === 'Resolved';
-          resolveButton.textContent = detail.status === 'Resolved' ? 'Incident Resolved' : 'Resolve Incident';
+          resolveButton.disabled = closed;
+          resolveButton.textContent = closed ? `Incident ${detail.status}` : 'Resolve Incident';
           resolveButton.addEventListener('click', async () => {
-            if (!confirm(`Resolve ${detail.id}? This keeps the incident history.`)) return;
+            if (!confirm(`Resolve ${detail.id}? The incident stays on record with its full history.`)) return;
+            resolveButton.disabled = true;
             try {
               await patchJSON(`/incident/${encodeURIComponent(detail.id)}`, { status: 'Resolved' });
-              notify(`${detail.id} marked as resolved.`);
+              notify(`${detail.id} marked as resolved.`, 'success');
               location.href = 'incidents.html';
             } catch (error) {
+              resolveButton.disabled = false;
               reportApiError(`Could not resolve ${detail.id}`, error);
             }
           }, { once: true });
@@ -122,6 +147,6 @@
       }
     }
   } catch (error) {
-    reportApiError('Live data could not be refreshed', error);
+    reportApiError('Live data could not be loaded', error);
   }
 })();

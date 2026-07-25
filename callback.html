@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Completing sign-in · RiskFusion AI</title>
+  <meta name="description" content="Completing your RiskFusion AI sign-in." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="styles/design-system.css" />
+  <style>
+    .callback-shell {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: var(--bg-subtle);
+    }
+
+    .callback-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-lg, 14px);
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+      padding: 36px 32px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .callback-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .callback-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0 0 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .callback-copy {
+      font-size: 0.875rem;
+      line-height: 1.6;
+      color: var(--text-tertiary);
+      margin: 0;
+    }
+
+    .spinner {
+      width: 30px;
+      height: 30px;
+      margin: 0 auto 20px;
+      border: 3px solid var(--border-default);
+      border-top-color: var(--brand-blue-mid);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .callback-actions {
+      margin-top: 22px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="callback-shell">
+    <div class="callback-card">
+      <div class="callback-logo">
+        <div class="logo-mark" style="width:26px;height:26px;border-radius:7px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"
+            stroke-linejoin="round" style="width:12px;height:12px;" aria-hidden="true">
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
+          </svg>
+        </div>
+        <span style="font-size:0.875rem;font-weight:700;color:var(--text-primary);">Risk<span
+            style="color:var(--brand-blue-mid);">Fusion</span> AI</span>
+      </div>
+      <div class="spinner" id="spinner"></div>
+      <h1 class="callback-title" id="callback-title">Completing sign-in</h1>
+      <p class="callback-copy" id="callback-copy">Verifying your Google account and opening your workspace…</p>
+      <div class="callback-actions" id="callback-actions" hidden>
+        <a class="btn btn-primary btn-sm" href="index.html">Return to sign-in</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="scripts/config.js"></script>
+  <script src="scripts/auth.js"></script>
+  <script>
+    (function () {
+      const auth = window.RiskFusionAuth;
+      const config = window.RISKFUSION_CONFIG;
+      const title = document.getElementById('callback-title');
+      const copy = document.getElementById('callback-copy');
+
+      function fail(text) {
+        document.getElementById('spinner').hidden = true;
+        document.getElementById('callback-actions').hidden = false;
+        title.textContent = 'Sign-in could not be completed';
+        copy.textContent = text;
+      }
+
+      function destination() {
+        const stored = sessionStorage.getItem('riskfusion.oauth_next');
+        sessionStorage.removeItem('riskfusion.oauth_next');
+        return stored && /^[\w.-]+\.html(\?[^#]*)?$/.test(stored) ? stored : config.homePage;
+      }
+
+      (async function complete() {
+        const query = new URLSearchParams(location.search);
+        // GoTrue reports provider failures on the query string.
+        const failure = query.get('error_description') || query.get('error');
+        if (failure) return fail(decodeURIComponent(failure));
+
+        const code = query.get('code');
+        if (!code) {
+          // Already signed in and landed here by accident? Move along.
+          const existing = await auth.getSession();
+          if (existing) return location.replace(destination());
+          return fail('This sign-in link is missing its authorisation code. Please start again from the sign-in page.');
+        }
+
+        try {
+          await auth.exchangeCodeForSession(code);
+          // Replace so the single-use code never stays in session history.
+          location.replace(destination());
+        } catch (error) {
+          fail(error.message);
+        }
+      })();
+    })();
+  </script>
+</body>
+
+</html>

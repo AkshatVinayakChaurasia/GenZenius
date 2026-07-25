@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /$
+Disallow: /dashboard.html
+Disallow: /incidents.html
+Disallow: /incident.html
+Disallow: /investigation.html
+Disallow: /killchain.html
+Disallow: /analytics.html
+Disallow: /ai.html
+Disallow: /config.html
+Disallow: /callback.html
+
+Sitemap: https://riskfusion-ai.vercel.app/sitemap.xml

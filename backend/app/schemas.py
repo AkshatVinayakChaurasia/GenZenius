@@ -35,6 +35,7 @@ class IncidentSummary(BaseModel):
     updated_at: datetime
     transaction_amount: float | None
     currency: str
+    assigned_to: str | None = None
 
 
 class IncidentDetail(IncidentSummary):
@@ -82,3 +83,13 @@ class IncidentCreate(BaseModel):
 class IncidentUpdate(BaseModel):
     status: str | None = None
     severity: str | None = None
+    assigned_to: str | None = None
+
+
+class IncidentAction(BaseModel):
+    """A response action or analyst note appended to an incident's timeline."""
+
+    action: str = Field(min_length=2, max_length=120)
+    detail: str = Field(default="", max_length=1000)
+    source: str = Field(default="analyst", max_length=60)
+    status: str | None = Field(default=None, max_length=32)
