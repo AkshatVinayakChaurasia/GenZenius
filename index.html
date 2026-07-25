@@ -649,6 +649,85 @@
       color: var(--brand-blue-mid);
     }
 
+    .lp-footer-credit {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .lp-footer-credit strong {
+      color: var(--text-secondary);
+      font-weight: 700;
+    }
+
+    .lp-footer-sep {
+      color: var(--border-strong);
+    }
+
+    /* Creator profiles */
+    .lp-social {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .lp-social a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: var(--r-md);
+      border: 1px solid var(--border-default);
+      background: var(--bg-surface);
+      color: var(--text-tertiary);
+      transition: color var(--t-fast), border-color var(--t-fast), background var(--t-fast),
+        transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease;
+    }
+
+    .lp-social a:hover {
+      color: var(--brand-blue-mid);
+      border-color: var(--brand-blue-mid);
+      background: var(--info-bg);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .lp-social a:active {
+      transform: none;
+    }
+
+    .lp-social a:focus-visible {
+      outline: 2px solid var(--border-focus);
+      outline-offset: 2px;
+    }
+
+    .lp-social svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .lp-footer-signin {
+      white-space: nowrap;
+    }
+
+    @media (max-width: 700px) {
+      .lp-footer-inner {
+        justify-content: center;
+        text-align: center;
+        gap: 18px;
+      }
+
+      .lp-footer-credit {
+        justify-content: center;
+        width: 100%;
+      }
+    }
+
     /* ── Scroll reveal ── */
     .reveal {
       opacity: 0;
@@ -719,7 +798,8 @@
       }
 
       .lp-cta:hover,
-      .lp-card:hover {
+      .lp-card:hover,
+      .lp-social a:hover {
         transform: none;
       }
 
@@ -1081,8 +1161,56 @@
 
   <footer class="lp-footer">
     <div class="lp-footer-inner">
-      <span>© 2026 RiskFusion AI</span>
-      <a href="signin.html">Sign in</a>
+      <div class="lp-footer-credit">
+        <span>© 2026 RiskFusion AI</span>
+        <span class="lp-footer-sep" aria-hidden="true">·</span>
+        <span>Designed &amp; built by <strong>Akshat Chaurasia</strong></span>
+      </div>
+
+      <ul class="lp-social" aria-label="Akshat Chaurasia's profiles">
+        <li>
+          <a href="https://www.linkedin.com/in/akshat-chaurasia-a10943402/" target="_blank" rel="noopener noreferrer"
+            title="LinkedIn" aria-label="Akshat Chaurasia on LinkedIn">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path
+                d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM10 9h3.8v1.64h.05a4.17 4.17 0 0 1 3.75-2.06c4.01 0 4.75 2.64 4.75 6.07V21h-4v-5.5c0-1.31-.02-3-1.83-3-1.83 0-2.11 1.43-2.11 2.9V21h-4z" />
+            </svg>
+          </a>
+        </li>
+        <li>
+          <a href="https://github.com/AkshatVinayakChaurasia" target="_blank" rel="noopener noreferrer"
+            title="GitHub" aria-label="Akshat Chaurasia on GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path
+                d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48l-.01-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.99 1.03-2.69-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.03A9.6 9.6 0 0 1 12 6.8c.85 0 1.71.11 2.51.34 1.91-1.3 2.75-1.03 2.75-1.03.55 1.38.2 2.4.1 2.65.64.7 1.03 1.6 1.03 2.69 0 3.84-2.34 4.69-4.57 4.94.36.31.68.92.68 1.85l-.01 2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2z" />
+            </svg>
+          </a>
+        </li>
+        <li>
+          <a href="https://www.instagram.com/akshatchaurasia/" target="_blank" rel="noopener noreferrer"
+            title="Instagram" aria-label="Akshat Chaurasia on Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" />
+              <circle cx="12" cy="12" r="4.2" />
+              <circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none" />
+            </svg>
+          </a>
+        </li>
+        <li>
+          <a href="https://linktr.ee/akshatchaurasia" target="_blank" rel="noopener noreferrer" title="Linktree"
+            aria-label="Akshat Chaurasia on Linktree">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 12.6V21" />
+              <path d="M5 6l7 6.6L19 6" />
+              <path d="M5 11.4l7 6.6 7-6.6" />
+            </svg>
+          </a>
+        </li>
+      </ul>
+
+      <a class="lp-footer-signin" href="signin.html">Sign in</a>
     </div>
   </footer>
 
@@ -1150,7 +1278,8 @@
         if (!session) return;
         document.querySelectorAll('a[href="signin.html"]').forEach((link) => {
           link.setAttribute('href', window.RISKFUSION_CONFIG.homePage);
-          if (link.classList.contains('lp-cta')) link.firstChild.textContent = 'Open your workspace\n              ';
+          const label = link.querySelector('.lp-cta-label');
+          if (label) label.textContent = 'Open your workspace';
         });
       });
     })();
