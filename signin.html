@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign in · RiskFusion AI</title>
+  <meta name="description"
+    content="Sign in to your RiskFusion AI workspace to review correlated security incidents and explainable risk scores." />
+  <meta name="robots" content="noindex, follow" />
+  <meta name="theme-color" content="#0F172A" />
+  <link rel="canonical" href="https://riskfusion-ai.vercel.app/signin.html" />
+  <link rel="stylesheet" href="styles/design-system.css" />
+  <style>
+    /* ── Brand panel ── */
+    .login-brand-panel {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 44px;
+    }
+
+    .brand-logo-mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1.5px solid rgba(255, 255, 255, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+    }
+
+    .brand-logo-mark svg {
+      width: 22px;
+      height: 22px;
+      color: white;
+    }
+
+    .brand-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      margin-bottom: 28px;
+      transition: color var(--t-fast), gap var(--t-fast);
+    }
+
+    .brand-back:hover {
+      color: white;
+      gap: 10px;
+    }
+
+    .brand-back svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .brand-headline {
+      font-size: 2.375rem;
+      font-weight: 800;
+      color: white;
+      letter-spacing: -0.04em;
+      line-height: 1.12;
+      margin-bottom: 18px;
+    }
+
+    .brand-headline span {
+      color: #67E8F9;
+    }
+
+    .brand-body {
+      font-size: 0.9375rem;
+      line-height: 1.7;
+      color: rgba(255, 255, 255, 0.7);
+      max-width: 380px;
+      margin-bottom: 36px;
+    }
+
+    .brand-points {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 380px;
+    }
+
+    .brand-point {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .brand-point-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-point-icon svg {
+      width: 15px;
+      height: 15px;
+      color: #67E8F9;
+    }
+
+    .brand-point-title {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 2px;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-point-copy {
+      font-size: 0.8125rem;
+      line-height: 1.55;
+      color: rgba(255, 255, 255, 0.58);
+    }
+
+    .login-brand-bottom {
+      font-size: 0.6875rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    /* ── Form panel ── */
+    .form-enter {
+      animation: formEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes formEnter {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* Swapping between sign in and create account */
+    .mode-swap {
+      animation: modeSwap 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes modeSwap {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .oauth-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 11px 16px;
+      border: 1.5px solid var(--border-default);
+      border-radius: var(--r-md);
+      background: var(--bg-surface);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      cursor: pointer;
+      width: 100%;
+      transition: background var(--t-fast), border-color var(--t-fast), transform var(--t-fast), box-shadow var(--t-fast);
+      font-family: inherit;
+    }
+
+    .oauth-btn:hover:not(:disabled) {
+      background: var(--bg-subtle);
+      border-color: var(--border-strong);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .oauth-btn:active:not(:disabled) {
+      transform: none;
+    }
+
+    .oauth-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .oauth-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .oauth-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .oauth-divider::before,
+    .oauth-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border-default);
+    }
+
+    /* Field validation states */
+    .input.is-invalid {
+      border-color: var(--critical);
+    }
+
+    .input.is-invalid:focus {
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+    }
+
+    .input.is-valid {
+      border-color: var(--low);
+    }
+
+    .field-note {
+      font-size: 0.75rem;
+      line-height: 1.45;
+      margin-top: 6px;
+      color: var(--critical);
+      display: none;
+    }
+
+    .field-note.show {
+      display: block;
+      animation: modeSwap 0.24s ease both;
+    }
+
+    .input-pw-wrap {
+      position: relative;
+    }
+
+    .input-pw-wrap .input {
+      padding-right: 44px;
+    }
+
+    .pw-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      transition: color var(--t-fast);
+    }
+
+    .pw-toggle:hover {
+      color: var(--text-primary);
+    }
+
+    .pw-toggle svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Password strength, shown only while creating an account */
+    .pw-strength {
+      display: none;
+      margin-top: 10px;
+    }
+
+    .pw-strength.show {
+      display: block;
+    }
+
+    .pw-meter {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+
+    .pw-seg {
+      flex: 1;
+      height: 3px;
+      border-radius: var(--r-full);
+      background: var(--bg-muted);
+      transition: background 0.3s ease;
+    }
+
+    .pw-strength-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      transition: color 0.3s ease;
+    }
+
+    .caps-warning {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--medium);
+    }
+
+    .caps-warning.show {
+      display: flex;
+      animation: modeSwap 0.24s ease both;
+    }
+
+    .caps-warning svg {
+      width: 13px;
+      height: 13px;
+      flex-shrink: 0;
+    }
+
+    .link-btn {
+      background: none;
+      border: none;
+      padding: 0;
+      font: inherit;
+      color: var(--brand-blue-mid);
+      font-weight: 600;
+      cursor: pointer;
+      transition: color var(--t-fast);
+    }
+
+    .link-btn:hover {
+      color: var(--brand-blue);
+      text-decoration: underline;
+    }
+
+    .link-btn:disabled {
+      color: var(--text-muted);
+      cursor: not-allowed;
+      text-decoration: none;
+    }
+
+    /* Submit button with an inline progress state */
+    .submit-btn {
+      position: relative;
+    }
+
+    .submit-btn.is-busy {
+      pointer-events: none;
+    }
+
+    .spinner {
+      width: 15px;
+      height: 15px;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .form-message {
+      margin: 16px 0 0;
+      padding: 11px 13px;
+      border-radius: var(--r-md);
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      display: none;
+      align-items: flex-start;
+      gap: 9px;
+    }
+
+    .form-message.show {
+      display: flex;
+      animation: modeSwap 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .form-message svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .form-message.error {
+      background: var(--critical-bg);
+      border: 1px solid var(--critical-border);
+      color: var(--critical);
+    }
+
+    .form-message.success {
+      background: var(--low-bg);
+      border: 1px solid var(--low-border);
+      color: var(--low);
+    }
+
+    .form-message.info {
+      background: var(--info-bg);
+      border: 1px solid var(--info-border);
+      color: var(--brand-blue-mid);
+    }
+
+    .form-footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      .form-enter,
+      .mode-swap,
+      .form-message.show,
+      .field-note.show,
+      .caps-warning.show {
+        animation: none;
+      }
+
+      .oauth-btn:hover:not(:disabled) {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="login-shell">
+
+    <!-- ── Brand panel ── -->
+    <section class="login-brand-panel">
+      <div class="login-brand-inner">
+        <a class="brand-back" href="index.html">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <path d="M10 12L6 8l4-4" />
+          </svg>
+          Back to overview
+        </a>
+
+        <div class="brand-logo-wrap">
+          <div class="brand-logo-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 17l10 5 10-5" />
+              <path d="M2 12l10 5 10-5" />
+            </svg>
+          </div>
+          <div>
+            <div style="font-size:1.125rem;font-weight:800;color:white;letter-spacing:-0.02em;">Risk<span
+                style="color:#67E8F9;">Fusion</span> AI</div>
+            <div
+              style="font-size:0.625rem;color:rgba(255,255,255,0.55);font-weight:600;letter-spacing:0.1em;text-transform:uppercase;">
+              Security Operations Platform</div>
+          </div>
+        </div>
+
+        <h1 class="brand-headline">Your workspace<br><span>is ready.</span></h1>
+
+        <p class="brand-body">
+          Sign in to review correlated incidents, trace the signals behind every risk score, and record the actions your
+          team takes.
+        </p>
+
+        <div class="brand-points">
+          <div class="brand-point">
+            <span class="brand-point-icon">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="7" width="10" height="7" rx="1.6" />
+                <path d="M5.5 7V4.8a2.5 2.5 0 0 1 5 0V7" />
+              </svg>
+            </span>
+            <div>
+              <div class="brand-point-title">Session-based access</div>
+              <div class="brand-point-copy">Every request is authorised against your identity, and sessions expire on
+                their own.</div>
+            </div>
+          </div>
+          <div class="brand-point">
+            <span class="brand-point-icon">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <path d="M8 1.5L2 4v4c0 3.3 2.6 6 6 6s6-2.7 6-6V4L8 1.5z" />
+                <path d="M5.5 8l1.8 1.8L10.5 6.5" />
+              </svg>
+            </span>
+            <div>
+              <div class="brand-point-title">Scoped to your organisation</div>
+              <div class="brand-point-copy">Incident data is reachable only through an authenticated workspace session.
+              </div>
+            </div>
+          </div>
+          <div class="brand-point">
+            <span class="brand-point-icon">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <circle cx="8" cy="8" r="6.2" />
+                <path d="M8 4.6V8l2.2 1.6" />
+              </svg>
+            </span>
+            <div>
+              <div class="brand-point-title">Everything is attributable</div>
+              <div class="brand-point-copy">Actions you take are written to the incident's audit timeline under your
+                name.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="login-brand-bottom">© 2026 RiskFusion AI · Authorised access only</div>
+    </section>
+
+    <!-- ── Form panel ── -->
+    <section class="login-form-panel">
+      <div class="login-form-box form-enter">
+
+        <div style="margin-bottom:28px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;">
+            <div class="logo-mark" style="width:28px;height:28px;border-radius:7px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round" style="width:13px;height:13px;" aria-hidden="true">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+              </svg>
+            </div>
+            <span style="font-size:0.9375rem;font-weight:700;color:var(--text-primary);">Risk<span
+                style="color:var(--brand-blue-mid);">Fusion</span> AI</span>
+          </div>
+          <h2 class="login-form-title" id="form-title">Sign in</h2>
+          <p class="login-form-sub" id="form-sub">Enter your workspace credentials to continue.</p>
+        </div>
+
+        <!-- Google sign-in appears only once the provider is configured -->
+        <div id="oauth-section" hidden>
+          <button type="button" class="oauth-btn" id="google-btn">
+            <svg viewBox="0 0 18 18" aria-hidden="true">
+              <path fill="#4285F4"
+                d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91c1.7-1.57 2.69-3.88 2.69-6.62z" />
+              <path fill="#34A853"
+                d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.91-2.26c-.81.54-1.84.86-3.05.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.34A9 9 0 0 0 9 18z" />
+              <path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.94H.96a9 9 0 0 0 0 8.12l3.01-2.34z" />
+              <path fill="#EA4335"
+                d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A9 9 0 0 0 .96 4.94l3.01 2.34C4.68 5.16 6.66 3.58 9 3.58z" />
+            </svg>
+            <span id="google-btn-label">Continue with Google</span>
+          </button>
+          <div class="oauth-divider">or</div>
+        </div>
+
+        <form id="auth-form" novalidate>
+          <div class="input-group" style="margin-bottom:16px;">
+            <label class="input-label" for="email">Work email</label>
+            <div class="input-with-icon">
+              <span class="input-icon">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                  stroke-linejoin="round" aria-hidden="true">
+                  <rect x="1" y="3" width="14" height="10" rx="2" />
+                  <polyline points="1 5 8 9 15 5" />
+                </svg>
+              </span>
+              <input id="email" name="email" type="email" class="input" style="width:100%;"
+                placeholder="you@company.com" autocomplete="username" autocapitalize="none" spellcheck="false"
+                required />
+            </div>
+            <p class="field-note" id="email-note">Enter a valid email address.</p>
+          </div>
+
+          <div class="input-group" style="margin-bottom:20px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <label class="input-label" for="password">Password</label>
+              <button type="button" class="link-btn" id="forgot-btn" style="font-size:0.75rem;">Forgot
+                password?</button>
+            </div>
+            <div class="input-pw-wrap">
+              <input id="password" name="password" type="password" class="input" style="width:100%;"
+                placeholder="Enter your password" autocomplete="current-password" required minlength="8" />
+              <button type="button" class="pw-toggle" id="pw-toggle" aria-label="Show password">
+                <svg id="pw-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
+                  aria-hidden="true">
+                  <path d="M1 8s3-6 7-6 7 6 7 6-3 6-7 6-7-6-7-6z" />
+                  <circle cx="8" cy="8" r="2" />
+                </svg>
+              </button>
+            </div>
+
+            <p class="field-note" id="password-note">Use at least 8 characters.</p>
+
+            <div class="caps-warning" id="caps-warning">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <path d="M8 2l5 5H10v3H6V7H3l5-5z" />
+                <rect x="6" y="12" width="4" height="2" rx="0.6" />
+              </svg>
+              Caps Lock is on
+            </div>
+
+            <div class="pw-strength" id="pw-strength">
+              <div class="pw-meter">
+                <span class="pw-seg"></span><span class="pw-seg"></span><span class="pw-seg"></span><span
+                  class="pw-seg"></span>
+              </div>
+              <div class="pw-strength-label" id="pw-strength-label">Use at least 8 characters, mixing letters, numbers
+                and symbols.</div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:22px;">
+            <input type="checkbox" id="remember" style="width:15px;height:15px;accent-color:var(--brand-blue-mid);" />
+            <label for="remember" style="font-size:0.875rem;color:var(--text-tertiary);cursor:pointer;">
+              Keep me signed in on this device
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full btn-lg submit-btn" id="submit-btn">
+            <span id="submit-icon" style="display:flex;align-items:center;">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" style="width:16px;height:16px;" aria-hidden="true">
+                <path d="M14 8H2m9-4l4 4-4 4" />
+              </svg>
+            </span>
+            <span id="submit-label">Sign in</span>
+          </button>
+
+          <p id="form-message" class="form-message" role="status" aria-live="polite">
+            <span id="form-message-icon"></span><span id="form-message-text"></span>
+          </p>
+        </form>
+
+        <div class="form-footer">
+          <span id="mode-prompt">Need a workspace account?</span>
+          <button type="button" class="link-btn" id="mode-toggle">Create one</button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script src="scripts/config.js"></script>
+  <script src="scripts/auth.js"></script>
+  <script>
+    (function () {
+      const auth = window.RiskFusionAuth;
+      const config = window.RISKFUSION_CONFIG;
+
+      const form = document.getElementById('auth-form');
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const rememberInput = document.getElementById('remember');
+      const emailNote = document.getElementById('email-note');
+      const passwordNote = document.getElementById('password-note');
+      const capsWarning = document.getElementById('caps-warning');
+      const strengthBox = document.getElementById('pw-strength');
+      const strengthLabel = document.getElementById('pw-strength-label');
+      const strengthSegments = [...document.querySelectorAll('.pw-seg')];
+      const message = document.getElementById('form-message');
+      const messageIcon = document.getElementById('form-message-icon');
+      const messageText = document.getElementById('form-message-text');
+      const submitBtn = document.getElementById('submit-btn');
+      const submitIcon = document.getElementById('submit-icon');
+      const submitLabel = document.getElementById('submit-label');
+      const modeToggle = document.getElementById('mode-toggle');
+      const modePrompt = document.getElementById('mode-prompt');
+      const formTitle = document.getElementById('form-title');
+      const formSub = document.getElementById('form-sub');
+      const forgotBtn = document.getElementById('forgot-btn');
+      const googleBtn = document.getElementById('google-btn');
+      const box = document.querySelector('.login-form-box');
+
+      const ARROW_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><path d="M14 8H2m9-4l4 4-4 4"/></svg>';
+      const ICONS = {
+        error: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="8" cy="8" r="6.4"/><path d="M8 5v3.6"/><circle cx="8" cy="11" r="0.5" fill="currentColor"/></svg>',
+        success: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.4"/><path d="M5.4 8.2l1.9 1.9 3.4-3.7"/></svg>',
+        info: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="8" cy="8" r="6.4"/><path d="M8 7.4V11"/><circle cx="8" cy="5" r="0.5" fill="currentColor"/></svg>',
+      };
+
+      let mode = 'signin';
+      let busy = false;
+
+      /* ── Navigation helpers ── */
+
+      /** Only ever navigate to a page inside this app. */
+      function safeNext() {
+        const next = new URLSearchParams(location.search).get('next');
+        if (!next || /^[a-z]+:|^\/\//i.test(next)) return config.homePage;
+        const page = next.split('/').pop();
+        return /^[\w.-]+\.html(\?[^#]*)?$/.test(page) ? page : config.homePage;
+      }
+
+      /* ── Messaging ── */
+
+      function show(text, tone) {
+        messageIcon.innerHTML = ICONS[tone] || ICONS.info;
+        messageText.textContent = text;
+        message.className = `form-message ${tone} show`;
+      }
+
+      function hide() {
+        message.className = 'form-message';
+      }
+
+      /* ── Validation ── */
+
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+      function validateEmail({ silent } = {}) {
+        const value = emailInput.value.trim();
+        const valid = emailPattern.test(value);
+        emailInput.classList.toggle('is-invalid', !valid && value.length > 0 && !silent);
+        emailInput.classList.toggle('is-valid', valid);
+        emailNote.classList.toggle('show', !valid && value.length > 0 && !silent);
+        return valid;
+      }
+
+      function validatePassword({ silent } = {}) {
+        const valid = passwordInput.value.length >= 8;
+        passwordInput.classList.toggle('is-invalid', !valid && passwordInput.value.length > 0 && !silent);
+        passwordNote.classList.toggle('show', !valid && passwordInput.value.length > 0 && !silent);
+        return valid;
+      }
+
+      /** Rough strength signal, shown only while creating an account. */
+      function scorePassword(value) {
+        let score = 0;
+        if (value.length >= 8) score += 1;
+        if (value.length >= 12) score += 1;
+        if (/[a-z]/.test(value) && /[A-Z]/.test(value)) score += 1;
+        if (/\d/.test(value) && /[^A-Za-z0-9]/.test(value)) score += 1;
+        return Math.min(score, 4);
+      }
+
+      function renderStrength() {
+        if (mode !== 'signup') return;
+        const value = passwordInput.value;
+        const score = value ? scorePassword(value) : 0;
+        const palette = ['var(--critical)', 'var(--high)', 'var(--medium)', 'var(--low)'];
+        const labels = ['Too weak', 'Weak', 'Fair', 'Strong'];
+
+        strengthSegments.forEach((segment, index) => {
+          segment.style.background = index < score ? palette[Math.max(0, score - 1)] : 'var(--bg-muted)';
+        });
+        if (!value) {
+          strengthLabel.textContent = 'Use at least 8 characters, mixing letters, numbers and symbols.';
+          strengthLabel.style.color = 'var(--text-muted)';
+        } else {
+          strengthLabel.textContent = labels[Math.max(0, score - 1)];
+          strengthLabel.style.color = palette[Math.max(0, score - 1)];
+        }
+      }
+
+      emailInput.addEventListener('input', () => { hide(); validateEmail({ silent: true }); });
+      emailInput.addEventListener('blur', () => validateEmail());
+      passwordInput.addEventListener('input', () => {
+        hide();
+        renderStrength();
+        if (mode === 'signup') validatePassword({ silent: true });
+      });
+      passwordInput.addEventListener('blur', () => { if (mode === 'signup') validatePassword(); });
+
+      // Caps Lock is the most common cause of a rejected password.
+      const capsHandler = (event) => {
+        const on = typeof event.getModifierState === 'function' && event.getModifierState('CapsLock');
+        capsWarning.classList.toggle('show', Boolean(on));
+      };
+      passwordInput.addEventListener('keydown', capsHandler);
+      passwordInput.addEventListener('keyup', capsHandler);
+      passwordInput.addEventListener('blur', () => capsWarning.classList.remove('show'));
+
+      /* ── Busy state ── */
+
+      function setBusy(state, label) {
+        busy = state;
+        submitBtn.disabled = state;
+        submitBtn.classList.toggle('is-busy', state);
+        googleBtn.disabled = state;
+        modeToggle.disabled = state;
+        forgotBtn.disabled = state;
+        submitIcon.innerHTML = state ? '<span class="spinner"></span>' : ARROW_ICON;
+        submitLabel.textContent = label;
+      }
+
+      /* ── Mode switching ── */
+
+      function setMode(next, { animate = true } = {}) {
+        mode = next;
+        hide();
+        const signup = mode === 'signup';
+
+        formTitle.textContent = signup ? 'Create your account' : 'Sign in';
+        formSub.textContent = signup
+          ? 'Register a workspace account with your work email.'
+          : 'Enter your workspace credentials to continue.';
+        submitLabel.textContent = signup ? 'Create account' : 'Sign in';
+        modePrompt.textContent = signup ? 'Already have an account?' : 'Need a workspace account?';
+        modeToggle.textContent = signup ? 'Sign in' : 'Create one';
+        passwordInput.autocomplete = signup ? 'new-password' : 'current-password';
+        passwordInput.placeholder = signup ? 'Create a password' : 'Enter your password';
+        forgotBtn.hidden = signup;
+        strengthBox.classList.toggle('show', signup);
+        passwordNote.classList.remove('show');
+        passwordInput.classList.remove('is-invalid');
+        renderStrength();
+
+        if (animate) {
+          box.classList.remove('mode-swap');
+          void box.offsetWidth; // restart the animation
+          box.classList.add('mode-swap');
+        }
+      }
+
+      modeToggle.addEventListener('click', () => setMode(mode === 'signup' ? 'signin' : 'signup'));
+
+      /* ── Password visibility ── */
+
+      document.getElementById('pw-toggle').addEventListener('click', (event) => {
+        const button = event.currentTarget;
+        const icon = document.getElementById('pw-icon');
+        const hidden = passwordInput.type === 'password';
+        passwordInput.type = hidden ? 'text' : 'password';
+        button.setAttribute('aria-label', hidden ? 'Hide password' : 'Show password');
+        icon.innerHTML = hidden
+          ? '<path d="M13.5 8A5.5 5.5 0 0 1 3 8"/><line x1="2" y1="2" x2="14" y2="14"/>'
+          : '<path d="M1 8s3-6 7-6 7 6 7 6-3 6-7 6-7-6-7-6z"/><circle cx="8" cy="8" r="2"/>';
+        passwordInput.focus();
+      });
+
+      /* ── Password reset ── */
+
+      forgotBtn.addEventListener('click', async () => {
+        if (busy) return;
+        if (!validateEmail()) {
+          show('Enter your work email address first, then select Forgot password.', 'error');
+          emailInput.focus();
+          return;
+        }
+        const email = emailInput.value.trim();
+        forgotBtn.disabled = true;
+        try {
+          await auth.sendPasswordReset(email);
+          show(`If an account exists for ${email}, a reset link is on its way.`, 'success');
+        } catch (error) {
+          show(error.message, 'error');
+        } finally {
+          forgotBtn.disabled = false;
+        }
+      });
+
+      /* ── Submit ── */
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (busy) return;
+        hide();
+
+        const emailOk = validateEmail();
+        const passwordOk = validatePassword();
+        if (!emailOk) { emailInput.focus(); return; }
+        if (!passwordOk) { passwordInput.focus(); return; }
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        const remember = rememberInput.checked;
+
+        setBusy(true, mode === 'signup' ? 'Creating account…' : 'Signing in…');
+        try {
+          if (mode === 'signup') {
+            const result = await auth.signUpWithPassword(email, password, remember);
+            if (result.confirmationRequired) {
+              setMode('signin');
+              setBusy(false, 'Sign in');
+              show(`Account created. Confirm your address from the email sent to ${email}, then sign in.`, 'success');
+              return;
+            }
+          } else {
+            await auth.signInWithPassword(email, password, remember);
+          }
+          // Hold the busy state through the redirect so nothing flickers.
+          setBusy(true, 'Opening workspace…');
+          location.replace(safeNext());
+        } catch (error) {
+          setBusy(false, mode === 'signup' ? 'Create account' : 'Sign in');
+          show(error.message, 'error');
+          passwordInput.select();
+        }
+      });
+
+      /* ── Google ── */
+
+      googleBtn.addEventListener('click', async () => {
+        if (busy) return;
+        hide();
+        googleBtn.disabled = true;
+        document.getElementById('google-btn-label').textContent = 'Redirecting to Google…';
+        try {
+          sessionStorage.setItem('riskfusion.oauth_next', safeNext());
+          await auth.signInWithGoogle(rememberInput.checked);
+        } catch (error) {
+          googleBtn.disabled = false;
+          document.getElementById('google-btn-label').textContent = 'Continue with Google';
+          show(error.message, 'error');
+        }
+      });
+
+      // Never present a third-party sign-in button that cannot complete a real
+      // sign-in: reveal it only once the provider is confirmed configured.
+      auth.providerEnabled('google').then((enabled) => {
+        if (enabled) document.getElementById('oauth-section').hidden = false;
+      });
+
+      /* ── Entry ── */
+
+      // An already-signed-in visitor should never see the form.
+      auth.getSession().then((session) => {
+        if (session) location.replace(safeNext());
+      });
+
+      setMode('signin', { animate: false });
+
+      // Surface why the user was sent here, when the workspace redirected them.
+      // This must follow setMode(), which clears any standing message.
+      if (new URLSearchParams(location.search).get('next')) {
+        show('Please sign in to open that page.', 'info');
+      }
+
+      emailInput.focus();
+    })();
+  </script>
+</body>
+
+</html>

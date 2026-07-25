@@ -14,5 +14,7 @@ window.RISKFUSION_CONFIG = {
   /** Page an authenticated user lands on. */
   homePage: 'dashboard.html',
   /** Page unauthenticated users are sent to. */
-  loginPage: 'index.html',
+  loginPage: 'signin.html',
+  /** Public landing page. */
+  landingPage: 'index.html',
 };

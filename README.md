@@ -15,7 +15,8 @@ timeline, and MITRE ATT&CK mapping.
 
 | File | Page | Description |
 |------|------|-------------|
-| `index.html` | **Sign in** | Email/password and Google sign-in, backed by Supabase Auth |
+| `index.html` | **Landing** | Public overview of the platform with a single call to action |
+| `signin.html` | **Sign in** | Email/password and Google sign-in, backed by Supabase Auth |
 | `callback.html` | **OAuth callback** | Completes the Google authorisation-code exchange |
 | `dashboard.html` | **SOC Dashboard** | Live KPIs, risk distribution, activity stream, threat-origin map |
 | `incidents.html` | **Incident Queue** | Table and board views, filters, bulk actions, pagination |
@@ -70,7 +71,10 @@ Supabase Auth, accessed through its REST API so the static frontend needs no bun
 - **Sessions** — access tokens refresh silently before expiry. "Keep me signed in" stores the
   session in `localStorage`; otherwise it lives in `sessionStorage` and dies with the tab.
 - **Route protection** — every workspace page calls `requireSession()` before rendering and
-  redirects to sign-in, preserving the requested destination.
+  redirects to sign-in, preserving the requested destination so the user lands where they
+  intended once authenticated.
+- **Public surface** — `index.html` is the only indexable page; the sign-in form lives behind
+  it at `signin.html`.
 - **Sign out** — clears local state immediately and revokes the session server-side.
 
 ### Enabling Google sign-in

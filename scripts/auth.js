@@ -295,19 +295,37 @@
 
   /* ─────────────── route protection ─────────────── */
 
+  /** Set once a page has declared itself protected, so public pages are left alone. */
+  let guarded = false;
+  let redirecting = false;
+
+  /**
+   * Sends the visitor to sign in, remembering where they were headed.
+   *
+   * Several things can discover a dead session at once — the route guard and
+   * any in-flight API call — so the first caller wins and later ones are
+   * ignored. Otherwise a second redirect would drop the `next` destination.
+   */
+  function redirectToLogin() {
+    if (redirecting) return;
+    redirecting = true;
+    const target = location.pathname.split('/').pop() + location.search;
+    const next = target && target !== config.loginPage ? `?next=${encodeURIComponent(target)}` : '';
+    location.replace(config.loginPage + next);
+  }
+
   /**
    * Guards an application page. Redirects to the login page when there is no
    * valid session, remembering where the user was headed.
    */
   async function requireSession() {
+    guarded = true;
     const session = await getSession();
     if (session) {
       scheduleRefresh(session);
       return session;
     }
-    const target = location.pathname.split('/').pop() + location.search;
-    const next = target && target !== config.loginPage ? `?next=${encodeURIComponent(target)}` : '';
-    location.replace(config.loginPage + next);
+    redirectToLogin();
     return null;
   }
 
@@ -319,16 +337,17 @@
     refreshTimer = setTimeout(async () => {
       const next = await getSession();
       if (next) scheduleRefresh(next);
-      else location.replace(config.loginPage);
+      else redirectToLogin();
     }, delay);
   }
 
-  /** Sends a signed-out tab back to the login page when another tab signs out. */
+  /**
+   * Sends a workspace tab back to the login page when another tab signs out.
+   * Public pages (landing, sign-in) never call requireSession, so they stay put.
+   */
   window.addEventListener('storage', (event) => {
     if (event.key !== SESSION_KEY || event.newValue) return;
-    if (!readSession() && !location.pathname.endsWith(config.loginPage)) {
-      location.replace(config.loginPage);
-    }
+    if (guarded && !readSession()) redirectToLogin();
   });
 
   window.RiskFusionAuth = {
@@ -345,5 +364,6 @@
     signOut,
     providerEnabled,
     requireSession,
+    redirectToLogin,
   };
 })();

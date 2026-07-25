@@ -17,7 +17,7 @@ async function authHeaders() {
   if (!token) {
     // The session is gone; send the user back to sign in rather than
     // hammering the API with requests that can only fail.
-    location.replace('index.html');
+    window.RiskFusionAuth.redirectToLogin();
     throw new Error('Your session has expired. Please sign in again.');
   }
   return { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
@@ -26,7 +26,7 @@ async function authHeaders() {
 /** Turns a non-2xx response into an Error carrying the API's own message. */
 async function toError(response, path) {
   if (response.status === 401) {
-    location.replace('index.html');
+    window.RiskFusionAuth.redirectToLogin();
     return new Error('Your session has expired. Please sign in again.');
   }
   let detail = '';

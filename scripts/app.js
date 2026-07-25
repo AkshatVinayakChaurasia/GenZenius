@@ -68,7 +68,7 @@ async function signOutOfWorkspace() {
   try {
     await window.RiskFusionAuth.signOut();
   } finally {
-    location.replace('index.html');
+    location.replace(window.RISKFUSION_CONFIG.landingPage);
   }
 }
 

@@ -4,9 +4,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign in · RiskFusion AI</title>
+  <title>RiskFusion AI — Security Operations Platform</title>
   <meta name="description"
-    content="RiskFusion AI is a security operations platform that correlates cybersecurity and transaction telemetry into explainable risk scores for banking security teams. Sign in to your workspace." />
+    content="RiskFusion AI correlates cybersecurity and transaction telemetry into explainable risk scores, giving security operations teams one workspace to investigate, decide and act." />
   <meta name="author" content="RiskFusion AI" />
   <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#0F172A" />
@@ -16,12 +16,12 @@
   <meta property="og:site_name" content="RiskFusion AI" />
   <meta property="og:title" content="RiskFusion AI — Security Operations Platform" />
   <meta property="og:description"
-    content="Correlate cybersecurity and transaction telemetry into explainable risk scores for banking security operations teams." />
+    content="Correlate cybersecurity and transaction telemetry into explainable risk scores for security operations teams." />
   <meta property="og:url" content="https://riskfusion-ai.vercel.app/" />
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="RiskFusion AI — Security Operations Platform" />
   <meta name="twitter:description"
-    content="Correlate cybersecurity and transaction telemetry into explainable risk scores for banking security operations teams." />
+    content="Correlate cybersecurity and transaction telemetry into explainable risk scores for security operations teams." />
 
   <link rel="stylesheet" href="styles/design-system.css" />
   <script type="application/ld+json">
@@ -31,647 +31,1128 @@
       "name": "RiskFusion AI",
       "applicationCategory": "SecurityApplication",
       "operatingSystem": "Web",
-      "description": "Security operations platform that correlates cybersecurity and transaction telemetry into explainable risk scores for banking security teams.",
-      "url": "https://riskfusion-ai.vercel.app/",
-      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      "description": "Security operations platform that correlates cybersecurity and transaction telemetry into explainable risk scores.",
+      "url": "https://riskfusion-ai.vercel.app/"
     }
   </script>
   <style>
-    /* Sign-in page layout overrides */
-    .login-brand-panel {
-      display: flex;
-      flex-direction: column;
+    /* ─────────── Landing page ─────────── */
+    .lp-body {
+      background: var(--bg-surface);
     }
 
-    .brand-logo-wrap {
+    /* ── Top bar ── */
+    .lp-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 48px;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 32px;
+      transition: background 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease, padding 0.3s ease;
+      border-bottom: 1px solid transparent;
     }
 
-    .brand-logo-mark {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.15);
-      border: 1.5px solid rgba(255, 255, 255, 0.3);
+    .lp-nav.scrolled {
+      background: rgba(255, 255, 255, 0.86);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom-color: var(--border-default);
+      padding: 12px 32px;
+    }
+
+    .lp-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .lp-brand-mark {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: var(--brand-gradient);
       display: flex;
       align-items: center;
       justify-content: center;
-      backdrop-filter: blur(8px);
+      flex-shrink: 0;
+      box-shadow: var(--shadow-blue);
     }
 
-    .brand-logo-mark svg {
-      width: 22px;
-      height: 22px;
+    .lp-brand-mark svg {
+      width: 16px;
+      height: 16px;
       color: white;
     }
 
-    .brand-headline {
-      font-size: 2.5rem;
+    .lp-brand-name {
+      font-size: 1rem;
       font-weight: 800;
+      letter-spacing: -0.025em;
       color: white;
-      letter-spacing: -0.04em;
-      line-height: 1.1;
-      margin-bottom: 20px;
+      transition: color 0.3s ease;
+      white-space: nowrap;
     }
 
-    .brand-headline span {
+    .lp-brand-name span {
+      color: #67E8F9;
+      transition: color 0.3s ease;
+    }
+
+    .lp-nav.scrolled .lp-brand-name {
+      color: var(--text-primary);
+    }
+
+    .lp-nav.scrolled .lp-brand-name span {
+      color: var(--brand-blue-mid);
+    }
+
+    /* The nav CTA is the same single action, revealed once the hero scrolls away. */
+    .lp-nav-cta {
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .lp-nav.scrolled .lp-nav-cta {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+    }
+
+    /* ── Hero ── */
+    .lp-hero {
+      position: relative;
+      background: var(--brand-gradient);
+      color: white;
+      padding: 132px 32px 96px;
+      overflow: hidden;
+    }
+
+    .lp-hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(900px 420px at 78% 12%, rgba(103, 232, 249, 0.18), transparent 65%),
+        radial-gradient(700px 380px at 8% 88%, rgba(37, 99, 235, 0.22), transparent 60%);
+      pointer-events: none;
+    }
+
+    .lp-wrap {
+      max-width: 1120px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .lp-hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      gap: 56px;
+      align-items: center;
+    }
+
+    .lp-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 13px;
+      border-radius: var(--r-full);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.82);
+      margin-bottom: 26px;
+    }
+
+    .lp-eyebrow .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #67E8F9;
+      box-shadow: 0 0 0 3px rgba(103, 232, 249, 0.22);
+    }
+
+    .lp-h1 {
+      font-size: clamp(2.4rem, 5.2vw, 3.75rem);
+      font-weight: 800;
+      letter-spacing: -0.045em;
+      line-height: 1.05;
+      margin-bottom: 22px;
+    }
+
+    .lp-h1 span {
       color: #67E8F9;
     }
 
-    .brand-body {
-      font-size: 1rem;
-      line-height: 1.7;
-      color: rgba(255, 255, 255, 0.7);
-      max-width: 380px;
-      margin-bottom: 40px;
+    .lp-lede {
+      font-size: 1.0625rem;
+      line-height: 1.72;
+      color: rgba(255, 255, 255, 0.74);
+      max-width: 520px;
+      margin-bottom: 36px;
     }
 
-    .brand-stats {
+    .lp-cta-row {
       display: flex;
-      gap: 32px;
+      align-items: center;
+      gap: 18px;
       flex-wrap: wrap;
     }
 
-    .brand-stat-val {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: white;
-      letter-spacing: -0.03em;
-      line-height: 1;
-    }
-
-    .brand-stat-lbl {
-      font-size: 0.75rem;
-      color: rgba(255, 255, 255, 0.55);
-      margin-top: 3px;
-    }
-
-    .brand-visual {
-      flex: 1;
-      display: flex;
+    /* The single primary call to action */
+    .lp-cta {
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
-      padding: 0 48px 48px;
-    }
-
-    .brand-card-stack {
-      position: relative;
-      width: 100%;
-      max-width: 340px;
-    }
-
-    .brand-mini-card {
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 16px;
-      padding: 18px 20px;
-      color: white;
-    }
-
-    .brand-mini-card+.brand-mini-card {
-      margin-top: 12px;
-    }
-
-    .bmc-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
       gap: 10px;
+      padding: 15px 28px;
+      border-radius: var(--r-lg);
+      background: white;
+      color: #0F172A;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      box-shadow: 0 10px 30px rgba(2, 6, 23, 0.26);
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease;
     }
 
-    .bmc-label {
-      font-size: 0.75rem;
+    .lp-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 38px rgba(2, 6, 23, 0.32);
+    }
+
+    .lp-cta:active {
+      transform: translateY(0);
+    }
+
+    .lp-cta svg {
+      width: 16px;
+      height: 16px;
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .lp-cta:hover svg {
+      transform: translateX(3px);
+    }
+
+    .lp-cta-note {
+      font-size: 0.8125rem;
+      color: rgba(255, 255, 255, 0.52);
+      line-height: 1.5;
+    }
+
+    /* Hero preview card */
+    .lp-preview {
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: var(--r-2xl);
+      padding: 22px;
+      box-shadow: 0 24px 60px rgba(2, 6, 23, 0.3);
+    }
+
+    .lp-preview-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 15px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .lp-preview-title {
+      font-size: 0.8125rem;
       font-weight: 700;
       color: white;
       letter-spacing: -0.01em;
     }
 
-    .bmc-icon {
-      width: 26px;
-      height: 26px;
-      border-radius: 8px;
+    .lp-preview-id {
+      font-family: monospace;
+      font-size: 0.6875rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .lp-score-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .lp-score {
+      font-size: 2.75rem;
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      color: white;
+    }
+
+    .lp-score-max {
+      font-size: 0.9375rem;
+      color: rgba(255, 255, 255, 0.4);
+      font-weight: 600;
+    }
+
+    .lp-score-tag {
+      margin-left: auto;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: var(--r-full);
+      background: rgba(239, 68, 68, 0.2);
+      color: #FCA5A5;
+      border: 1px solid rgba(239, 68, 68, 0.32);
+    }
+
+    .lp-score-caption {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 18px;
+    }
+
+    .lp-signal {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 9px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .lp-signal-name {
+      font-size: 0.8125rem;
+      color: rgba(255, 255, 255, 0.86);
+      font-weight: 500;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .lp-signal-bar {
+      width: 74px;
+      height: 5px;
+      border-radius: var(--r-full);
       background: rgba(255, 255, 255, 0.12);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .lp-signal-fill {
+      height: 100%;
+      border-radius: var(--r-full);
+      width: 0;
+      transition: width 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .lp-signal-weight {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.62);
+      font-family: monospace;
+      width: 30px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* ── Sections ── */
+    .lp-section {
+      padding: 92px 32px;
+    }
+
+    .lp-section.tinted {
+      background: var(--bg-canvas);
+      border-top: 1px solid var(--border-default);
+      border-bottom: 1px solid var(--border-default);
+    }
+
+    .lp-section-head {
+      max-width: 640px;
+      margin-bottom: 48px;
+    }
+
+    .lp-kicker {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+      color: var(--brand-blue-mid);
+      margin-bottom: 14px;
+    }
+
+    .lp-h2 {
+      font-size: clamp(1.6rem, 3vw, 2.125rem);
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      color: var(--text-primary);
+      line-height: 1.2;
+      margin-bottom: 14px;
+    }
+
+    .lp-sub {
+      font-size: 1rem;
+      line-height: 1.72;
+      color: var(--text-tertiary);
+    }
+
+    .lp-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .lp-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--r-xl);
+      padding: 26px 24px;
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease, border-color 0.28s ease;
+    }
+
+    .lp-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--border-strong);
+    }
+
+    .lp-card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--r-md);
+      background: var(--info-bg);
+      border: 1px solid var(--info-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .lp-card-icon svg {
+      width: 19px;
+      height: 19px;
+      color: var(--brand-blue-mid);
+    }
+
+    .lp-card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .lp-card-copy {
+      font-size: 0.875rem;
+      line-height: 1.68;
+      color: var(--text-tertiary);
+    }
+
+    /* Steps */
+    .lp-steps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+      counter-reset: step;
+    }
+
+    .lp-step {
+      position: relative;
+      padding-top: 22px;
+      border-top: 2px solid var(--border-default);
+      transition: border-color 0.28s ease;
+    }
+
+    .lp-step:hover {
+      border-top-color: var(--brand-blue-mid);
+    }
+
+    .lp-step-num {
+      font-size: 0.6875rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: var(--brand-blue-mid);
+      margin-bottom: 10px;
+    }
+
+    .lp-step-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .lp-step-copy {
+      font-size: 0.875rem;
+      line-height: 1.68;
+      color: var(--text-tertiary);
+    }
+
+    /* Module list */
+    .lp-modules {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0 40px;
+    }
+
+    .lp-module {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border-default);
+    }
+
+    .lp-module-check {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--low-bg);
+      border: 1px solid var(--low-border);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      margin-top: 1px;
     }
 
-    .bmc-icon svg {
+    .lp-module-check svg {
+      width: 11px;
+      height: 11px;
+      color: var(--low);
+    }
+
+    .lp-module-name {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 3px;
+    }
+
+    .lp-module-copy {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      color: var(--text-tertiary);
+    }
+
+    /* Security strip */
+    .lp-security {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .lp-sec-item {
+      padding: 20px;
+      border-radius: var(--r-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+    }
+
+    .lp-sec-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .lp-sec-title svg {
       width: 14px;
       height: 14px;
-      color: #67E8F9;
+      color: var(--brand-cyan);
+      flex-shrink: 0;
     }
 
-    .bmc-sub {
+    .lp-sec-copy {
       font-size: 0.8125rem;
-      line-height: 1.55;
-      color: rgba(255, 255, 255, 0.6);
+      line-height: 1.6;
+      color: var(--text-tertiary);
     }
 
-    .oauth-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 11px 16px;
-      border: 1.5px solid var(--border-default);
-      border-radius: var(--r-md);
-      background: var(--bg-surface);
-      font-size: 0.9375rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      cursor: pointer;
-      width: 100%;
-      transition: all var(--t-fast);
-      font-family: inherit;
-    }
-
-    .oauth-btn:hover:not(:disabled) {
-      background: var(--bg-subtle);
-      border-color: var(--border-strong);
-    }
-
-    .oauth-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .oauth-btn svg {
-      width: 18px;
-      height: 18px;
-    }
-
-    .oauth-divider {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 20px 0;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    .oauth-divider::before,
-    .oauth-divider::after {
-      content: "";
-      flex: 1;
-      height: 1px;
-      background: var(--border-default);
-    }
-
-    .form-footer {
-      margin-top: 24px;
+    /* Closing band */
+    .lp-close {
+      background: var(--brand-gradient);
+      color: white;
+      padding: 76px 32px;
       text-align: center;
-      font-size: 0.8125rem;
-      color: var(--text-muted);
-    }
-
-    .link-btn {
-      background: none;
-      border: none;
-      padding: 0;
-      font: inherit;
-      color: var(--brand-blue-mid);
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .link-btn:hover {
-      text-decoration: underline;
-    }
-
-    .input-pw-wrap {
       position: relative;
+      overflow: hidden;
     }
 
-    .input-pw-wrap .input {
-      padding-right: 44px;
-    }
-
-    .pw-toggle {
+    .lp-close::after {
+      content: "";
       position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      padding: 4px;
+      inset: 0;
+      background: radial-gradient(700px 320px at 50% 0%, rgba(103, 232, 249, 0.16), transparent 70%);
+      pointer-events: none;
+    }
+
+    .lp-close h2 {
+      font-size: clamp(1.6rem, 3vw, 2.125rem);
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      margin-bottom: 14px;
+    }
+
+    .lp-close p {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: rgba(255, 255, 255, 0.7);
+      max-width: 520px;
+      margin: 0 auto 32px;
+    }
+
+    /* Footer */
+    .lp-footer {
+      padding: 30px 32px;
+      border-top: 1px solid var(--border-default);
+      background: var(--bg-surface);
+    }
+
+    .lp-footer-inner {
+      max-width: 1120px;
+      margin: 0 auto;
       display: flex;
       align-items: center;
-    }
-
-    .pw-toggle:hover {
-      color: var(--text-primary);
-    }
-
-    .pw-toggle svg {
-      width: 16px;
-      height: 16px;
-    }
-
-    .form-message {
-      margin: 14px 0 0;
-      padding: 10px 12px;
-      border-radius: var(--r-md);
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
       font-size: 0.8125rem;
-      line-height: 1.5;
+      color: var(--text-muted);
     }
 
-    .form-message.error {
-      background: var(--critical-bg, #FEF2F2);
-      border: 1px solid var(--critical-border, #FECACA);
-      color: var(--critical);
+    .lp-footer a {
+      color: var(--text-tertiary);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color var(--t-fast);
     }
 
-    .form-message.success {
-      background: var(--info-bg);
-      border: 1px solid var(--info-border);
+    .lp-footer a:hover {
       color: var(--brand-blue-mid);
     }
 
-    .login-brand-bottom {
-      font-size: 0.6875rem;
-      color: rgba(255, 255, 255, 0.4);
+    /* ── Scroll reveal ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 940px) {
+      .lp-hero-grid {
+        grid-template-columns: 1fr;
+        gap: 44px;
+      }
+
+      .lp-grid-3,
+      .lp-steps {
+        grid-template-columns: 1fr;
+      }
+
+      .lp-modules {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+
+      .lp-security {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .lp-hero {
+        padding: 116px 24px 76px;
+      }
+
+      .lp-section {
+        padding: 68px 24px;
+      }
+
+      .lp-nav,
+      .lp-nav.scrolled {
+        padding: 12px 20px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .lp-security {
+        grid-template-columns: 1fr;
+      }
+
+      .lp-cta {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .lp-nav-cta {
+        display: none !important;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
+
+      .lp-cta:hover,
+      .lp-card:hover {
+        transform: none;
+      }
+
+      .lp-signal-fill {
+        transition: none;
+      }
+
+      html {
+        scroll-behavior: auto !important;
+      }
+    }
+
+    html {
+      scroll-behavior: smooth;
     }
   </style>
 </head>
 
-<body>
-  <main class="login-shell">
+<body class="lp-body">
 
-    <!-- ── Brand Panel ── -->
-    <section class="login-brand-panel">
-      <div class="login-brand-inner">
-        <div class="brand-logo-wrap">
-          <div class="brand-logo-mark">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round" aria-hidden="true">
-              <path d="M12 2L2 7l10 5 10-5-10-5z" />
-              <path d="M2 17l10 5 10-5" />
-              <path d="M2 12l10 5 10-5" />
-            </svg>
-          </div>
-          <div>
-            <div style="font-size:1.125rem;font-weight:800;color:white;letter-spacing:-0.02em;">Risk<span
-                style="color:#67E8F9;">Fusion</span> AI</div>
-            <div
-              style="font-size:0.625rem;color:rgba(255,255,255,0.55);font-weight:600;letter-spacing:0.1em;text-transform:uppercase;">
-              Security Operations Platform</div>
-          </div>
-        </div>
+  <!-- ── Navigation ── -->
+  <nav class="lp-nav" id="lp-nav">
+    <a class="lp-brand" href="#top" aria-label="RiskFusion AI home">
+      <span class="lp-brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 2L2 7l10 5 10-5-10-5z" />
+          <path d="M2 17l10 5 10-5" />
+          <path d="M2 12l10 5 10-5" />
+        </svg>
+      </span>
+      <span class="lp-brand-name">Risk<span>Fusion</span> AI</span>
+    </a>
+    <a class="btn btn-primary btn-sm lp-nav-cta" href="signin.html">Launch Secure Workspace</a>
+  </nav>
 
-        <h1 class="brand-headline">
-          Detect. Correlate.<br><span>Neutralise.</span>
-        </h1>
-
-        <p class="brand-body">
-          RiskFusion AI unifies cybersecurity and transaction telemetry in one workspace, so security operations teams
-          can investigate correlated threats with an explainable risk score behind every decision.
-        </p>
-
-        <div class="brand-stats">
-          <div>
-            <div class="brand-stat-val">Unified</div>
-            <div class="brand-stat-lbl">Cyber &amp; transaction signals</div>
-          </div>
-          <div>
-            <div class="brand-stat-val">Explainable</div>
-            <div class="brand-stat-lbl">Every score is traceable</div>
-          </div>
-          <div>
-            <div class="brand-stat-val">MITRE</div>
-            <div class="brand-stat-lbl">ATT&amp;CK mapped</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Capability cards -->
-      <div class="brand-visual">
-        <div class="brand-card-stack">
-          <div class="brand-mini-card">
-            <div class="bmc-top">
-              <span class="bmc-label">Correlated incident timeline</span>
-              <span class="bmc-icon">
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
-                  stroke-linejoin="round" aria-hidden="true">
-                  <circle cx="3" cy="8" r="1.5" />
-                  <circle cx="8" cy="5" r="1.5" />
-                  <circle cx="13" cy="10" r="1.5" />
-                  <path d="M4.5 8h2L8 6.5" />
-                  <path d="M9.5 5.5l2 3.5" />
-                </svg>
-              </span>
-            </div>
-            <div class="bmc-sub">Authentication, device, network and payment events assembled into one ordered
-              narrative per incident.</div>
-          </div>
-          <div class="brand-mini-card">
-            <div class="bmc-top">
-              <span class="bmc-label">Explainable risk scoring</span>
-              <span class="bmc-icon">
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
-                  stroke-linejoin="round" aria-hidden="true">
-                  <polyline points="1 12 5 7 8 9 12 4 15 6" />
-                  <path d="M1 14.5h14" />
-                </svg>
-              </span>
-            </div>
-            <div class="bmc-sub">A weighted signal engine shows which factors moved the score and by how much — no
-              black-box verdicts.</div>
-          </div>
-          <div class="brand-mini-card">
-            <div class="bmc-top">
-              <span class="bmc-label">Guided response actions</span>
-              <span class="bmc-icon">
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
-                  stroke-linejoin="round" aria-hidden="true">
-                  <path d="M8 1.5L2 4v4c0 3.3 2.6 6 6 6s6-2.7 6-6V4L8 1.5z" />
-                  <path d="M5.5 8l1.8 1.8L10.5 6.5" />
-                </svg>
-              </span>
-            </div>
-            <div class="bmc-sub">Recommended containment steps are ranked by impact and recorded against the incident
-              record.</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="login-brand-bottom">
-        © 2026 RiskFusion AI · Authorised access only
-      </div>
-    </section>
-
-    <!-- ── Form Panel ── -->
-    <section class="login-form-panel">
-      <div class="login-form-box">
-
-        <div style="margin-bottom:32px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
-            <div class="logo-mark" style="width:28px;height:28px;border-radius:7px;">
-              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"
-                stroke-linejoin="round" style="width:13px;height:13px;" aria-hidden="true">
-                <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                <path d="M2 17l10 5 10-5" />
-                <path d="M2 12l10 5 10-5" />
+  <!-- ── Hero ── -->
+  <header class="lp-hero" id="top">
+    <div class="lp-wrap">
+      <div class="lp-hero-grid">
+        <div>
+          <div class="lp-eyebrow"><span class="dot"></span>Security Operations Platform</div>
+          <h1 class="lp-h1">Detect. Correlate.<br><span>Neutralise.</span></h1>
+          <p class="lp-lede">
+            RiskFusion AI brings cybersecurity and transaction telemetry into a single workspace, so your team can see
+            how separate signals form one attack — and act on it with the reasoning in full view.
+          </p>
+          <div class="lp-cta-row">
+            <a class="lp-cta" href="signin.html">
+              <span class="lp-cta-label">Launch Secure Workspace</span>
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <path d="M14 8H2m9-4l4 4-4 4" />
               </svg>
-            </div>
-            <span style="font-size:0.9375rem;font-weight:700;color:var(--text-primary);">Risk<span
-                style="color:var(--brand-blue-mid);">Fusion</span> AI</span>
+            </a>
+            <span class="lp-cta-note" id="lp-cta-note">Sign in with your work email account.</span>
           </div>
-          <h2 class="login-form-title" id="form-title">Sign in</h2>
-          <p class="login-form-sub" id="form-sub">Use your RiskFusion AI workspace account to continue.</p>
         </div>
 
-        <!-- Google OAuth: rendered only once the provider is confirmed available -->
-        <div id="oauth-section" hidden>
-          <button type="button" class="oauth-btn" id="google-btn">
-            <svg viewBox="0 0 18 18" aria-hidden="true">
-              <path fill="#4285F4"
-                d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91c1.7-1.57 2.69-3.88 2.69-6.62z" />
-              <path fill="#34A853"
-                d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.91-2.26c-.81.54-1.84.86-3.05.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.34A9 9 0 0 0 9 18z" />
-              <path fill="#FBBC05"
-                d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.94H.96a9 9 0 0 0 0 8.12l3.01-2.34z" />
-              <path fill="#EA4335"
-                d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A9 9 0 0 0 .96 4.94l3.01 2.34C4.68 5.16 6.66 3.58 9 3.58z" />
-            </svg>
-            <span id="google-btn-label">Continue with Google</span>
-          </button>
-          <div class="oauth-divider">or</div>
+        <!-- Illustrative view of how a score is explained -->
+        <div class="lp-preview" aria-label="Example of an explained risk score">
+          <div class="lp-preview-head">
+            <span class="lp-preview-title">Explained risk score</span>
+            <span class="lp-preview-id">EXAMPLE</span>
+          </div>
+          <div class="lp-score-row">
+            <span class="lp-score" id="lp-score">0</span>
+            <span class="lp-score-max">/ 100</span>
+            <span class="lp-score-tag">Critical</span>
+          </div>
+          <div class="lp-score-caption">Every score decomposes into the signals that produced it.</div>
+
+          <div class="lp-signal">
+            <span class="lp-signal-name">Impossible travel</span>
+            <span class="lp-signal-bar"><span class="lp-signal-fill" data-width="100"
+                style="background:#F87171;"></span></span>
+            <span class="lp-signal-weight">+25</span>
+          </div>
+          <div class="lp-signal">
+            <span class="lp-signal-name">High value transaction</span>
+            <span class="lp-signal-bar"><span class="lp-signal-fill" data-width="86"
+                style="background:#FB923C;"></span></span>
+            <span class="lp-signal-weight">+21</span>
+          </div>
+          <div class="lp-signal">
+            <span class="lp-signal-name">New beneficiary</span>
+            <span class="lp-signal-bar"><span class="lp-signal-fill" data-width="62"
+                style="background:#FBBF24;"></span></span>
+            <span class="lp-signal-weight">+15</span>
+          </div>
+          <div class="lp-signal">
+            <span class="lp-signal-name">Trusted device</span>
+            <span class="lp-signal-bar"><span class="lp-signal-fill" data-width="40"
+                style="background:#34D399;"></span></span>
+            <span class="lp-signal-weight">−10</span>
+          </div>
         </div>
-
-        <form id="auth-form" novalidate>
-          <div class="input-group" style="margin-bottom:16px;">
-            <label class="input-label" for="email">Work email</label>
-            <div class="input-with-icon">
-              <span class="input-icon">
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                  stroke-linejoin="round" aria-hidden="true">
-                  <rect x="1" y="3" width="14" height="10" rx="2" />
-                  <polyline points="1 5 8 9 15 5" />
-                </svg>
-              </span>
-              <input id="email" name="email" type="email" class="input" style="width:100%;" placeholder="you@company.com"
-                autocomplete="username" autocapitalize="none" spellcheck="false" required />
-            </div>
-          </div>
-
-          <div class="input-group" style="margin-bottom:20px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-              <label class="input-label" for="password">Password</label>
-              <button type="button" class="link-btn" id="forgot-btn"
-                style="font-size:0.75rem;">Forgot password?</button>
-            </div>
-            <div class="input-pw-wrap">
-              <input id="password" name="password" type="password" class="input" style="width:100%;"
-                placeholder="Enter your password" autocomplete="current-password" required minlength="8" />
-              <button type="button" class="pw-toggle" id="pw-toggle" aria-label="Show password">
-                <svg id="pw-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
-                  aria-hidden="true">
-                  <path d="M1 8s3-6 7-6 7 6 7 6-3 6-7 6-7-6-7-6z" />
-                  <circle cx="8" cy="8" r="2" />
-                </svg>
-              </button>
-            </div>
-            <p id="password-hint" hidden
-              style="margin:8px 0 0;font-size:0.75rem;color:var(--text-muted);line-height:1.5;">
-              Use at least 8 characters. Choose a password you do not use anywhere else.
-            </p>
-          </div>
-
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:24px;">
-            <input type="checkbox" id="remember" style="width:15px;height:15px;accent-color:var(--brand-blue-mid);" />
-            <label for="remember" style="font-size:0.875rem;color:var(--text-tertiary);cursor:pointer;">
-              Keep me signed in on this device
-            </label>
-          </div>
-
-          <button type="submit" class="btn btn-primary btn-full btn-lg" id="submit-btn">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round" style="width:16px;height:16px;" aria-hidden="true">
-              <path d="M14 8H2m9-4l4 4-4 4" />
-            </svg>
-            <span id="submit-label">Sign in</span>
-          </button>
-
-          <p id="form-message" class="form-message" role="status" aria-live="polite" hidden></p>
-        </form>
-
-        <div class="form-footer">
-          <span id="mode-prompt">Need a workspace account?</span>
-          <button type="button" class="link-btn" id="mode-toggle">Create one</button>
-        </div>
-
       </div>
-    </section>
+    </div>
+  </header>
 
-  </main>
+  <!-- ── What it does ── -->
+  <section class="lp-section">
+    <div class="lp-wrap">
+      <div class="lp-section-head reveal">
+        <div class="lp-kicker">What it does</div>
+        <h2 class="lp-h2">One workspace for signals that are usually reviewed apart</h2>
+        <p class="lp-sub">
+          Authentication events, device fingerprints, network origin and payment behaviour rarely sit in the same tool.
+          RiskFusion AI joins them into a single incident record and shows what that combination means.
+        </p>
+      </div>
+
+      <div class="lp-grid-3">
+        <article class="lp-card reveal">
+          <div class="lp-card-icon">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <circle cx="3" cy="8" r="1.6" />
+              <circle cx="8" cy="5" r="1.6" />
+              <circle cx="13" cy="10" r="1.6" />
+              <path d="M4.6 8h1.9L8 6.6" />
+              <path d="M9.5 5.6l2 3.5" />
+            </svg>
+          </div>
+          <h3 class="lp-card-title">Correlated timelines</h3>
+          <p class="lp-card-copy">
+            Related events are assembled into one ordered narrative per incident, so the sequence of an attack reads
+            end to end instead of across four consoles.
+          </p>
+        </article>
+
+        <article class="lp-card reveal">
+          <div class="lp-card-icon">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <polyline points="1 12 5 7 8 9 12 4 15 6" />
+              <path d="M1 14.5h14" />
+            </svg>
+          </div>
+          <h3 class="lp-card-title">Explainable scoring</h3>
+          <p class="lp-card-copy">
+            A weighted signal engine shows which factors moved a score and by how much. Analysts can defend a decision
+            because they can see how it was reached.
+          </p>
+        </article>
+
+        <article class="lp-card reveal">
+          <div class="lp-card-icon">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <path d="M8 1.5L2 4v4c0 3.3 2.6 6 6 6s6-2.7 6-6V4L8 1.5z" />
+              <path d="M5.5 8l1.8 1.8L10.5 6.5" />
+            </svg>
+          </div>
+          <h3 class="lp-card-title">Recorded response</h3>
+          <p class="lp-card-copy">
+            Containment steps are ranked by impact, and every action an analyst takes is written to the incident's
+            audit timeline under their name.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── How it works ── -->
+  <section class="lp-section tinted">
+    <div class="lp-wrap">
+      <div class="lp-section-head reveal">
+        <div class="lp-kicker">How it works</div>
+        <h2 class="lp-h2">From raw telemetry to a decision you can justify</h2>
+      </div>
+
+      <div class="lp-steps">
+        <div class="lp-step reveal">
+          <div class="lp-step-num">STEP 01</div>
+          <h3 class="lp-step-title">Ingest</h3>
+          <p class="lp-step-copy">
+            Identity, device, network and payment events arrive against a customer or session and are held on a single
+            incident record.
+          </p>
+        </div>
+        <div class="lp-step reveal">
+          <div class="lp-step-num">STEP 02</div>
+          <h3 class="lp-step-title">Correlate</h3>
+          <p class="lp-step-copy">
+            Weighted rules test each signal — impossible travel, unfamiliar devices, behavioural deviation — and combine
+            them into a scored assessment with a written rationale.
+          </p>
+        </div>
+        <div class="lp-step reveal">
+          <div class="lp-step-num">STEP 03</div>
+          <h3 class="lp-step-title">Respond</h3>
+          <p class="lp-step-copy">
+            Analysts triage from the queue, work the evidence, and record containment actions that persist to the
+            incident's history.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Inside the workspace ── -->
+  <section class="lp-section">
+    <div class="lp-wrap">
+      <div class="lp-section-head reveal">
+        <div class="lp-kicker">Inside the workspace</div>
+        <h2 class="lp-h2">Everything the shift needs, in one place</h2>
+      </div>
+
+      <div class="lp-modules">
+        <div class="lp-module reveal">
+          <span class="lp-module-check">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <path d="M2.5 6.2l2.4 2.4L9.5 3.8" />
+            </svg>
+          </span>
+          <div>
+            <div class="lp-module-name">SOC dashboard</div>
+            <div class="lp-module-copy">Live operational metrics, risk distribution, activity stream and threat
+              origins.</div>
+          </div>
+        </div>
+        <div class="lp-module reveal">
+          <span class="lp-module-check">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <path d="M2.5 6.2l2.4 2.4L9.5 3.8" />
+            </svg>
+          </span>
+          <div>
+            <div class="lp-module-name">Incident queue</div>
+            <div class="lp-module-copy">Table and board views with filters, assignment and bulk triage.</div>
+          </div>
+        </div>
+        <div class="lp-module reveal">
+          <span class="lp-module-check">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <path d="M2.5 6.2l2.4 2.4L9.5 3.8" />
+            </svg>
+          </span>
+          <div>
+            <div class="lp-module-name">Investigations</div>
+            <div class="lp-module-copy">Evidence workspace with notes that persist to the incident record.</div>
+          </div>
+        </div>
+        <div class="lp-module reveal">
+          <span class="lp-module-check">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <path d="M2.5 6.2l2.4 2.4L9.5 3.8" />
+            </svg>
+          </span>
+          <div>
+            <div class="lp-module-name">Attack kill chain</div>
+            <div class="lp-module-copy">Stage-by-stage progression with the indicators observed at each step.</div>
+          </div>
+        </div>
+        <div class="lp-module reveal">
+          <span class="lp-module-check">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <path d="M2.5 6.2l2.4 2.4L9.5 3.8" />
+            </svg>
+          </span>
+          <div>
+            <div class="lp-module-name">Analyst report</div>
+            <div class="lp-module-copy">Structured reasoning chain, confidence and MITRE ATT&amp;CK mapping.</div>
+          </div>
+        </div>
+        <div class="lp-module reveal">
+          <span class="lp-module-check">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <path d="M2.5 6.2l2.4 2.4L9.5 3.8" />
+            </svg>
+          </span>
+          <div>
+            <div class="lp-module-name">Analytics</div>
+            <div class="lp-module-copy">Severity, type, status and geography trends across the incident set.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Security posture ── -->
+  <section class="lp-section tinted">
+    <div class="lp-wrap">
+      <div class="lp-section-head reveal">
+        <div class="lp-kicker">Security posture</div>
+        <h2 class="lp-h2">Built to the standard the data deserves</h2>
+      </div>
+
+      <div class="lp-security">
+        <div class="lp-sec-item reveal">
+          <div class="lp-sec-title">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="7" width="10" height="7" rx="1.6" />
+              <path d="M5.5 7V4.8a2.5 2.5 0 0 1 5 0V7" />
+            </svg>
+            Authenticated by default
+          </div>
+          <p class="lp-sec-copy">Every workspace route and every API endpoint requires a verified session.</p>
+        </div>
+        <div class="lp-sec-item reveal">
+          <div class="lp-sec-title">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <path d="M8 1.5L2 4v4c0 3.3 2.6 6 6 6s6-2.7 6-6V4L8 1.5z" />
+            </svg>
+            Row-level isolation
+          </div>
+          <p class="lp-sec-copy">Incident data is unreachable without an authorised session behind the API.</p>
+        </div>
+        <div class="lp-sec-item reveal">
+          <div class="lp-sec-title">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <path d="M2 4h12v8H2z" />
+              <path d="M2 7h12" />
+            </svg>
+            Hardened delivery
+          </div>
+          <p class="lp-sec-copy">Strict content security policy, framing denied, and HTTPS enforced throughout.</p>
+        </div>
+        <div class="lp-sec-item reveal">
+          <div class="lp-sec-title">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <circle cx="8" cy="8" r="6.2" />
+              <path d="M8 4.6V8l2.2 1.6" />
+            </svg>
+            Preserved history
+          </div>
+          <p class="lp-sec-copy">Incidents are closed, never deleted, so the audit trail stays intact.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Close ── -->
+  <section class="lp-close">
+    <div class="lp-wrap reveal">
+      <h2>Open your workspace</h2>
+      <p>Sign in to review the current incident queue and the reasoning behind every score.</p>
+      <a class="lp-cta" href="signin.html">
+        <span class="lp-cta-label">Launch Secure Workspace</span>
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <path d="M14 8H2m9-4l4 4-4 4" />
+        </svg>
+      </a>
+    </div>
+  </section>
+
+  <footer class="lp-footer">
+    <div class="lp-footer-inner">
+      <span>© 2026 RiskFusion AI</span>
+      <a href="signin.html">Sign in</a>
+    </div>
+  </footer>
 
   <script src="scripts/config.js"></script>
   <script src="scripts/auth.js"></script>
   <script>
     (function () {
-      const auth = window.RiskFusionAuth;
-      const config = window.RISKFUSION_CONFIG;
+      /* Condense the navigation bar once the hero scrolls away. */
+      const nav = document.getElementById('lp-nav');
+      const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 60);
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
 
-      const form = document.getElementById('auth-form');
-      const emailInput = document.getElementById('email');
-      const passwordInput = document.getElementById('password');
-      const rememberInput = document.getElementById('remember');
-      const message = document.getElementById('form-message');
-      const submitBtn = document.getElementById('submit-btn');
-      const submitLabel = document.getElementById('submit-label');
-      const modeToggle = document.getElementById('mode-toggle');
-      const modePrompt = document.getElementById('mode-prompt');
-      const formTitle = document.getElementById('form-title');
-      const formSub = document.getElementById('form-sub');
-      const passwordHint = document.getElementById('password-hint');
-      const googleBtn = document.getElementById('google-btn');
-
-      let mode = 'signin';
-
-      /** Only ever navigate to a page inside this app. */
-      function safeNext() {
-        const next = new URLSearchParams(location.search).get('next');
-        if (!next || /^[a-z]+:|^\/\//i.test(next)) return config.homePage;
-        const page = next.split('/').pop();
-        return /^[\w.-]+\.html(\?[^#]*)?$/.test(page) ? page : config.homePage;
+      /* Reveal sections as they enter the viewport. */
+      const revealables = document.querySelectorAll('.reveal');
+      if (!('IntersectionObserver' in window)) {
+        revealables.forEach((el) => el.classList.add('visible'));
+      } else {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry, index) => {
+            if (!entry.isIntersecting) return;
+            // A short stagger keeps grouped cards from popping in all at once.
+            setTimeout(() => entry.target.classList.add('visible'), index * 70);
+            observer.unobserve(entry.target);
+          });
+        }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+        revealables.forEach((el) => observer.observe(el));
       }
 
-      function show(text, tone) {
-        message.textContent = text;
-        message.className = `form-message ${tone}`;
-        message.hidden = false;
+      /* Animate the example score and its signal bars on first paint. */
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const scoreEl = document.getElementById('lp-score');
+      const fills = document.querySelectorAll('.lp-signal-fill');
+      const TARGET = 94;
+
+      const paintBars = () => fills.forEach((fill) => { fill.style.width = fill.dataset.width + '%'; });
+
+      if (reduceMotion) {
+        scoreEl.textContent = TARGET;
+        paintBars();
+      } else {
+        requestAnimationFrame(() => {
+          setTimeout(paintBars, 260);
+          const start = performance.now();
+          const duration = 1100;
+          const tick = (now) => {
+            const progress = Math.min(1, (now - start) / duration);
+            // Ease out so the counter settles rather than stopping dead.
+            scoreEl.textContent = Math.round(TARGET * (1 - Math.pow(1 - progress, 3)));
+            if (progress < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        });
       }
 
-      function hide() {
-        message.hidden = true;
-      }
-
-      function busy(state, label) {
-        submitBtn.disabled = state;
-        googleBtn.disabled = state;
-        submitLabel.textContent = label;
-      }
-
-      function setMode(next) {
-        mode = next;
-        hide();
-        const signup = mode === 'signup';
-        formTitle.textContent = signup ? 'Create your account' : 'Sign in';
-        formSub.textContent = signup
-          ? 'Register a RiskFusion AI workspace account with your work email.'
-          : 'Use your RiskFusion AI workspace account to continue.';
-        submitLabel.textContent = signup ? 'Create account' : 'Sign in';
-        modePrompt.textContent = signup ? 'Already have an account?' : 'Need a workspace account?';
-        modeToggle.textContent = signup ? 'Sign in' : 'Create one';
-        passwordInput.autocomplete = signup ? 'new-password' : 'current-password';
-        passwordHint.hidden = !signup;
-        document.getElementById('google-btn-label').textContent = signup ? 'Sign up with Google' : 'Continue with Google';
-      }
-
-      modeToggle.addEventListener('click', () => setMode(mode === 'signup' ? 'signin' : 'signup'));
-
-      document.getElementById('pw-toggle').addEventListener('click', (event) => {
-        const button = event.currentTarget;
-        const icon = document.getElementById('pw-icon');
-        const hidden = passwordInput.type === 'password';
-        passwordInput.type = hidden ? 'text' : 'password';
-        button.setAttribute('aria-label', hidden ? 'Hide password' : 'Show password');
-        icon.innerHTML = hidden
-          ? '<path d="M13.5 8A5.5 5.5 0 0 1 3 8"/><line x1="2" y1="2" x2="14" y2="14"/>'
-          : '<path d="M1 8s3-6 7-6 7 6 7 6-3 6-7 6-7-6-7-6z"/><circle cx="8" cy="8" r="2"/>';
+      /* Mention Google only while that provider is actually available. */
+      window.RiskFusionAuth.providerEnabled('google').then((enabled) => {
+        if (!enabled) return;
+        const note = document.getElementById('lp-cta-note');
+        if (note) note.innerHTML = "Sign in with your work email<br>or your organisation's Google account.";
       });
 
-      document.getElementById('forgot-btn').addEventListener('click', async () => {
-        const email = emailInput.value.trim();
-        if (!email || !emailInput.checkValidity()) {
-          show('Enter your work email address first, then select Forgot password.', 'error');
-          emailInput.focus();
-          return;
-        }
-        try {
-          await auth.sendPasswordReset(email);
-          show(`If an account exists for ${email}, a password reset link is on its way.`, 'success');
-        } catch (error) {
-          show(error.message, 'error');
-        }
+      /* Someone with a live session should go straight to their workspace. */
+      window.RiskFusionAuth.getSession().then((session) => {
+        if (!session) return;
+        document.querySelectorAll('a[href="signin.html"]').forEach((link) => {
+          link.setAttribute('href', window.RISKFUSION_CONFIG.homePage);
+          if (link.classList.contains('lp-cta')) link.firstChild.textContent = 'Open your workspace\n              ';
+        });
       });
-
-      form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        hide();
-        if (!form.checkValidity()) {
-          show(
-            emailInput.validity.valid
-              ? 'Your password must be at least 8 characters.'
-              : 'Enter a valid email address.',
-            'error'
-          );
-          return;
-        }
-
-        const email = emailInput.value.trim();
-        const password = passwordInput.value;
-        const remember = rememberInput.checked;
-
-        busy(true, mode === 'signup' ? 'Creating account…' : 'Signing in…');
-        try {
-          if (mode === 'signup') {
-            const result = await auth.signUpWithPassword(email, password, remember);
-            if (result.confirmationRequired) {
-              // setMode() clears any message, so switch views before reporting.
-              setMode('signin');
-              busy(false, 'Sign in');
-              show(`Account created. Confirm your address from the email sent to ${email}, then sign in.`, 'success');
-              return;
-            }
-          } else {
-            await auth.signInWithPassword(email, password, remember);
-          }
-          location.replace(safeNext());
-        } catch (error) {
-          busy(false, mode === 'signup' ? 'Create account' : 'Sign in');
-          show(error.message, 'error');
-          passwordInput.select();
-        }
-      });
-
-      googleBtn.addEventListener('click', async () => {
-        hide();
-        googleBtn.disabled = true;
-        try {
-          sessionStorage.setItem('riskfusion.oauth_next', safeNext());
-          await auth.signInWithGoogle(rememberInput.checked);
-        } catch (error) {
-          googleBtn.disabled = false;
-          show(error.message, 'error');
-        }
-      });
-
-      // Never present a third-party sign-in button that cannot complete a real
-      // sign-in: reveal it only after the provider is confirmed configured.
-      auth.providerEnabled('google').then((enabled) => {
-        if (enabled) document.getElementById('oauth-section').hidden = false;
-      });
-
-      // An already-signed-in visitor should not see the sign-in form at all.
-      auth.getSession().then((session) => {
-        if (session) location.replace(safeNext());
-      });
-
-      setMode('signin');
-      emailInput.focus();
     })();
   </script>
 </body>
