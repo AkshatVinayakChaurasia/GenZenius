@@ -1,0 +1,2 @@
+Contact: https://github.com/AkshatVinayakChaurasia/GenZenius/security
+Preferred-Languages: en, hi

@@ -10,5 +10,3 @@ Disallow: /killchain.html
 Disallow: /analytics.html
 Disallow: /ai.html
 Disallow: /config.html
-
-Sitemap: https://riskfusion-ai.vercel.app/sitemap.xml

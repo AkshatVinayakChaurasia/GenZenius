@@ -1,0 +1,34 @@
+# Netlify security headers for the static frontend.
+/*
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self' https://njepfasjoaomxgpxvjbx.supabase.co; frame-src 'none'; worker-src 'self'; manifest-src 'self'; upgrade-insecure-requests
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: accelerometer=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), usb=(), xr-spatial-tracking=(), interest-cohort=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  X-Permitted-Cross-Domain-Policies: none
+  X-DNS-Prefetch-Control: off
+
+# Keep workspace and auth pages out of search indexes.
+/dashboard.html
+  X-Robots-Tag: noindex, nofollow
+/incidents.html
+  X-Robots-Tag: noindex, nofollow
+/incident.html
+  X-Robots-Tag: noindex, nofollow
+/investigation.html
+  X-Robots-Tag: noindex, nofollow
+/killchain.html
+  X-Robots-Tag: noindex, nofollow
+/ai.html
+  X-Robots-Tag: noindex, nofollow
+/analytics.html
+  X-Robots-Tag: noindex, nofollow
+/config.html
+  X-Robots-Tag: noindex, nofollow
+/callback.html
+  X-Robots-Tag: noindex, nofollow
+/signin.html
+  X-Robots-Tag: noindex, nofollow
